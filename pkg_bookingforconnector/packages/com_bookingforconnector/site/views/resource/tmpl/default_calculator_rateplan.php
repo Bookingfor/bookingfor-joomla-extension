@@ -341,11 +341,6 @@ $allRatePlans = array();
 //	}
 //}
 //
-$defaultRatePlans =  array_values(array_filter($allRatePlans, function($p) use ($resourceId) {return $p->ResourceId == $resourceId ;})); // c#: allRatePlans.Where(p => p.ResourceId == resId);
-
-if(is_array($defaultRatePlans)){
-$defaultRatePlan =  reset($defaultRatePlans);
-}
 
 //if(!empty($lstRatePlans)){
 //	usort($lstRatePlans, "BFCHelper::bfi_sortRatePlans");
@@ -362,6 +357,11 @@ if(!empty($relatedRatePlans)){
 //	$allRatePlans = array_merge($allRatePlans,$altLstRatePlans);
 //}
 
+$defaultRatePlans =  array_values(array_filter($allRatePlans, function($p) use ($resourceId) {return $p->ResourceId == $resourceId ;})); // c#: allRatePlans.Where(p => p.ResourceId == resId);
+
+if(is_array($defaultRatePlans)){
+$defaultRatePlan =  reset($defaultRatePlans);
+}
 
 $calPrices = null;
 
@@ -727,6 +727,10 @@ $resCount = 0;
 $totalResCount = count($allRatePlans);
 
 $allResourceId = array_unique(array_map(function ($i) { return $i->ResourceId; }, $allRatePlans));
+$keyfirst = array_search($resourceId, $allResourceId);
+$tempfirst = array($keyfirst => $allResourceId[$keyfirst]);
+unset($allResourceId[$keyfirst]);
+$allResourceId = $tempfirst + $allResourceId;
 ?>
 
 	
