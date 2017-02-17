@@ -156,13 +156,7 @@ $addressDataMerchant = $merchant->AddressData;
 		</div>
 		<div class="resourcetabcontainer">
 			<div id="foto" class="tabcontent">
-				<?php echo  $this->loadTemplate('gallery_'.COM_BOOKINGFORCONNECTOR_GALLERY); ?>
-			</div>
-			<div id="planimetria" class="tabcontent">
-				<?php echo  $this->loadTemplate('gallery_Planimetry_'.COM_BOOKINGFORCONNECTOR_GALLERY); ?>
-			</div>
-			<div id="video" class="tabcontent">
-				<?php echo  $this->loadTemplate('gallery_Video_'.COM_BOOKINGFORCONNECTOR_GALLERY); ?>
+				<?php echo  $this->loadTemplate('gallery'); ?>
 			</div>
 			<div id="mappa" class="tabcontent">
 				<div id="map_canvasresource" style="width:100%; height:400px"></div>
@@ -175,20 +169,8 @@ $addressDataMerchant = $merchant->AddressData;
 
 	jQuery(document).ready(function(){
 			//jQuery('.tabcontent').hide();
-			jQuery(".tabcontent:first").show(); 
-			
-			if( jQuery("#resourcegallery")){
-				try
-				{
-					var slider = jQuery("#resourcegallery").data('royalSlider');
-					slider.updateSliderSize(); // updates size of slider. Use after you resize slider with js. 
-				}
-				catch (err)
-				{
-				}
-			}
-
-
+		jQuery(".tabcontent:first").show(); 
+		
 		jQuery(".resourcetabmenu a").click(function() {
 			jQuery('.tabcontent').hide();
 			var activeTab = jQuery(this).attr("rel"); 
@@ -211,17 +193,6 @@ $addressDataMerchant = $merchant->AddressData;
 			if (activeTab=='foto')
 			{
 				currentslider = "#resourcegallery";
-			}
-
-			try
-			{
-				if( jQuery(currentslider)){
-					var slider = jQuery(currentslider).data('royalSlider');
-					slider.updateSliderSize(); // updates size of slider. Use after you resize slider with js. 
-				}
-			}
-			catch (err)
-			{
 			}
 
 		});

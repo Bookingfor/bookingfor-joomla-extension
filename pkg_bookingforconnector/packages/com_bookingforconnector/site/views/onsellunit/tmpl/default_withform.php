@@ -274,17 +274,6 @@ $showResourceVideo= (!empty($VideoData));
 			//jQuery('.tabcontent').hide();
 			jQuery(".tabcontent:first").show(); 
 			
-			if( jQuery("#resourcegallery")){
-				try
-				{
-					var slider = jQuery("#resourcegallery").data('royalSlider');
-					slider.updateSliderSize(); // updates size of slider. Use after you resize slider with js. 
-				}
-				catch (err)
-				{
-				}
-			}
-
 
 		jQuery(".resourcetabmenu a").click(function() {
 			jQuery('.tabcontent').hide();
@@ -310,16 +299,6 @@ $showResourceVideo= (!empty($VideoData));
 				currentslider = "#resourcegallery";
 			}
 
-			try
-			{
-				if( jQuery(currentslider)){
-					var slider = jQuery(currentslider).data('royalSlider');
-					slider.updateSliderSize(); // updates size of slider. Use after you resize slider with js. 
-				}
-			}
-			catch (err)
-			{
-			}
 
 		});
 	});

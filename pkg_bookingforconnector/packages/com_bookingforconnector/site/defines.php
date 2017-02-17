@@ -7,7 +7,6 @@
  // No direct access to this file
 defined('_JEXEC') or die('Restricted access');
 
-//define("COM_BOOKINGFORCONNECTOR_WSURL", "http://ws.bookingfor.com/BookingService.svc");
 define("COM_BOOKINGFORCONNECTOR_APIKEY", "aXBlcnRyYWRlOlF5TWQ5V0xPSG53RGhQSzFnVk4vbVE9PQ==");
 
 //define("COM_BOOKINGFORCONNECTOR_IMGURL", "//ws.bookingfor.com/azure/");
@@ -26,7 +25,7 @@ define("COM_BOOKINGFORCONNECTOR_CONVERSIONCURRENCY", 1);
 
 define("COM_BOOKINGFORCONNECTOR_MAXRESOURCESAJAXMERCHANT", 6);
 
-define("COM_BOOKINGFORCONNECTOR_GALLERY", "Royalslider");
+define("COM_BOOKINGFORCONNECTOR_GALLERY", "");
 define("COM_BOOKINGFORCONNECTOR_ANONYMOUS_TYPE", "3,4");
 
 define("COM_BOOKINGFORCONNECTOR_KEY", "WZgfdUps");  // chiave di cifratura DEVE essere di 8 caratteri altrimenti genera un errore
@@ -48,14 +47,3 @@ define("COM_BOOKINGFORCONNECTOR_NLP_OTHERPARAM_IT", "&list=4&group=50");
 define("COM_BOOKINGFORCONNECTOR_NLP_OTHERPARAM_DE", "&list=5&group=51");
 define("COM_BOOKINGFORCONNECTOR_NLP_OTHERPARAM_EN", "&list=6&group=52");
 
-/*definizione css per bootstrap 3 o 2 
-bootstrap 3:
-define("COM_BOOKINGFORCONNECTOR_BOOTSTRAP_ROW", "row");
-define("COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL", "col-md-");
-bootstrap 2:
-define("COM_BOOKINGFORCONNECTOR_BOOTSTRAP_ROW", "row-fluid");
-define("COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL", "span");
-
-define("COM_BOOKINGFORCONNECTOR_BOOTSTRAP_ROW", "row");
-define("COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL", "col-md-");
-*/

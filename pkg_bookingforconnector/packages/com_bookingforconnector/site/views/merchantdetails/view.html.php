@@ -225,7 +225,9 @@ class BookingForConnectorViewMerchantDetails extends BFCView
 					$totalItems[] = $obj;
 					break;
 			}
-			if($this->checkAnalytics($listName) && $config->get('eecenabled', 0) == 1) {
+			}
+
+			if($checkAnalytics && $this->checkAnalytics($listName) && $config->get('eecenabled', 0) == 1) {
 				$checkAnalytics = true;
 				switch($itemType) {
 					case 0:
@@ -311,7 +313,6 @@ class BookingForConnectorViewMerchantDetails extends BFCView
 						break;
 				}
 			}
-		}
 
 		// Check for errors.
 		if (count($errors = $this->get('Errors'))) {

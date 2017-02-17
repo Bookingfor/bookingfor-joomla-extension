@@ -208,16 +208,7 @@ BFCHelper::setState($resource->Merchant, 'merchant', 'merchant');
 		</div>
 		<div class="resourcetabcontainer">
 			<div id="foto" class="tabcontent">
-				<?php echo  $this->loadTemplate('gallery_'.COM_BOOKINGFORCONNECTOR_GALLERY); ?>
-			</div>
-			<div id="planimetria" class="tabcontent">
-				planimetria
-			</div>
-			<div id="video" class="tabcontent">
-				video
-			</div>
-			<div id="mappa" class="tabcontent">
-				mappa
+				<?php echo  $this->loadTemplate('gallery'); ?>
 			</div>
 		</div>
 	</div>
@@ -260,8 +251,6 @@ BFCHelper::setState($resource->Merchant, 'merchant', 'merchant');
 //				google.maps.event.trigger(sharedMap, 'resize');
 //				sharedMap.setCenter(new google.maps.LatLng(<?php echo $mappa; ?>));
 			}
-			var slider = jQuery(".royalSlider").data('royalSlider');
-			slider.updateSliderSize(); // updates size of slider. Use after you resize slider with js. 
 
 		});
 	});

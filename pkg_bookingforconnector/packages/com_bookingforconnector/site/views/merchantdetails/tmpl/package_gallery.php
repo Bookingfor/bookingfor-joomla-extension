@@ -9,10 +9,8 @@
 defined('_JEXEC') or die('Restricted access');
 $basPath = JURI::base(false) . 'components/com_bookingforconnector/assets/';
 
-$this->document->addScript('components/com_bookingforconnector/assets/js/royalslider/jquery.royalslider.min.js');
-$this->document->addStyleSheet('components/com_bookingforconnector/assets/js/royalslider/royalslider.css');
-$this->document->addStyleSheet('components/com_bookingforconnector/assets/js/royalslider/skins/universal/rs-universal.css');
-$this->document->addStyleSheet('components/com_bookingforconnector/assets/css/royalslider-overrides.css');
+$this->document->addScript('components/com_bookingforconnector/assets/js/jquery.magnific-popup.min.js');
+$this->document->addStyleSheet('components/com_bookingforconnector/assets/css/magnific-popup.css');
 
 $config = $this->config;
 $isportal = $config->get('isportal', 1);
@@ -78,66 +76,42 @@ if(count($sub_images)<3){
 	</table>
 </div>
 
-<div class="royalSlider rsUni" id="resourcegallery" style="display: none">
-	<?php foreach ($images as $image):?>
-	<?php if($image['type'] != 'video') { ?>
-	<div>
-	  <a class="rsImg" href="<?php echo BFCHelper::getImageUrlResized('offers', $image['data'],'')?>"><img class="rsTmb" src="<?php echo BFCHelper::getImageUrlResized('offers', $image['data'],'logomedium')?>" onerror="this.onerror=null;this.src='<?php echo BFCHelper::getImageUrl('offers', $image['data'], 'logomedium')?>'" /></a>
-	</div>	
-	<?php  } else { ?>
-	<?php
-	$url='';
-   if(is_array($image['data'])){
-	  $url = $image['data']["url"];
-   }else{
-	  $url = $image['data'];
-   }
-   parse_str( parse_url( $url, PHP_URL_QUERY ), $arrUrl );
-   $idyoutube = $arrUrl['v'];	
-	?>
-	<a class="rsImg" href="http://img.youtube.com/vi/<?php echo $idyoutube ?>/0.jpg" data-rsVideo="<?php echo $url ?>" ><img class="rsTmb" src="http://img.youtube.com/vi/<?php echo $idyoutube ?>/sddefault.jpg"></a>	
-	<?php } ?>	
-	<?php endforeach?>
-</div>
 <script type="text/javascript">
 <!--
 jQuery(document).ready(function() {
-  jQuery('#resourcegallery').royalSlider({
-    fullscreen: {
-      enabled: true,
-      nativeFS: true
-    },
-    controlNavigation: 'thumbnails',
-    thumbs: {
-      orientation: 'horizontal',
-      paddingBottom: 4,
-      appendSpan: true
-    },
-    transitionType:'fade',
-    autoScaleSliderWidth: 822,     
-    autoScaleSliderHeight: 355,
-    loop: true,
-    arrowsNav: false,
-    globalCaption: true,
-    navigateByClick: true,
-    keyboardNavEnabled: true,
-    autoScaleSlider: true, 
-    arrowsNav:true
-  });
-  
-    var slider = jQuery('#resourcegallery').data('royalSlider');
-  slider.exitFullscreen = function(preventNative) {
-    jQuery.rsProto.exitFullscreen.call(this, preventNative);
-    jQuery('#resourcegallery').hide();
-  };
-  slider.enterFullscreen = function(preventNative) {
-    jQuery.rsProto.enterFullscreen.call(this, preventNative);
-    jQuery('#resourcegallery').show();
-  };
-  jQuery('.launch-fullscreen').click(function() { jQuery('#resourcegallery').royalSlider('enterFullscreen'); });
-  jQuery('.showall').click(function() { jQuery('#resourcegallery').royalSlider('enterFullscreen'); });
-});
 
+	jQuery('.showall, .launch-fullscreen').magnificPopup({
+		items: [
+		<?php foreach ($images as $image):?>
+		<?php if($image['type'] != 'video') { ?>
+		  {
+			src: '<?php echo BFCHelper::getImageUrlResized('offers', $image['data'], '')?>'
+		  },
+		<?php  } else { ?>
+		<?php
+		$url='';
+	   if(is_array($image['data'])){
+		  $url = $image['data']["url"];
+	   }else{
+		  $url = $image['data'];
+	   }
+	   parse_str( parse_url( $url, PHP_URL_QUERY ), $arrUrl );
+	   $idyoutube = $arrUrl['v'];	
+		?>
+		  {
+			src: '<?php echo $url ?>',
+			type: 'iframe' // this overrides default type
+		  },
+		<?php } ?>	
+		<?php endforeach?>
+		],
+		gallery: {
+		  enabled: true
+		},
+		type: 'image' // this is default type
+	});
+
+});
  //-->
 </script>
 

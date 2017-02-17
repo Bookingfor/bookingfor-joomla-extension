@@ -161,16 +161,6 @@ $searchedRequest =  array(
 			defaultcultureCode = defaultcultureCode.substring(0, 2).toLowerCase();
 		}
 			
-		if( jQuery("#resourcegallery")){
-			try
-			{
-				var slider = jQuery("#resourcegallery").data('royalSlider');
-				slider.updateSliderSize(); // updates size of slider. Use after you resize slider with js. 
-			}
-			catch (err)
-			{
-			}
-		}
 	});
 	//-->
 	</script>
