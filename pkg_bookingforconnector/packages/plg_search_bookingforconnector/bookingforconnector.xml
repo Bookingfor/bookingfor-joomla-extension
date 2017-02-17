@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension version="3.6" type="plugin" group="search" method="upgrade">
+	<name>BookingFor Search - Plugin</name>
+	<!-- The following elements are optional and free of formatting constraints -->
+	<creationDate>2016-06-05</creationDate>
+	<author>Bookingfor</author>
+	<authorEmail>developer@ipertrade.com</authorEmail>
+	<authorUrl>http://www.ipertrade.com</authorUrl>
+	<copyright>Copyright (c)2006-2016 Ipertrade s.r.l.</copyright>
+    <license>http://www.gnu.org/copyleft/gpl.html GNU/GPL</license>
+	<!--  The version string is recorded in the components table -->
+	<version>2.2.1</version>
+	<!-- The description is optional and defaults to the name -->
+	<description>Simple search plugin for BookingFor and Joomla!</description>
+
+	<files>
+		<filename plugin="bookingforconnector">bookingforconnector.php</filename>
+		<filename>index.html</filename>
+	</files>
+
+	<languages>
+	   <language tag="en-GB">language/en-GB/en-GB.plg_search_bookingforconnector.ini</language>
+	</languages>
+    
+	<config>
+		<fields name="params">			
+
+			<fieldset name="basic">
+				<field name="search_limit" type="text" 
+					size="5" 
+					default="50" 
+					label="JFIELD_PLG_SEARCH_SEARCHLIMIT_DESC" 
+					description="JFIELD_PLG_SEARCH_SEARCHLIMIT_LABEL"
+				/>
+				
+			</fieldset>
+		</fields>
+	</config>
+
+</extension>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<metadata>
+	<layout title="COM_BOOKINGFORCONNECTOR_SEARCH_VIEW_DEFAULT_TITLE">
+		<message>COM_BOOKINGFORCONNECTOR_SEARCH_VIEW_DEFAULT_DESC</message>
+	</layout>
+	<fields 
+		name="request"
+		addfieldpath="/administrator/components/com_bookingforconnector/models/fields"		
+		>
+		<fieldset name="request">
+			<field
+				name="default_display"
+				type="radio"
+				default="0"
+				label="COM_BOOKINGFORCONNECTOR_SEARCH_DISPLAY_LABEL"
+				description="COM_BOOKINGFORCONNECTOR_SEARCH_DISPLAY_DESC">
+				<option
+					value="0">List</option>
+				<option
+					 value="1">Grid</option>
+			</field>
+		</fieldset>
+	</fields>
+</metadata>

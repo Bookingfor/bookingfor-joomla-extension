@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<metadata>
+	<layout title="COM_BOOKINGFORCONNECTOR_ONSELLUNIT_VIEW_DEFAULT_TITLE">
+		<message>COM_BOOKINGFORCONNECTOR_ONSELLUNIT_VIEW_DEFAULT_DESC</message>
+	</layout>
+	<fields 
+		name="request"	
+		>
+		<!-- <fieldset name="request">
+			<field
+				name="resourceId"
+				type="text"
+				label="COM_BOOKINGFORCONNECTOR_RESOURCE_FIELD_ID_LABEL"
+				description="COM_BOOKINGFORCONNECTOR_RESOURCE_FIELD_ID_DESC"
+			>	
+			</field>
+		</fieldset>-->
+	</fields>
+</metadata> 

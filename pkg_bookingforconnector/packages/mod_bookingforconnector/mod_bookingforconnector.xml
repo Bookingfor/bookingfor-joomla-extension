@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="module" version="3.6" method="upgrade" >
+    <!-- Name of the Module -->
+	<name>BookingFor Connector - Module</name>  
+    <!-- The following elements are optional and free of formatting constraints -->
+	<creationDate>2016-06-05</creationDate>
+	<author>Bookingfor</author>
+	<authorEmail>developer@ipertrade.com</authorEmail>
+	<authorUrl>http://www.ipertrade.com</authorUrl>
+	<copyright>Copyright (c)2006-2016 Ipertrade s.r.l.</copyright>
+     <license>http://www.gnu.org/copyleft/gpl.html GNU/GPL</license>
+	<!--  The version string is recorded in the components table -->
+	<version>2.2.1</version>
+	<!-- The description is optional and defaults to the name -->
+	<description>Simple module for BookingFor Connector</description>
+ 
+    <!-- Listing of all files that should be installed for the module to function -->
+	<files>
+        <!-- The "module" attribute signifies that this is the main controller file -->
+		<filename module="mod_bookingforconnector">mod_bookingforconnector.php</filename>
+		<filename>index.html</filename>
+		<folder>assets</folder>
+		<folder>tmpl</folder>
+	</files>
+ 
+    <!-- Optional parameters -->
+	<config>
+		<fields name="params">
+			<fieldset name="basic">
+				<field
+					name="moduleclass_sfx"
+					type="text"
+					label="COM_MODULES_FIELD_MODULECLASS_SFX_LABEL"
+					description="COM_MODULES_FIELD_MODULECLASS_SFX_DESC" />
+			</fieldset>
+		</fields>
+	</config>
+</extension>

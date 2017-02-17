@@ -1,0 +1,148 @@
+.mod_bookingforsearch{
+}
+.mod_bookingforconnector-inner{
+	border: 1px solid #E0E0E0;
+	border-radius: 3px;
+}
+
+.mod_bookingforconnector-vcard-wrapper{
+    background: #eeeeee;
+	padding:15px 10px 10px 10px;
+}
+.mod_bookingforconnector-vcard-name {
+	text-align: center;
+}
+.mod_bookingforconnector-vcard-name a,
+.mod_bookingforconnector-vcard-name a:hover{
+    color: #0895FF;
+    font-size: 17px;
+    line-height: 25px;
+    font-weight: normal;
+    margin: 10px 0 0px 0;
+	text-decoration:none;
+	display:block;
+}
+
+.mod_bookingforconnector-vcard-rating{
+    color: #FCB802;
+    font-size: 16px;
+	white-space: nowrap;
+}
+
+.merchant_info, .merchant_info a{
+    font-size: 13px;
+    color: #1565C0;	
+}
+
+/*merchant vcard*/
+.mod_bookingforconnector-vcard-wrapper .inline-field-right {
+    padding-right: 10px !important;
+}
+
+.mod_bookingforconnector-vcard-wrapper .inline-field-left {
+    padding-left: 10px !important;
+}
+.mod_bookingforconnector-vcard-logo {
+    /*float: left;*/
+    width: 100%;
+}
+
+.mod_bookingforconnector-vcard-logo img {
+    width: auto;
+    margin: auto;
+    display: block;
+}
+
+/* menu */
+.mod_bookingforconnector-menu {
+	margin-left: 0px !important;
+	padding-left: 0px !important;
+    margin-top: 20px;
+    list-style: none;
+}
+/* menu */
+.mod_bookingforconnector-menu li{
+    padding:0 10px;
+}
+.mod_bookingforconnector-menu li a {
+    font-size: 13px;
+    height: 30px;
+    line-height: 30px;
+    display: block;
+    margin: 0;
+    padding: 0 5px;
+    color: #0895FF;
+    text-decoration: none;
+    border-bottom: 1px solid #e7e7e7;
+}
+.mod_bookingforconnector-menu li a i {
+	min-width: 15px;
+}
+
+.mod_bookingforconnector-menu li:last-child a {
+    border-bottom: none;
+}
+
+/*merchant vcard contact form*/
+
+.opencontactform {
+    width: 98%;
+    background: #0895FF;
+    border: none;
+    color: #fff;
+    border-radius: 3px;
+    color: #fff;
+    padding: 5px;
+    display: block;
+    text-align: center;
+    font-size: 15px;
+    border-bottom: 2px solid #1565C0;
+	margin:auto;
+}
+.opencontactform:hover {
+	background: #1565C0;
+}
+
+.mod_bookingforconnector-contacts{
+    background: #eeeeee;
+    padding: 5px;
+}
+
+.mod_bookingforconnector_form-title{
+    font-size: 15px;
+	font-weight:bold;
+    padding:10px 0;
+}
+.mod_bookingforconnector_form-field{
+    padding: 0 20px;
+}
+
+.com_bookingforconnector_merchantdetails-contacts .row:before, .com_bookingforconnector_merchantdetails-contacts .row:after {
+    display: block;
+}
+
+.com_bookingforconnector_merchantdetails-contacts form div:not(checkbox-wrapper) label {
+    font-size: 15px;
+    color: #616161;
+    line-height: 15px;
+    vertical-align: top;
+}
+
+.com_bookingforconnector_merchantdetails-contacts form .checkbox-wrapper label, .highlight-form .checkbox-wrapper label, .com_bookingforconnector_resource-payment-form .checkbox-wrapper label {
+    font-size: 13px;
+    line-height: 20px;
+    color: #616161;
+}
+
+#merchantdetailscontacts input:not([type='checkbox']), .highlight-form input:not([type='checkbox']) {
+    width: 95% !important;
+}
+
+#merchantdetailscontacts select, .highlight-form select {
+    width: 95%;
+}
+
+.agreeprivacy{
+	cursor:pointer;
+	display:inline-block;
+}

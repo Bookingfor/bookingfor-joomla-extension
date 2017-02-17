@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<metadata>
+	<layout title="COM_BOOKINGFORCONNECTOR_TAG_VIEW_DEFAULT_TITLE">
+		<message>COM_BOOKINGFORCONNECTOR_TAG_VIEW_DEFAULT_DESC</message>
+	</layout>
+	<fields 
+		name="request"	
+		addfieldpath="/administrator/components/com_bookingforconnector/models/fields"		
+		>
+		<fieldset name="request">
+			<field
+				name="tagId"
+				type="tags"
+				label="COM_BOOKINGFORCONNECTOR_TAG_FIELD_ID_LABEL"
+				description="COM_BOOKINGFORCONNECTOR_TAG_FIELD_ID_DESC"
+			>	
+			</field>
+			<!-- <field
+				name="category"
+				type="list"
+				label="COM_BOOKINGFORCONNECTOR_TAG_FIELD_CATEGORY_LABEL"
+				description="COM_BOOKINGFORCONNECTOR_TAG_FIELD_CATEGORY_DESC"
+				default="1"
+			>
+				<option value="1">COM_BOOKINGFORCONNECTOR_TAG_FIELD_CATEGORY_MERCHANTS</option>
+				<option value="2">COM_BOOKINGFORCONNECTOR_TAG_FIELD_CATEGORY_ONSELLUNITS</option>
+				<option value="4">COM_BOOKINGFORCONNECTOR_TAG_FIELD_CATEGORY_RESOURCES</option>
+				<option value="8">COM_BOOKINGFORCONNECTOR_TAG_FIELD_CATEGORY_PACKAGES</option>
+				<option value="16">COM_BOOKINGFORCONNECTOR_TAG_FIELD_CATEGORY_OFFERS</option>
+			</field>	 -->		
+
+			<field
+				name="show_grouped"
+				type="radio"
+				default="0"
+				label="COM_BOOKINGFORCONNECTOR_TAG_FIELD_SHOW_GROUPED_LABEL"
+				description="COM_BOOKINGFORCONNECTOR_TAG_FIELD_SHOW_GROUPED_DESC">
+				<option
+					value="0">JNO</option>
+				<option
+					 value="1">JYES</option>
+			</field>
+		</fieldset>
+	</fields>
+</metadata>

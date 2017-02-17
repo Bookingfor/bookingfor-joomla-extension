@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<metadata>
+	<layout title="COM_BOOKINGFORCONNECTOR_RESOURCES_VIEW_DEFAULT_TITLE">
+		<message>COM_BOOKINGFORCONNECTOR_RESOURCES_VIEW_DEFAULT_DESC</message>
+	</layout>
+	<fields 
+		name="request"
+		addfieldpath="/administrator/components/com_bookingforconnector/models/fields"		
+		>
+		<fieldset name="request">
+			<field
+				name="categoryId"
+				type="mastertypologies"
+				label="COM_BOOKINGFORCONNECTOR_MERCHANTS_FIELD_CATEGORY_LABEL"
+				description="COM_BOOKINGFORCONNECTOR_MERCHANTS_FIELD_CATEGORY_DESC"
+			>	
+			</field>
+		</fieldset>
+	</fields>
+</metadata>

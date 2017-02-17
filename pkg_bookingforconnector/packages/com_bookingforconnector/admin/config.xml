@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config>
+	<fieldset name="settings" label="CONFIG_SETTING_HEADER_LABEL" description="CONFIG_SETTING_HEADER_DESC">
+			<field name="wsurl" type="url" default="Subscription Code" size="150"  required="true" 
+			label="CONFIG_WSURL_LABEL"
+			description="CONFIG_WSURL_DESC"
+            class="input-large"/>
+			<field name="apikey" type="text" default="apykey" size="150" required="true" 
+			label="CONFIG_APIKEY_LABEL"
+			description="CONFIG_APIKEY_DESC"
+            class="input-large"/>
+			<field name="bootstrap" type="radio" default="2"
+				label="CONFIG_BOOTSTRAP_LABEL"
+				description="CONFIG_BOOTSTRAP_DESC"
+				class="btn-group">
+				<option value="2">2</option>
+				<option value="3">3</option>
+			</field>
+			<field name="isportal" type="radio" default="1"
+				label="CONFIG_ISPORTAL_LABEL"
+				description="CONFIG_ISPORTAL_DESC"
+				class="btn-group">
+				<option value="0">JNo</option>
+				<option value="1">JYes</option>
+			</field>
+			<field name="showdata" type="radio" default="1"
+				label="CONFIG_SHOWDATA_LABEL"
+				description="CONFIG_SHOWDATA_DESC"
+				class="btn-group">
+				<option value="0">JNo</option>
+				<option value="1">JYes</option>
+			</field>
+			<field name="formlabel" type="text" default="mysite.com" size="50" required="true" 
+			label="CONFIG_FORMLABEL_LABEL"
+			description="CONFIG_FORMLABEL_DESC"
+            class="input-large"/>
+			<!-- <field name="imgurl" type="text" default="mysite/images/resources" size="50" required="false" 
+			label="CONFIG_IMGURL_LABEL"
+			description="CONFIG_IMGURL_DESC"
+            class="input-large"/> -->
+			<field name="posx" type="text" default="0" size="50" required="true" 
+			label="CONFIG_POSX_LABEL"
+			description="CONFIG_POSX_DESC"
+            class="input-large"/>
+			<field name="posy" type="text" default="0" size="50" required="true" 
+			label="CONFIG_POSY_LABEL"
+			description="CONFIG_POSY_DESC"
+            class="input-large"/>
+			<field name="googlemapskey" 
+				type="text" 
+				default="" 
+				size="50"
+				required="true" 
+				label="CONFIG_GOOGLEMAPSKEY_LABEL"
+				description="CONFIG_GOOGLEMAPSKEY_DESC"
+				class="input-large"/>
+			<field name="startzoom" 
+				type="integer" default="15" 
+				label="CONFIG_STARTZOOM_LABEL" 
+				description="CONFIG_STARTZOOM_DESC" 
+				first="7" 
+				last="17" 
+				step="1"
+			/>
+			<field name="enablescalarrequest" type="radio" default="1"
+				label="CONFIG_ENABLESCALARREQUEST_LABEL"
+				description="CONFIG_ENABLESCALARREQUEST_DESC"
+				class="btn-group">
+				<option value="0">JNo</option>
+				<option value="1">JYes</option>
+			</field>
+		
+		</fieldset>
+
+	<fieldset name="person" label="CONFIG_PERSON_HEADER_LABEL" description="CONFIG_PERSON_HEADER_DESC">
+		<field name="adultsage" 
+			type="integer" 
+			default="18" 
+			first="0" 
+			last="120" 
+			step="1"
+			label="CONFIG_PERSON_ADULTSAGE_LABEL"
+			description="CONFIG_PERSON_ADULTSAGE_DESCRIPTION"
+            class="btn-group">
+		</field>
+		<field name="adultsqt" 
+			type="integer" 
+			default="2" 
+			first="0" 
+			last="12" 
+			step="1"
+			label="CONFIG_PERSON_ADULTSQT_LABEL"
+			description="CONFIG_PERSON_ADULTSQT_DESCRIPTION"
+            class="btn-group">
+		</field>
+		<field name="childrensage" 
+			type="integer" 
+			default="12" 
+			first="0" 
+			last="25" 
+			step="1"
+			label="CONFIG_PERSON_CHILDRENSAGE_LABEL"
+			description="CONFIG_PERSON_CHILDRENSAGE_DESCRIPTION"
+            class="btn-group">
+		</field>
+		<field name="senioresage" 
+			type="integer" 
+			default="65" 
+			first="40" 
+			last="120" 
+			step="1"
+			label="CONFIG_PERSON_SENIORESAGE_LABEL"
+			description="CONFIG_PERSON_SENIORESAGE_DESCRIPTION"
+            class="btn-group">
+		</field>
+	</fieldset>
+	<fieldset name="security" label="CONFIG_SECURITY_HEADER_LABEL" description="CONFIG_SECURITY_HEADER_DESC">
+		<field name="usessl" type="radio" default="0"
+			label="CONFIG_SECURITY_USESSL_LABEL"
+			description="CONFIG_SECURITY_USESSL_DESCRIPTION"
+            class="btn-group">
+			<option value="0">JNo</option>
+			<option value="1">JYes</option>
+		</field>
+		<field name="ssllogo" type="textarea" default="" rows="10" cols="5" filter="raw"
+		label="CONFIG_SECURITY_SSLLOGO_LABEL"
+		description="CONFIG_SECURITY_SSLLOGO_DESC"
+		/>
+	</fieldset>
+	<fieldset name="debug" label="CONFIG_DEBUG_HEADER_LABEL" description="CONFIG_DEBUG_HEADER_DESC">
+		<field name="usegzip" type="radio" default="1"
+			label="CONFIG_DEBUG_USEGZIP_LABEL"
+			description="CONFIG_DEBUG_USEGZIP_DESCRIPTION"
+            class="btn-group">
+			<option value="0">JNo</option>
+			<option value="1">JYes</option>
+		</field>
+		<field name="useproxy" type="radio" default="0"
+			label="CONFIG_DEBUG_USEPROXY_LABEL"
+			description="CONFIG_DEBUG_USEPROXY_DESCRIPTION"
+            class="btn-group">
+			<option value="0">JNo</option>
+			<option value="1">JYes</option>
+		</field>
+		<field name="urlproxy" type="url" default="127.0.0.1:8888" size="50" required="false" 
+			label="CONFIG_DEBUG_PROXYURL_LABEL"
+			description="CONFIG_DEBUG_PROXYURL_DESCRIPTION"
+            class="input-large">
+		</field>
+		<field name="enablecache"  type="radio" default="1"
+			label="CONFIG_DEBUG_ENABLECACHE_LABEL"
+			description="CONFIG_DEBUG_ENABLECACHE_DESCRIPTION"
+            class="btn-group">
+			<option value="0">JNo</option>
+			<option value="1">JYes</option>
+		</field>
+	</fieldset>
+	<fieldset name="analyitics" label="CONFIG_ANALYTICS_HEADER_LABEL" description="CONFIG_ANALYTICS_HEADER_DESC">
+		<field name="gaenabled" type="radio" default="0"
+			label="CONFIG_ANALYTICS_GAENABLED_LABEL"
+			description="CONFIG_ANALYTICS_GAENABLED_DESC"
+            class="btn-group">
+			<option value="0">JNo</option>
+			<option value="1">JYes</option>
+		</field>
+		<field name="gaaccount" type="text" default="UA-XXXXX-Y" size="50" required="false" 
+			label="CONFIG_ANALYTICS_GAACCOUNT_LABEL"
+			description="CONFIG_ANALYTICS_GAACCOUNT_DESC"
+            class="input-large">
+		</field>
+		<field name="eecenabled" type="radio" default="0"
+			label="CONFIG_ANALYTICS_EECENABLED_LABEL"
+			description="CONFIG_ANALYTICS_EECENABLED_DESC"
+            class="btn-group">
+			<option value="0">JNo</option>
+			<option value="1">JYes</option>
+		</field>
+	</fieldset>
+</config>
+

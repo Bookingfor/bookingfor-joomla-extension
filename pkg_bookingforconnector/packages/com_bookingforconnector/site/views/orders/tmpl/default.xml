@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<metadata>
+	<layout title="COM_BOOKINGFORCONNECTOR_ORDERS_VIEW_DEFAULT_TITLE">
+		<message>COM_BOOKINGFORCONNECTOR_ORDERS_VIEW_DEFAULT_DESC</message>
+	</layout>
+	<fields 
+		name="request"
+		>
+		<fieldset name="request">
+			<field
+				name="donation"
+				type="hidden"
+				default="0"
+				label="COM_BOOKINGFORCONNECTOR_ONSELLUNITS_FIELD_DONATION_LABEL"
+				description="COM_BOOKINGFORCONNECTOR_ONSELLUNITS_FIELD_DONATION_DESC">
+				<option
+					value="0">JNO</option>
+				<option
+					 value="1">JYES</option>
+			</field>
+			<field
+				name="checkmode"
+				type="list"
+				label="COM_BOOKINGFORCONNECTOR_ORDERS_FIELD_CHECKMODE_LABEL"
+				description="COM_BOOKINGFORCONNECTOR_ORDERS_FIELD_CHECKMODE_DESC"
+				default="0"
+			>	
+				<option value="5">OrderId + Email</option>
+				<option value="6">ExternalOrderId + Email</option>
+				<option value="25">OrderId + Firstname + Lastname</option>
+				<option value="26">ExternalOrderId + Firstname + Lastname</option>
+				<option value="146">ExternalOrderId + Lastname + Checkin</option>
+				<option value="450">ExternalCustomerId + ExternalOrderId + Checkin + Checkout</option>
+			</field>
+		</fieldset>
+	</fields>
+
+</metadata>

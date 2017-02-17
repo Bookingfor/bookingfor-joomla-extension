@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="module" version="3.6" method="upgrade">
+    <!-- Name of the Module -->
+	<name>BookingFor Merchants - Module</name> 
+ 
+    <!-- The following elements are optional and free of formatting constraints -->
+	<creationDate>2016-07-05</creationDate>
+	<author>Bookingfor</author>
+	<authorEmail>developer@ipertrade.com</authorEmail>
+	<authorUrl>http://www.ipertrade.com</authorUrl>
+	<copyright>Copyright (c)2006-2016 Ipertrade s.r.l.</copyright>
+     <license>http://www.gnu.org/copyleft/gpl.html GNU/GPL</license>
+	<!--  The version string is recorded in the components table -->
+	<version>2.2.1</version>
+	<!-- The description is optional and defaults to the name -->
+	<description>Simple module for BookingFor Search</description>
+ 
+    <!-- Listing of all files that should be installed for the module to function -->
+	<files>
+        <!-- The "module" attribute signifies that this is the main controller file -->
+		<filename module="mod_bookingformerchants">mod_bookingformerchants.php</filename>
+		<filename>index.html</filename>
+		<folder>tmpl</folder>
+		<folder>assets</folder>
+	</files>
+ 
+    <!-- Optional parameters -->
+	<config>
+		<fields name="params">
+			<fieldset name="basic" addfieldpath="/administrator/components/com_bookingforconnector/models/fields">
+				<field
+					name="moduleclass_sfx"
+					type="text"
+					label="COM_MODULES_FIELD_MODULECLASS_SFX_LABEL"
+					description="COM_MODULES_FIELD_MODULECLASS_SFX_DESC" />
+				<field
+					name="tags"
+					type="tags"
+					default=""
+					category="1"
+					multiple="true"
+					label="Tags"
+					description="Seleziona i tag da includere">
+				</field>
+				<field
+					name="itemspage"
+					type="list"
+					default="4"
+					label="Schede per 'pagina'"
+					description="">
+					<option value="3">3</option>
+					<option value="4">4</option>
+					<option value="6">6</option>
+				</field>
+				<field
+					name="maxitems"
+					type="number"
+					default="10"
+					label="Massimo schede"
+					description="" />
+				<field
+					name="desc_maxchars"
+					type="number"
+					default="300"
+					label="Massimo caratteri descrizione"
+					description="" />
+			</fieldset>
+		</fields>
+	</config>
+</extension>

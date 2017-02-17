@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<metadata>
+	<layout title="COM_BOOKINGFORCONNECTOR_SEARCHONSELL_VIEW_DEFAULT_TITLE">
+		<message>COM_BOOKINGFORCONNECTOR_SEARCHONSELL_VIEW_DEFAULT_DESC</message>
+	</layout>
+	<config>
+		<fields name="params">
+			<fieldset name="basic">
+				<field name="XGooglePos" type="text"
+					default=""
+					label="COM_BOOKINGFORCONNECTOR_SEARCHONSELL_FIELD_XGOOGLEPOS_LABEL"
+					description="COM_BOOKINGFORCONNECTOR_SEARCHONSELL_FIELD_XGOOGLEPOS_DESC" />
+				<field name="YGooglePos" type="text"
+					default=""
+					label="COM_BOOKINGFORCONNECTOR_SEARCHONSELL_FIELD_YGOOGLEPOS_LABEL"
+					description="COM_BOOKINGFORCONNECTOR_SEARCHONSELL_FIELD_YGOOGLEPOS_DESC" />
+			</fieldset>
+		</fields>
+	</config>
+
+</metadata>

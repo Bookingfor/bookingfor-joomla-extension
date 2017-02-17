@@ -1,0 +1,94 @@
+.mod_bookingforsearchfilter{
+    background: #ffffff;
+    border: 2px solid #eaeaea;
+    padding: 20px;
+    font-size: 15px;
+    color: #616161;
+}
+.mod_bookingforsearchfilter h3{
+    color: #616161;
+
+}
+
+.mod_bookingforsearchfilter .bookingfor_title{
+	color:#ffffff;
+}
+.mod_bookingforsearchfilter .bookingfor_param{
+	color:#ffffff;
+	
+}
+.mod_bookingforsearchfilter .bookingfor_label{
+	display:inline-block;
+	float:left;
+	margin-right:10px;
+}
+.mod_bookingforsearchfilter .bookingfor_field{
+	display:inline-block;
+	float:left;
+}
+
+.mod_bookingforsearchfilter .inputmedium{
+	width:150px;
+ }
+
+.mod_bookingforsearchfilter .inputmini{
+	width:70px;
+ }
+
+.mod_bookingforsearchfilter.clearboth{
+	clear:both;
+}
+/*------------accordion-------------*/
+#filtertoggle{
+	/*border-top: 1px solid #e5e5e5 !important;*/
+}
+#filtertoggle ul {
+    margin: 0;
+    padding: 0 !important;
+	border-top: 1px solid #e5e5e5 !important;
+}
+#filtertoggle li:hover{
+	background:#FFFFE0
+	}
+#filtertoggle li{
+	list-style-type:none;
+	cursor:pointer;
+	border-top: 1px solid #e5e5e5 !important;
+	border-bottom: 1px solid #e5e5e5 !important;
+	margin:2px 0 ; 
+	padding:10px 5px 10px 5px;
+	font-size: 18px;
+	}
+
+#filtertoggle ul div.divtoggle{
+	color: #666666; 
+	cursor: auto; 
+	padding: 5px 0 5px 20px;  /**/
+	text-decoration: none;
+	}
+
+#filtertoggle li:before {
+	content: "-"; 
+	padding:10px 10px 10px 0; 
+	color:#0895ff; 
+	/*font-weight:bold;*/
+	}
+#filtertoggle li.active:before {
+	content: "+"; 
+	padding:10px 10px 10px 0; 
+	color:#0895ff; 
+	/*font-weight:bold;*/
+}
+.mod_bookingforsearchfilter input[type="checkbox"] {
+    margin: 5px 0 0 -20px !important;
+}
+
+.mod_bookingforsearchfilter .checkbox.inline {
+    margin: 5px 0 5px 5px !important;
+}
+
+#sliderfilerting {
+    width: 90%;
+    margin: 10px 0;
+}
+

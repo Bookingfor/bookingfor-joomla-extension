@@ -1,0 +1,445 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension type="module" version="3.6" method="upgrade">
+    <!-- Name of the Module -->
+	<name>BookingFor - Module</name> 
+ 
+    <!-- The following elements are optional and free of formatting constraints -->
+	<creationDate>2016-09-27</creationDate>
+	<author>Bookingfor</author>
+	<authorEmail>developer@ipertrade.com</authorEmail>
+	<authorUrl>http://www.ipertrade.com</authorUrl>
+	<copyright>Copyright (c)2006-2016 Ipertrade s.r.l.</copyright>
+     <license>http://www.gnu.org/copyleft/gpl.html GNU/GPL</license>
+	<!--  The version string is recorded in the components table -->
+	<version>2.2.1</version>
+	<!-- The description is optional and defaults to the name -->
+	<description>Simple module for BookingFor Search</description>
+ 
+    <!-- Listing of all files that should be installed for the module to function -->
+	<files>
+        <!-- The "module" attribute signifies that this is the main controller file -->
+		<filename module="mod_bookingfor">mod_bookingfor.php</filename>
+		<filename>index.html</filename>
+		<folder>tmpl</folder>
+		<folder>assets</folder>
+		<folder>language</folder>
+	</files>
+ 
+    <!-- Optional parameters -->
+	<config>
+		<fields name="params">
+			<fieldset name="basic" addfieldpath="/administrator/components/com_bookingforconnector/models/fields"		>
+				<field
+					name="moduleclass_sfx"
+					type="text"
+					label="COM_MODULES_FIELD_MODULECLASS_SFX_LABEL"
+					description="COM_MODULES_FIELD_MODULECLASS_SFX_DESC" />
+				<field
+					name="cache"
+					type="list"
+					default="1"
+					label="COM_MODULES_FIELD_CACHING_LABEL"
+					description="COM_MODULES_FIELD_CACHING_DESC">
+					<option
+						value="1">JGLOBAL_USE_GLOBAL</option>
+					<option
+						value="0">COM_MODULES_FIELD_VALUE_NOCACHING</option>
+				</field>
+				<field
+					name="type"
+					type="list"
+					default="1"
+					label="MOD_BOOKINGFOR_TYPE_LABEL"
+					description="MOD_BOOKINGFOR_TYPE_DESC"
+					>
+					<option value="multi">MOD_BOOKINGFOR_TYPE_MULTIMERCHANT</option>
+					<option value="mono">MOD_BOOKINGFOR_TYPE_MONOMERCHANT</option>
+					<option value="real">MOD_BOOKINGFOR_TYPE_REALSTATE</option>
+				</field>
+				<field
+					name="tablistSelected"
+					type="list"
+					multiple="multiple"
+					label="MOD_BOOKINGFOR_TABLIST_LABEL"
+					description="MOD_BOOKINGFOR_TABLIST_DESC"
+					class = "required"
+					>
+					<option value="0">MOD_BOOKINGFOR_TABLIST_BOOKING</option>
+					<option value="1">MOD_BOOKINGFOR_TABLIST_SERVICES</option>
+					<option value="2">MOD_BOOKINGFOR_TABLIST_ACTIVITIES</option>
+					<option value="3">MOD_BOOKINGFOR_TABLIST_REALESTATE</option>
+				</field>
+				<field
+					name="merchantcategoriesbooking"
+					type="merchantcategories"
+					multiple="multiple"
+					label="MOD_BOOKINGFOR_MERCHANTCATEGORIESBOOKING_LABEL"
+					description="MOD_BOOKINGFOR_MERCHANTCATEGORIESBOOKING_DESC"
+					showon="tablistSelected:0"
+					>
+				</field>
+				<field
+					name="unitcategoriesbooking"
+					type="mastertypologies"
+					multiple="multiple"
+					label="MOD_BOOKINGFOR_UNITCATEGORIESBOOKING_LABEL"
+					description="MOD_BOOKINGFOR_UNITCATEGORIESBOOKING_DESC"
+					showon="tablistSelected:0"
+					>
+				</field>
+				<field
+					name="availabilitytypesbooking"
+					type="list"
+					multiple="multiple"
+					default="1"
+					label="MOD_BOOKINGFOR_SHOWSELECTOR_LABEL"
+					description="MOD_BOOKINGFOR_SHOWSELECTOR_DESC"
+					showon="tablistSelected:0"
+					>
+					<option value="1">MOD_BOOKINGFORSEARCH_NIGHT</option>
+					<option value="0">MOD_BOOKINGFORSEARCH_DAYS</option>
+				</field>
+				<field
+					name="merchantcategoriesservices"
+					type="merchantcategories"
+					multiple="multiple"
+					label="MOD_BOOKINGFOR_MERCHANTCATEGORIESSERVICES_LABEL"
+					description="MOD_BOOKINGFOR_MERCHANTCATEGORIESSERVICES_DESC"
+					showon="tablistSelected:1"
+					>
+				</field>
+				<field
+					name="unitcategoriesservices"
+					type="mastertypologies"
+					multiple="multiple"
+					label="MOD_BOOKINGFOR_UNITCATEGORIESSERVICES_LABEL"
+					description="MOD_BOOKINGFOR_UNITCATEGORIESSERVICES_DESC"
+					showon="tablistSelected:1"
+					>
+				</field>
+				<field
+					name="availabilitytypesservices"
+					type="list"
+					multiple="multiple"
+					default="0"
+					label="MOD_BOOKINGFOR_SHOWNIGHTSELECTOR_LABEL"
+					description="MOD_BOOKINGFOR_SHOWNIGHTSELECTOR_DESC"
+					showon="tablistSelected:1"
+					>
+					<option value="1">MOD_BOOKINGFORSEARCH_NIGHT</option>
+					<option value="0">MOD_BOOKINGFORSEARCH_DAYS</option>
+				</field>
+				<field
+					name="merchantcategoriesactivities"
+					type="merchantcategories"
+					multiple="multiple"
+					label="MOD_BOOKINGFOR_MERCHANTCATEGORIESACTIVITIES_LABEL"
+					description="MOD_BOOKINGFOR_MERCHANTCATEGORIESACTIVITIES_DESC"
+					showon="tablistSelected:2"
+					>
+				</field>
+				<field
+					name="unitcategoriesactivities"
+					type="mastertypologies"
+					multiple="multiple"
+					label="MOD_BOOKINGFOR_UNITCATEGORIESACTIVITIES_LABEL"
+					description="MOD_BOOKINGFOR_UNITCATEGORIESACTIVITIES_DESC"
+					showon="tablistSelected:2"
+					>
+				</field>
+				<field
+					name="availabilitytypesactivities"
+					type="list"
+					multiple="multiple"
+					default="2,3"
+					label="MOD_BOOKINGFOR_SHOWSELECTOR_LABEL"
+					description="MOD_BOOKINGFOR_SHOWSELECTOR_DESC"
+					showon="tablistSelected:2"
+					>
+					<option value="1">MOD_BOOKINGFORSEARCH_NIGHT</option>
+					<option value="0">MOD_BOOKINGFORSEARCH_DAYS</option>
+					<option value="2">MOD_BOOKINGFORSEARCH_HOURS</option>
+					<option value="3">MOD_BOOKINGFORSEARCH_TIMESLOT</option>
+				</field>
+				<field
+					name="merchantcategoriesrealestate"
+					type="merchantcategories"
+					multiple="multiple"
+					label="MOD_BOOKINGFOR_MERCHANTCATEGORIESREALESTATE_LABEL"
+					description="MOD_BOOKINGFOR_MERCHANTCATEGORIESREALESTATE_DESC"
+					showon="tablistSelected:3"
+					>
+				</field>
+				<field
+					name="unitcategoriesrealestate"
+					type="mastertypologies"
+					multiple="multiple"
+					label="MOD_BOOKINGFOR_UNITCATEGORIESREALESTATE_LABEL"
+					description="MOD_BOOKINGFOR_UNITCATEGORIESREALESTATE_DESC"
+					showon="tablistSelected:3"
+					>
+				</field>
+				<field
+					name="startdate"
+					type="calendar"
+					default="NOW"
+					label="MOD_BOOKINGFOR_DEFAULTVALUE_STARTDATE_LABEL"
+					description="MOD_BOOKINGFOR_DEFAULTVALUE_STARTDATE_DESC"
+					format="%d-%m-%Y"
+					>
+				</field>
+				<field
+					name="enddate"
+					type="calendar"
+					default="NOW"
+					label="MOD_BOOKINGFOR_DEFAULTVALUE_ENDDATE_LABEL"
+					description="MOD_BOOKINGFOR_DEFAULTVALUE_ENDDATE_DESC"
+					format="%d-%m-%Y"
+					>
+				</field>
+				<field
+					name="blockmonths"
+					type="list"
+					multiple="multiple"
+					label="MOD_BOOKINGFOR_BLOCKMONTHS_LABEL"
+					description="MOD_BOOKINGFOR_BLOCKMONTHS_DESC">
+					<option value="1">JANUARY</option>
+					<option value="2">FEBRUARY</option>
+					<option value="3">MARCH</option>
+					<option value="4">APRIL</option>
+					<option value="5">MAY</option>
+					<option value="6">JUNE</option>
+					<option value="7">JULY</option>
+					<option value="8">AUGUST</option>
+					<option value="9">SEPTEMBER</option>
+					<option value="10">OCTOBER</option>
+					<option value="11">NOVEMBER</option>
+					<option value="12">DECEMBER</option>
+
+				</field>
+				<field
+					name="blockdays"
+					type="list"
+					multiple="multiple"
+					label="MOD_BOOKINGFOR_BLOCKDAYS_LABEL"
+					description="MOD_BOOKINGFOR_BLOCKDAYS_DESC">
+					<option value="1">MONDAY</option>
+					<option value="2">TUESDAY</option>
+					<option value="3">WEDNESDAY</option>
+					<option value="4">THURSDAY</option>
+					<option value="5">FRIDAY</option>
+					<option value="6">SATURDAY</option>
+					<option value="0">SUNDAY</option>
+				</field>
+				<field
+					name="groupbycondominium"
+					type="radio"
+					default="0"
+					label="MOD_BOOKINGFOR_DEFAULTVALUE_GROUPBYCONDOMINIUM_LABEL" class="btn-group btn-group-yesno"
+					description="MOD_BOOKINGFOR_DEFAULTVALUE_GROUPBYCONDOMINIUM_DESC">
+					<option
+						value="0">JNO</option>
+					<option
+						 value="1">JYES</option>
+				</field>
+				<field
+					name="show_direction"
+					type="radio"
+					default="0"
+					label="MOD_BOOKINGFORSEARCH_DEFAULTVALUE_SHOW_DIRECTION_LABEL" class="btn-group btn-group-yesno"
+					description="MOD_BOOKINGFORSEARCH_DEFAULTVALUE_SHOW_DIRECTION_DESC">
+					<option value="0">JNO</option>
+					<option value="1">JYES</option>
+				</field>
+				
+				<field name="spacer" type="spacer" default="" label="MOD_BOOKINGFOR_VISIBILITY_HEADING" />
+
+				<field
+					name="showLocation"
+					type="radio"
+					default="1"
+					label="MOD_BOOKINGFOR_SHOWLOCATION_LABEL" class="btn-group btn-group-yesno"
+					description="MOD_BOOKINGFOR_SHOWLOCATION_DESC">
+					<option value="0">JNO</option>
+					<option value="1">JYES</option>
+				</field>
+
+				<field
+					name="showMapIcon"
+					type="radio"
+					default="1"
+					label="MOD_BOOKINGFOR_SHOWMAPICON_LABEL" class="btn-group btn-group-yesno"
+					description="MOD_BOOKINGFOR_SHOWMAPICON_DESC">
+					<option value="0">JNO</option>
+					<option value="1">JYES</option>
+				</field>
+				<field
+					name="showAccomodations"
+					type="radio"
+					default="1"
+					label="MOD_BOOKINGFOR_SHOWACCOMODATIONS_LABEL" class="btn-group btn-group-yesno"
+					description="MOD_BOOKINGFOR_SHOWACCOMODATIONS_DESC">
+					<option value="0">JNO</option>
+					<option value="1">JYES</option>
+				</field>
+				<field
+					name="showDateRange"
+					type="radio"
+					default="1"
+					label="MOD_BOOKINGFOR_SHOWDATERANGE_LABEL" class="btn-group btn-group-yesno"
+					description="MOD_BOOKINGFOR_SHOWDATERANGE_DESC"
+					showon="tablistSelected:0[OR]tablistSelected:1[OR]tablistSelected:2"
+					>
+					<option value="0">JNO</option>
+					<option value="1">JYES</option>
+				</field>
+				<field
+					name="showAdult"
+					type="radio"
+					default="1"
+					label="MOD_BOOKINGFOR_SHOWADULT_LABEL" class="btn-group btn-group-yesno"
+					description="MOD_BOOKINGFOR_SHOWADULT_DESC"
+					showon="tablistSelected:0[OR]tablistSelected:1[OR]tablistSelected:2"
+					>
+					<option value="0">JNO</option>
+					<option value="1">JYES</option>
+				</field>
+				<field
+					name="showChildren"
+					type="radio"
+					default="1"
+					label="MOD_BOOKINGFOR_SHOWCHILDREN_LABEL" class="btn-group btn-group-yesno"
+					description="MOD_BOOKINGFOR_SHOWCHILDREN_DESC"
+					showon="tablistSelected:0[OR]tablistSelected:1[OR]tablistSelected:2"
+					>
+					<option value="0">JNO</option>
+					<option value="1">JYES</option>
+				</field>
+				<field
+					name="showSenior"
+					type="radio"
+					default="1"
+					label="MOD_BOOKINGFOR_SHOWSENIOR_LABEL" class="btn-group btn-group-yesno"
+					description="MOD_BOOKINGFOR_SHOWSENIOR_DESC"
+					showon="tablistSelected:0[OR]tablistSelected:1[OR]tablistSelected:2"
+					>
+					<option value="0">JNO</option>
+					<option value="1">JYES</option>
+				</field>
+				<field
+					name="showServices"
+					type="radio"
+					default="1"
+					label="MOD_BOOKINGFOR_SHOWSERVICES_LABEL" class="btn-group btn-group-yesno"
+					description="MOD_BOOKINGFOR_SHOWSERVICES_DESC"
+					showon="tablistSelected:0[OR]tablistSelected:1[OR]tablistSelected:2"
+					>
+					<option value="0">JNO</option>
+					<option value="1">JYES</option>
+				</field>
+				<field
+					name="showOnlineBooking"
+					type="radio"
+					default="1"
+					label="MOD_BOOKINGFOR_SHOWONLINEBOOKING_LABEL" class="btn-group btn-group-yesno"
+					description="MOD_BOOKINGFOR_SHOWONLINEBOOKING_DESC"
+					showon="tablistSelected:0[OR]tablistSelected:1[OR]tablistSelected:2"
+					>
+					<option value="0">JNO</option>
+					<option value="1">JYES</option>
+				</field>
+
+				<field
+					name="showContract"
+					type="radio"
+					default="1"
+					label="MOD_BOOKINGFOR_SHOWCONTRACT_LABEL" class="btn-group btn-group-yesno"
+					description="MOD_BOOKINGFOR_SHOWCONTRACT_DESC"
+					showon="tablistSelected:3"
+					>
+					<option value="0">JNO</option>
+					<option value="1">JYES</option>
+				</field>
+				<field
+					name="showMaxPrice"
+					type="radio"
+					default="1"
+					label="MOD_BOOKINGFOR_SHOWMAXPRICE_LABEL" class="btn-group btn-group-yesno"
+					description="MOD_BOOKINGFOR_showMaxPrice_DESC"
+					showon="tablistSelected:3"
+					>
+					<option value="0">JNO</option>
+					<option value="1">JYES</option>
+				</field>
+				<field
+					name="showMinFloor"
+					type="radio"
+					default="1"
+					label="MOD_BOOKINGFOR_SHOWMINFLOOR_LABEL" class="btn-group btn-group-yesno"
+					description="MOD_BOOKINGFOR_SHOWMINFLOOR_DESC"
+					showon="tablistSelected:3"
+					>
+					<option value="0">JNO</option>
+					<option value="1">JYES</option>
+				</field>
+				<field
+					name="showBedRooms"
+					type="radio"
+					default="1"
+					label="MOD_BOOKINGFOR_SHOWBEDROOMS_LABEL" class="btn-group btn-group-yesno"
+					description="MOD_BOOKINGFOR_SHOWBEDROOMS_DESC"
+					showon="tablistSelected:3"
+					>
+					<option value="0">JNO</option>
+					<option value="1">JYES</option>
+				</field>
+				<field
+					name="showRooms"
+					type="radio"
+					default="1"
+					label="MOD_BOOKINGFOR_SHOWROOMS_LABEL" class="btn-group btn-group-yesno"
+					description="MOD_BOOKINGFOR_SHOWROOMS_DESC"
+					showon="tablistSelected:3"
+					>
+					<option value="0">JNO</option>
+					<option value="1">JYES</option>
+				</field>
+				<field
+					name="showBaths"
+					type="radio"
+					default="1"
+					label="MOD_BOOKINGFOR_SHOWBATHS_LABEL" class="btn-group btn-group-yesno"
+					description="MOD_BOOKINGFOR_SHOWBATHS_DESC"
+					showon="tablistSelected:3"
+					>
+					<option value="0">JNO</option>
+					<option value="1">JYES</option>
+				</field>
+				<field
+					name="showOnlyNew"
+					type="radio"
+					default="1"
+					label="MOD_BOOKINGFOR_SHOWONLYNEW_LABEL" class="btn-group btn-group-yesno"
+					description="MOD_BOOKINGFOR_SHOWONLYNEW_DESC"
+					showon="tablistSelected:3"
+					>
+					<option value="0">JNO</option>
+					<option value="1">JYES</option>
+				</field>
+				<field
+					name="showServicesList"
+					type="radio"
+					default="1"
+					label="MOD_BOOKINGFOR_SHOWSERVICESLIST_LABEL" class="btn-group btn-group-yesno"
+					description="MOD_BOOKINGFOR_SHOWSERVICESLIST_DESC"
+					showon="tablistSelected:3"
+					>
+					<option value="0">JNO</option>
+					<option value="1">JYES</option>
+				</field>
+
+			</fieldset>
+
+		</fields>
+	</config>
+</extension>

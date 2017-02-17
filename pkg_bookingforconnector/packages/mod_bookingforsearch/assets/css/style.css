@@ -1,0 +1,89 @@
+
+.mod_bookingforsearch{
+    background: #eeeeee;
+}
+.mod_bookingforsearch .row-fluid {margin-bottom: 10px;}
+.mod_bookingforsearch select {color: #616161;}
+.mod_bookingforsearch_inner-wrapper {
+   padding: 10px 10px 0 10px;
+}
+.mod_bookingforsearch_inner-wrappercenter {
+	padding: 10px 10px 0 10px;
+    display: table;
+    margin: 0 auto;
+}
+
+.mod_bookingforsearch .bookingfor_label {
+    color: #616161;
+    display: inline-block;
+    max-width: 100%;
+    font-size: 17px;
+	margin-top:10px;
+}
+
+ .inputmedium{
+	width:150px;
+ }
+
+ .inputmini{
+	width:70px;
+ }
+ .inputtotal{
+	width:99%;
+ }
+ .inputtotal.button:hover span, .inputtotal button:hover span {
+    color: #616161;
+}
+ .inputtotal.button.btn-danger:hover span, .inputtotal button.btn-danger:hover span {
+    color: #ffffff;
+}
+
+.calendar{
+	width:60px;
+	font-size:12px !important;
+ }
+.clearboth{
+	clear:both;
+}
+
+
+.mod_bookingforsearcherror{
+	border: 1px solid #ff0000;
+	color:#ffffff !important;
+    background-color: #ff0000;
+
+}
+.mod_bookingforsearcherror a{
+    background-color: #ff0000 !important;
+
+}
+.mod_bookingforsearch-searchbutton {
+    background-color: #FF9800;
+    border-radius: 3px;
+    color: #fff;
+    padding: 5px;
+    display: block;
+    text-align: center;
+    font-size: 15px;
+	border-bottom: 2px solid #EF6C00;
+}
+
+.mod_bookingforsearch-searchbutton:hover, .mod_bookingforsearch-searchbutton:focus {
+    background-color: #EF6C00;
+    color: #fff;
+    text-decoration: none;
+}
+
+
+.divhorizontal{
+	display:inline-block !important;
+	line-height:normal !important;
+	vertical-align: middle;
+	margin-left:20px;
+}
+.divhorizontal:first-child{
+	margin-left:0px;
+}
+#merchantdetailscontacts input[type="text"],
+#merchantdetailscontacts input[type="email"],
+#merchantdetailscontacts textarea {color: #616161;background-color: #FFFFFF;}

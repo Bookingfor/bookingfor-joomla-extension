@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<metadata>
+	<layout title="COM_BOOKINGFORCONNECTOR_MERCHANTDETAILS_VIEW_DEFAULT_TITLE">
+		<message>COM_BOOKINGFORCONNECTOR_MERCHANTDETAILS_VIEW_DEFAULT_DESC</message>
+	</layout>
+	<fields 
+		name="request"
+		>
+		<!-- <fieldset name="request">
+			<field
+				name="layout"
+				type="list"
+				label="COM_BOOKINGFORCONNECTOR_ORDERS_FIELD_CHECKMODE_LABEL"
+				description="COM_BOOKINGFORCONNECTOR_ORDERS_FIELD_CHECKMODE_DESC"
+			>	
+				<option value="">Dettaglio merchant</option>
+				<option value="resources">Elenco risorse</option>
+			</field>
+			<field
+				name="merchantId"
+				type="text"
+				label="COM_BOOKINGFORCONNECTOR_MERCHANT_FIELD_ID_LABEL"
+				description="COM_BOOKINGFORCONNECTOR_MERCHANT_FIELD_ID_DESC"
+			>	
+			</field>
+		</fieldset> -->
+	</fields>
+</metadata>
