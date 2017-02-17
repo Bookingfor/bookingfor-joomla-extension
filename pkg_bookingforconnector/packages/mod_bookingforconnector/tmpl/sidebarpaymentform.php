@@ -430,17 +430,17 @@ setlocale(LC_TIME, $language);
 				<div class="bf-summary-body-resourceprice">
 					<?php 
 					if($rdetail->PercentVariation){ ?>
-						<div class="specialoffer variationlabel " rel="<?php echo $rdetail->AllVariations ?>" rel1="<?php echo  $rdetail->ResourceId ?>" >
+						<div class="specialoffer variationlabel " rel="<?php echo $rdetail->AllVariations ?>" rel1="<?php echo  $rdetail->ResourceId ?>_<?php echo $resCount ?>" >
 							<span class="variationlabel_percent"><?php echo $rdetail->PercentVariation ?></span>% <?php echo JTEXT::_('MOD_BOOKINGFORSEARCHFILTER_OFFERS') ?> <i class="fa fa-angle-down" aria-hidden="true"></i>
-						</div>
+						</div><br />
 					<?php 
 					}
 					if($rdetail->TotalDiscounted < $rdetail->TotalAmount){ ?>
-						<span class="bf-summary-body-resourceprice-total-strike">&euro; <?php echo BFCHelper::priceFormat($rdetail->TotalAmount); ?></span>
+						<span class="bf-summary-body-resourceprice-total-strike bfi_<?php echo $currencyclass ?>"> <?php echo BFCHelper::priceFormat($rdetail->TotalAmount); ?></span>
 					<?php 
 					}
 					if($rdetail->TotalDiscounted > 0){ ?>
-						<span class="bf-summary-body-resourceprice-total">&euro; <?php echo BFCHelper::priceFormat($rdetail->TotalDiscounted); ?></span>
+						<span class="bf-summary-body-resourceprice-total bfi_<?php echo $currencyclass ?>"> <?php echo BFCHelper::priceFormat($rdetail->TotalDiscounted); ?></span>
 					<?php 
 					}
 					?>
@@ -480,9 +480,9 @@ setlocale(LC_TIME, $language);
 							</div>
 							<div class="bf-summary-body-resourceprice">
 								<?php if($sdetail->TotalDiscounted < $sdetail->TotalAmount){ ?>
-									<span class="bf-summary-body-resourceprice-total-strike">&euro; <?php echo BFCHelper::priceFormat($sdetail->TotalAmount);?></span>
+									<span class="bf-summary-body-resourceprice-total-strike bfi_<?php echo $currencyclass ?>"> <?php echo BFCHelper::priceFormat($sdetail->TotalAmount);?></span>
 								<?php } ?>
-								<span class="bf-summary-body-resourceprice-total">&euro; <?php echo BFCHelper::priceFormat($sdetail->TotalDiscounted );?></span>
+								<span class="bf-summary-body-resourceprice-total bfi_<?php echo $currencyclass ?>"> <?php echo BFCHelper::priceFormat($sdetail->TotalDiscounted );?></span>
 							</div>
 					<?php endforeach;?>
 				<?php } ?>
@@ -493,7 +493,7 @@ setlocale(LC_TIME, $language);
 			<?php if($rdetail->TotalAmount > $rdetail->TotalDiscounted) { ?>
 				<div class="com_bookingforconnector_merchantdetails-resource-stay-price originalquote">
 					<span class="com_bookingforconnector_resourcelist_strikethrough notvars">
-						<span class="com_bookingforconnector_merchantdetails-resource-stay-discount gray-highlight">€ <?php echo  BFCHelper::priceFormat($rdetail->TotalAmount) ?></span>
+						<span class="com_bookingforconnector_merchantdetails-resource-stay-discount gray-highlight bfi_<?php echo $currencyclass ?>"> <?php echo  BFCHelper::priceFormat($rdetail->TotalAmount) ?></span>
 					</span>
 				</div>
 			<?php } ?>
@@ -513,7 +513,7 @@ setlocale(LC_TIME, $language);
 			<?php if($totalAmount> $totalDiscounted) { ?>
 				<div class="com_bookingforconnector_merchantdetails-resource-stay-price originalquote">
 					<span class="com_bookingforconnector_resourcelist_strikethrough notvars">
-						<span class="com_bookingforconnector_merchantdetails-resource-stay-discount gray-highlight">€ <?php echo  BFCHelper::priceFormat($totalAmount) ?></span>
+						<span class="com_bookingforconnector_merchantdetails-resource-stay-discount gray-highlight bfi_<?php echo $currencyclass ?>"> <?php echo  BFCHelper::priceFormat($totalAmount) ?></span>
 					</span>
 				</div>
 			<?php } ?>
