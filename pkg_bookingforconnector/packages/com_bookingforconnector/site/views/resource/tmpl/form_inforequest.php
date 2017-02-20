@@ -337,9 +337,6 @@ if(!empty($bookingTypes)){
 			  <div class="<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>2">
 				 <?php echo $ssllogo ?>
 			  </div>
-			  <div class="<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>10">
-				  <?php echo sprintf(JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_CCDISCLAIMER'),$sitename); ?>
-			  </div>
 		</div>
 
 </div>	

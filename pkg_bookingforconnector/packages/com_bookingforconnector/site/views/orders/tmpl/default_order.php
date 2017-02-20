@@ -248,8 +248,7 @@ $ArchivedAsSpam = $order->ArchivedAsSpam;
 									
 									</div><!--/span-->
 									<div class="<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>4">
-										<?php echo sprintf(JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_CCDISCLAIMER'),$sitename); ?>
-										<br /><br /><?php echo$ssllogo ?>
+										<?php echo$ssllogo ?>
 									</div><!--/span-->
 							</div>
 							<input type="hidden" id="redirect" name="form[Redirect]" value="<?php echo $routeThanks;?>" />
