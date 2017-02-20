@@ -52,10 +52,11 @@
     font-size: 12px;
   }
   
+/*
   td.resourceimage, th.resourceimage {
     display:none;  
   }
-  
+*/  
   #calculateButton3 a.btn-warning {
     color: #fff;
     text-shadow: none;
