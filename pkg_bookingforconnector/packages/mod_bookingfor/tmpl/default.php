@@ -579,7 +579,7 @@ $showChildrenagesmsg = isset($_REQUEST['showmsgchildage']) ? $_REQUEST['showmsgc
 						<div class="<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_ROW ?> form-group">
 							<div class="bfi_showadult <?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>4"><!-- Adults -->
 								<label><?php echo JTEXT::_('MOD_BOOKINGFORSEARCH_ADULTS'); ?></label>
-								<select name="adults" onchange="quoteChanged<?php echo $currModID ?>();" class="inputmini">
+								<select name="adults" onchange="quoteChanged<?php echo $currModID ?>();" class="inputmini" style="display:inline-block !important;">
 									<?php
 									foreach (range(1, 10) as $number) {
 										?> <option value="<?php echo $number ?>" <?php echo ($nad == $number)?"selected":""; //selected( $nad, $number ); ?>><?php echo $number ?></option><?php
@@ -590,7 +590,7 @@ $showChildrenagesmsg = isset($_REQUEST['showmsgchildage']) ? $_REQUEST['showmsgc
 						<?php if($showSenior){?>
 							<div class="bfi_showsenior <?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>4"><!-- Seniores -->
 								<label><?php echo JTEXT::_('MOD_BOOKINGFORSEARCH_SENIORES'); ?></label>
-								<select  name="seniores" onchange="quoteChanged<?php echo $currModID ?>();" class="inputmini">
+								<select  name="seniores" onchange="quoteChanged<?php echo $currModID ?>();" class="inputmini" style="display:inline-block !important;">
 									<?php
 									foreach (range(0, 10) as $number) {
 										?> <option value="<?php echo $number ?>" <?php echo ($nse == $number)?"selected":""; //selected( $nad, $number ); ?>><?php echo $number ?></option><?php
@@ -602,7 +602,7 @@ $showChildrenagesmsg = isset($_REQUEST['showmsgchildage']) ? $_REQUEST['showmsgc
 						<?php if($showChildren){?>
 							<div class="bfi_showchildren <?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>4" id="mod_bookingforsearch-children<?php echo $currModID ?>"  class="col-sm-4"><!-- n childrens -->
 								<label><?php echo JTEXT::_('MOD_BOOKINGFORSEARCH_CHILDREN'); ?></label>
-								<select name="children" onchange="quoteChanged<?php echo $currModID ?>();" class="inputmini">
+								<select name="children" onchange="quoteChanged<?php echo $currModID ?>();" class="inputmini" style="display:inline-block !important;">
 									<?php
 									foreach (range(0, 4) as $number) {
 										?> <option value="<?php echo $number ?>" <?php echo ($nch == $number)?"selected":""; //selected( $nch, $number ); ?>><?php echo $number ?></option><?php
@@ -1451,7 +1451,8 @@ function checkChildrenSearch<?php echo $currModID ?>(nch,showMsg) {
 		jQuery("#mod_bookingforsearch-childrenages<?php echo $currModID ?> select").each(function(i) {
 			if (i < nch) {
 				var id=jQuery(this).attr('id');
-				jQuery(this).show();
+				jQuery(this).css('display', 'inline-block');
+//				jQuery(this).show();
 			}
 		});
 		jQuery("#mod_bookingforsearch-childrenages<?php echo $currModID ?>").show();
