@@ -1918,7 +1918,8 @@ class BFCHelper {
 			}
 			$document 	= JFactory::getDocument();
 			$config = JComponentHelper::getParams('com_bookingforconnector');
-			if($config->get('gaenabled', 0) == 1 && !empty($config->get('gaaccount', ''))) {
+			$gaaccount = $config->get('gaaccount', '');
+			if($config->get('gaenabled', 0) == 1 && !empty($gaaccount)) {
 				if($writeJs) {
 					$document->addScriptDeclaration('
 					var bookingfor_gacreated = true;
@@ -2057,7 +2058,8 @@ class BFCHelper {
 		}
 
 		$config = JComponentHelper::getParams('com_bookingforconnector');
-		if($config->get('gaenabled', 0) == 1 && !empty($config->get('gaaccount', ''))) {
+		$gaaccount = $config->get('gaaccount', '');
+		if($config->get('gaenabled', 0) == 1 && !empty($gaaccount)) {
 			return true;
 		}
 		return false;
@@ -2117,7 +2119,7 @@ class BFCHelper {
 	}
 
 	public static function getSession($string, $defaultValue=null, $prefix ='') {
-		if(empty(COM_BOOKINGFORCONNECTOR_ENABLECACHE)) return null;
+		if(!defined(COM_BOOKINGFORCONNECTOR_ENABLECACHE)) return null;
 //		return isset($_SESSION[$prefix.$string]) ? $_SESSION[$prefix.$string] : $defaultValue;
 		$session = JFactory::getSession();
 		return $session->get($string, $defaultValue , $prefix);
