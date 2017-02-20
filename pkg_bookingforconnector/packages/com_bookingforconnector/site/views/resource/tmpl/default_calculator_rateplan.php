@@ -1826,7 +1826,8 @@ function getDiscountsAjaxInformations(discountIds,obj, fn){
 			jQuery(".com_bookingforconnector_resource-calculatorForm-childrenages select").each(function(i) {
 				if (i < nch) {
 					var id=jQuery(this).attr('id');
-					jQuery(this).show();
+					jQuery(this).css('display', 'inline-block');
+//					jQuery(this).show();
 //					console.log(id);
 //				   jQuery('#calculatorForm #s2id_'+id).show();
 				}
