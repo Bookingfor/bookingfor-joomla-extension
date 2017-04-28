@@ -4,7 +4,7 @@ Joomla extension repo for Bookingfor. BookingFor Joomla extension is a free and 
 # This release is currently maintained and supported
 
 # Requirements
-PHP 5.5 +<br/>
+PHP 5.6 +<br/>
 cURL 7.30 +<br/>
 OpenSSL 1.0.1 +<br/>
 Joomla 3.6.x<br />
