@@ -332,8 +332,12 @@ jQuery(function($)
 			    		.closest('.control-group').removeClass('error').addClass('success');
 			    },
 				submitHandler: function(form) {
-					 jQuery.blockUI();
-					 form.submit();
+					var $form = $(form);
+					if($form.valid()){
+						 jQuery.blockUI();
+						 form.submit();
+					}
+
 				}
 
 		    });

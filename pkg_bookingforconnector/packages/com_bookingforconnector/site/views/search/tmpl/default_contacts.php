@@ -224,19 +224,22 @@ jQuery(function($)
 					//label.closest('.control-group').removeClass('error');
 			    },
 				submitHandler: function(form) {
-					if (typeof grecaptcha === 'object') {
-						var response = grecaptcha.getResponse();
-						//recaptcha failed validation
-						if(response.length == 0) {
-							$('#recaptcha-error').show();
-							return false;
+					var $form = $(form);
+					if($form.valid()){
+						if (typeof grecaptcha === 'object') {
+							var response = grecaptcha.getResponse();
+							//recaptcha failed validation
+							if(response.length == 0) {
+								$('#recaptcha-error').show();
+								return false;
+							}
+							//recaptcha passed validation
+							else {
+								$('#recaptcha-error').hide();
+							}					 
 						}
-						//recaptcha passed validation
-						else {
-							$('#recaptcha-error').hide();
-						}					 
+						form.submit();
 					}
-					form.submit();
 				}
 
 			});

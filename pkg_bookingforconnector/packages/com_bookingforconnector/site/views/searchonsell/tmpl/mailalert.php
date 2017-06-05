@@ -406,33 +406,36 @@ jQuery(function($)
 					//label.closest('.control-group').removeClass('error');
 			    },
 				submitHandler: function(form) {
-					$.ajax({
-						 type: "POST",
-						 url: urlAlert,
-						 data: $(form).serialize(),
-						 success: function (data) {
-//								$("#datasend").html(data);
-							
-							$("#divMailAlert").hide();
-							jQuery("#aBtn2").toggle("slow");
-							var divAlert =  $("#sendalert");
-							
-							if (data) // ok
-							{
-								divAlert.removeClass('alert-error').addClass("alert-success");
-								divAlert.html(msgAlertOk);
-							}else{  //ko
-								divAlert.removeClass('alert-success').addClass("alert-error");
-								divAlert.html(msgAlertKo);
-							}
-							divAlert.show();
-//								setTimeout(function() {
-//									divAlert.fadeOut('slow');
-//								}, 4000); 
-						 }
-					 });
-					return false;
+					var $form = $(form);
+					if($form.valid()){
+						$.ajax({
+							 type: "POST",
+							 url: urlAlert,
+							 data: $(form).serialize(),
+							 success: function (data) {
+	//								$("#datasend").html(data);
+								
+								$("#divMailAlert").hide();
+								jQuery("#aBtn2").toggle("slow");
+								var divAlert =  $("#sendalert");
+								
+								if (data) // ok
+								{
+									divAlert.removeClass('alert-error').addClass("alert-success");
+									divAlert.html(msgAlertOk);
+								}else{  //ko
+									divAlert.removeClass('alert-success').addClass("alert-error");
+									divAlert.html(msgAlertKo);
+								}
+								divAlert.show();
+	//								setTimeout(function() {
+	//									divAlert.fadeOut('slow');
+	//								}, 4000); 
+							 }
+						 });
+						return false;
 
+					}
 				}
 
 			});

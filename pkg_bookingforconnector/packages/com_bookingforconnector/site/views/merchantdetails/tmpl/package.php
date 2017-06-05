@@ -309,25 +309,27 @@ jQuery(function($)
 			    },
 				submitHandler: function(form) {
 					var $form = $(form);
-					if (typeof grecaptcha === 'object') {
-						var response = grecaptcha.getResponse();
-						//recaptcha failed validation
-						if(response.length == 0) {
-							$('#recaptcha-error').show();
-							return false;
+					if($form.valid()){
+						if (typeof grecaptcha === 'object') {
+							var response = grecaptcha.getResponse();
+							//recaptcha failed validation
+							if(response.length == 0) {
+								$('#recaptcha-error').show();
+								return false;
+							}
+							//recaptcha passed validation
+							else {
+								$('#recaptcha-error').hide();
+							}					 
 						}
-						//recaptcha passed validation
-						else {
-							$('#recaptcha-error').hide();
-						}					 
-					}
-					jQuery.blockUI({message: ''});
-					if ($form.data('submitted') === true) {
-						 return false;
-					} else {
-						// Mark it so that the next submit can be ignored
-						$form.data('submitted', true);
-						form.submit();
+						jQuery.blockUI({message: ''});
+						if ($form.data('submitted') === true) {
+							 return false;
+						} else {
+							// Mark it so that the next submit can be ignored
+							$form.data('submitted', true);
+							form.submit();
+						}
 					}
 				}
 
