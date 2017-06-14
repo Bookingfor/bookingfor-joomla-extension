@@ -1552,9 +1552,9 @@ jQuery(function() {
 });
 
 function countPersone<?php echo $currModID ?>() {
-	var numAdults = new Number(jQuery("#searchform<?php echo $currModID ?> select[name='adults']").val());
-	var numSeniores = new Number(jQuery("#searchform<?php echo $currModID ?> select[name='seniores']").val());
-	var numChildren = new Number(jQuery("#mod_bookingforsearch-children<?php echo $currModID ?> select[name='children']").val());
+	var numAdults = new Number(jQuery("#searchform<?php echo $currModID ?> select[name='adults']").val() || 0);
+	var numSeniores = new Number(jQuery("#searchform<?php echo $currModID ?> select[name='seniores']").val() || 0);
+	var numChildren = new Number(jQuery("#mod_bookingforsearch-children<?php echo $currModID ?> select[name='children']").val() || 0);
 	jQuery('#searchformpersons<?php echo $currModID ?>').val(numAdults + numChildren + numSeniores);
 	jQuery('#showmsgchildage<?php echo $currModID ?>').val(0);
 	jQuery(".mod_bookingforsearch-childrenages select:visible option:selected").each(function(i) {
