@@ -484,6 +484,11 @@ setlocale(LC_TIME, $language);
 								<?php } ?>
 								<span class="bf-summary-body-resourceprice-total bfi_<?php echo $currencyclass ?>"> <?php echo BFCHelper::priceFormat($sdetail->TotalDiscounted );?></span>
 							</div>
+							<?php 	
+									$totalAmount += $sdetail->TotalAmount;
+									$totalDiscounted += $sdetail->TotalDiscounted;
+							?>
+
 					<?php endforeach;?>
 				<?php } ?>
 			</div>
