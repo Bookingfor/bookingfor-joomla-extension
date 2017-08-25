@@ -98,7 +98,7 @@ class BookingForConnectorModelMerchantDetails extends JModelList
 			'packageid' => BFCHelper::getInt('packageId'),
             'onSellUnitId' => BFCHelper::getInt('onsellunitid'),
 			'searchseed' => $searchseed,
-			'filters' => BFCHelper::getVar('filters'),
+			'filters' => BFCHelper::getArray('filters'),
 			'checkin' => BFCHelper::getStayParam('checkin', $defaultDate),
 			'checkout' => BFCHelper::getStayParam('checkout', $ci->modify(BFCHelper::$defaultDaysSpan)),
 			'duration' => BFCHelper::getStayParam('duration'),
@@ -565,7 +565,12 @@ class BookingForConnectorModelMerchantDetails extends JModelList
 		$filters = $params['filters'];
 		
 		// typologyid filtering
+		if ($filters != null && $filters['typologyid'] != null) {
+			$_SESSION['ratings']['filters']['typologyid'] = $filters['typologyid'];
+		}
 		if ($filters != null && $filters['typologyid'] != null && $filters['typologyid']!= "0") {
+			$_SESSION['ratings']['filters']['typologyid'] = $filters['typologyid'];
+
 //			$options['data']['$filter'] .= ' and TypologyId eq ' .$filters['typologyid'];
 			$options['data']['tipologyId'] = $filters['typologyid'];
 		}
@@ -1045,11 +1050,11 @@ class BookingForConnectorModelMerchantDetails extends JModelList
 		
 		$url = $this->helper->getQuery($options);
 		
-		$count = null;
+		$count = 0;
 		
 		$r = $this->helper->executeQuery($url);
 		if (isset($r)) {
-			$count = (int)$r;
+//			$count = (int)$r;
 			$res = json_decode($r);
 			$count = (int)$res->d->GetVariationPlansCount;
 		}

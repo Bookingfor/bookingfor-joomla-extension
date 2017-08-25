@@ -11,7 +11,6 @@ include_once JPATH_COMPONENT . '/defines.php';
 require_once JPATH_COMPONENT . '/views/BFCView.php';
 require_once JPATH_COMPONENT . '/helpers/wsQueryHelper.php';
 require_once JPATH_COMPONENT . '/helpers/BFCHelper.php';
-require_once JPATH_COMPONENT . '/helpers/BFFavoritesHelper.php';
 
 // import joomla controller library
 jimport('joomla.application.component.controller');
@@ -20,7 +19,7 @@ jimport('joomla.application.component.controller');
 $controller = JControllerLegacy::getInstance('BookingForConnector');
 
 // Perform the Request task
-$controller->execute(BFCHelper::getCmd('task'));
+$controller->execute(JFactory::getApplication()->input->get('task'));
 
 // Redirect if set by the controller
 $controller->redirect();

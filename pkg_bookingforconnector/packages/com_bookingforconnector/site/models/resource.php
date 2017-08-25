@@ -67,11 +67,15 @@ class BookingForConnectorModelResource extends JModelList
 	private $urlGetCheckInDatesPerTimes = null;
 	private $urlGetCheckInDatesTimeSlot = null;
 	private $urlGetListCheckInDayPerTimes = null;
+	private $urlGetMostRestrictivePolicyByIds = null;
+	private $urlGetPolicyById = null;
 	
 	public function __construct($config = array())
 	{
 		parent::__construct($config);
-		$this->helper = new wsQueryHelper(COM_BOOKINGFORCONNECTOR_WSURL, COM_BOOKINGFORCONNECTOR_APIKEY);
+      $ws_url = COM_BOOKINGFORCONNECTOR_WSURL;
+		$api_key = COM_BOOKINGFORCONNECTOR_API_KEY;
+		$this->helper = new wsQueryHelper($ws_url, $api_key);
 		$this->urlResource = '/GetResourceById';// '/Resources(%d)';
 		$this->urlUnitServices = '/Resources(%d)/Unit/Services';
 		$this->urlUnit = '/Resources(%d)';
@@ -106,17 +110,19 @@ class BookingForConnectorModelResource extends JModelList
 		$this->urlRating = '/GetReviews';
 		$this->urlRatingCount = '/GetReviewsCount';
 		$this->urlRatingAverage = '/GetResourceAverage';
+		$this->urlDiscountVariationDetails = '/GetDiscountsByIds';
+		$this->urlDiscountDetails = '/Discounts(%d)';
+		$this->urlListDiscounts = '/Discounts';
+		$this->urlListVariations = '/VariationPlans';
 		$this->urlGetRatePlansByResourceId = '/GetRatePlansByResourceId';
 		$this->urlGetPolicy = '/GetPolicy';
-		$this->urlGetDescription = '/GetResourceDescr';
-		$this->urlDiscountVariationDetails = '/GetDiscountsByIds';
-		$this->urlListVariations = '/VariationPlans';
 		$this->urlSearchAllCalculate = '/SearchAllNew';
-
 		$this->urlGetCheckInDatesPerTimes = '/GetCheckInDatesPerTimes';
 		$this->urlGetCheckInDatesTimeSlot = '/GetCheckInDatesTimeSlot';
 		$this->urlGetRelatedResourceStays = '/GetRelatedResourceStaysAll';
 		$this->urlGetListCheckInDayPerTimes = '/GetListCheckInDayPerTimes';
+		$this->urlGetMostRestrictivePolicyByIds = '/GetMostRestrictivePolicyByIds';
+		$this->urlGetPolicyById = '/GetPolicyById';
 
 	}
 	
@@ -447,8 +453,8 @@ class BookingForConnectorModelResource extends JModelList
 			if (isset($r)) {
 				$res = json_decode($r);
 				//$resource = $res->d->results ?: $res->d;
-				if (!empty($res->d->results)){
-					$resource = $res->d->results;
+				if (!empty($res->d->GetResourceById)){
+					$resource = $res->d->GetResourceById;
 				}elseif(!empty($res->d)){
 					$resource = $res->d;
 				}
@@ -467,42 +473,7 @@ class BookingForConnectorModelResource extends JModelList
 	public function getResourceFromService() {
 		$params = $this->getState('params');
 		$resourceId = $params['resourceId'];
-		$resourceIdRef = $params['resourceId'];
-//		if (empty($language)){
-			$language = JFactory::getLanguage()->getTag();
-//		}
-		$resource = BFCHelper::getAppication($resourceId."_".$language,null);
-		if(empty($resource)){
-			$options = array(
-					'path' => $this->urlResource, // sprintf($this->urlResource, $resourceId),
-					'data' => array(
-						'$format' => 'json',
-						//'expand' => 'Merchant',
-						'id' => $resourceId,
-						'cultureCode' => BFCHelper::getQuotedString($language)
-					)
-				);
-			
-			$url = $this->helper->getQuery($options);
-				
-			$resource = null;
-			
-			$r = $this->helper->executeQuery($url);
-			if (isset($r)) {
-				$res = json_decode($r);
-				//$resource = $res->d->results ?: $res->d;
-				if (!empty($res->d->results)){
-					$resource = $res->d->results;
-				}elseif(!empty($res->d)){
-					$resource = $res->d;
-				}
-			}
-			if(!empty($resource)){
-				$resource->Merchant=BFCHelper::getMerchantFromServicebyId($resource->MerchantId);
-				BFCHelper::setAppication($resourceId."_".$language,$resource);
-			}
-		}
-		return $resource;
+		return $this->getResourceFromServicebyId($resourceId);
 	}
 
 	public function getUnitRelatedResourceFromService() {
@@ -757,6 +728,71 @@ class BookingForConnectorModelResource extends JModelList
 		}
 		return $types;
 	}
+
+	public function GetPolicyById($policyId, $cultureCode) {
+		if(empty($cultureCode)){
+			$cultureCode = $GLOBALS['bfi_lang'];
+		}
+		$options = array(
+			'path' => $this->urlGetPolicyById,
+			'data' => array(
+					'policyId' => $policyId,
+					'cultureCode' => '\'' . $cultureCode . '\'',
+					'$format' => 'json'
+				)
+			);
+		$url = $this->helper->getQuery($options);
+		$types = null;
+		
+		$r = $this->helper->executeQuery($url);
+		if (isset($r)) {
+			$res = json_decode($r);
+			if (!empty($res->d->GetPolicyById)){
+				$types = $res->d->GetPolicyById;
+			}elseif(!empty($res->d)){
+				$types = $res->d;
+			}
+		}
+		return $types;
+	}
+
+
+	public function GetMostRestrictivePolicyByIds($policyIds, $cultureCode, $stayConfiguration ='', $priceValue=null, $days=null) {
+		if(empty($cultureCode)){
+			$cultureCode = $GLOBALS['bfi_lang'];
+		}
+		$options = array(
+			'path' => $this->urlGetMostRestrictivePolicyByIds,
+			'data' => array(
+					'policyIds' => '\'' .$policyIds. '\'',
+					'cultureCode' => '\'' . $cultureCode . '\'',
+					'$format' => 'json'
+				)
+			);
+		if (!empty($stayConfiguration) ) {
+			$options['data']['stayConfiguration'] = '\'' . $stayConfiguration . '\'';
+		}
+		if (!empty($priceValue) ) {
+			$options['data']['priceValue'] = $priceValue;
+		}
+		if (!empty($days) ) {
+			$options['data']['days'] = $days;
+		}
+		$url = $this->helper->getQuery($options);
+		$types = null;
+		
+		$r = $this->helper->executeQuery($url,"POST");
+		if (isset($r)) {
+			$res = json_decode($r);
+			if (!empty($res->d->GetMostRestrictivePolicyByIds)){
+				$types = $res->d->GetMostRestrictivePolicyByIds;
+			}elseif(!empty($res->d)){
+				$types = $res->d;
+			}
+		}
+		return $types;
+	}
+
 	public function GetMerchantBookingTypeList($SearchModel, $resourceId, $cultureCode) {
 		if(empty($cultureCode)){
 			$cultureCode = $GLOBALS['bfi_lang'];
@@ -903,7 +939,20 @@ class BookingForConnectorModelResource extends JModelList
 		return $rateplan;
 	}
 
-	public function GetRelatedResourceStays($merchantId,$relatedProductid,$excludedIds,$checkin,$duration,$paxages,$variationPlanId,$language="" ) {
+	public function GetRelatedResourceStays($merchantId,$relatedProductid,$excludedIds,$checkin,$duration,$paxages,$variationPlanId,$language="",$condominiumId ) {
+		$newpaxages = array();
+		foreach ($paxages as $age) {
+			if ($age >= BFCHelper::$defaultAdultsAge) {
+				if ($age >= BFCHelper::$defaultSenioresAge) {
+					array_push($newpaxages, $age.":".bfiAgeType::$Seniors);
+				} else {
+					array_push($newpaxages, $age.":".bfiAgeType::$Adult);
+				}
+			} else {
+				array_push($newpaxages, $age.":".bfiAgeType::$Reduced);
+			}
+		}
+
 		$options = array(
 				'path' =>  $this->urlGetRelatedResourceStays,
 				'data' => array(
@@ -919,7 +968,8 @@ class BookingForConnectorModelResource extends JModelList
 //					'checkin' => '\'' . $checkin->format('YmdHis') . '\'',
 					'checkin' => '\'' . $checkin->format('Ymd') . '\'',
 					'duration' => $duration,
-					'paxages' => '\'' . implode('|',$paxages) . '\'',
+//					'paxages' => '\'' . implode('|',$paxages) . '\'',
+					'paxages' => '\'' . implode('|',$newpaxages) . '\'',
 					'paxes' => count($paxages),
 					'getRelatedProducts' => 0,
 					'$format' => 'json'
@@ -929,7 +979,10 @@ class BookingForConnectorModelResource extends JModelList
 			$options['data']['cultureCode'] = '\'' . $language . '\'';
 		}
 		if (!empty($variationPlanId)) {
-			$options['data']['variationPlanId'] = $variationPlanId;
+			$options['data']['variationPlanIds'] = '\'' .$variationPlanId . '\'';
+		}
+		if (!empty($condominiumId)) {
+			$options['data']['condominiumId'] = $condominiumId ;
 		}
 			
 		$url = $this->helper->getQuery($options);
@@ -950,13 +1003,26 @@ class BookingForConnectorModelResource extends JModelList
 	}
 
 	public function GetCompleteRatePlansStayWP($resourceId,$checkin,$duration,$paxages,$selectablePrices,$packages,$pricetype,$ratePlanId,$variationPlanId,$language="",$merchantBookingTypeId = "", $getAllResults=false ) {
+		$newpaxages = array();
+		foreach ($paxages as $age) {
+			if ($age >= BFCHelper::$defaultAdultsAge) {
+				if ($age >= BFCHelper::$defaultSenioresAge) {
+					array_push($newpaxages, $age.":".bfiAgeType::$Seniors);
+				} else {
+					array_push($newpaxages, $age.":".bfiAgeType::$Adult);
+				}
+			} else {
+				array_push($newpaxages, $age.":".bfiAgeType::$Reduced);
+			}
+		}
 		$options = array(
 				'path' =>  $this->urlCompleteStayRatePlan,
 				'data' => array(
 					'resourceId' => $resourceId,
 					'checkin' => '\'' . $checkin->format('YmdHis') . '\'',
 					'duration' => $duration,
-					'paxages' => '\'' . implode('|',$paxages) . '\'',
+//					'paxages' => '\'' . implode('|',$paxages) . '\'',
+					'paxages' => '\'' . implode('|',$newpaxages) . '\'',
 					'$format' => 'json'
 				)
 			);
@@ -1904,6 +1970,7 @@ class BookingForConnectorModelResource extends JModelList
 			'variationPlanId' => BFCHelper::getStayParam('variationPlanId'),
 			'state' => BFCHelper::getStayParam('state'),
 			'gotCalculator' => BFCHelper::getBool('calculate'),
+			'filters' => BFCHelper::getArray('filters'),
 			'paxes' => count(BFCHelper::getStayParam('paxages'))
 		);
 		
@@ -2141,6 +2208,9 @@ class BookingForConnectorModelResource extends JModelList
 		$filters = $params['filters'];
 		}
 		// typologyid filtering
+		if ($filters != null && $filters['typologyid'] != null) {
+			$_SESSION['ratings']['filters']['typologyid'] = $filters['typologyid'];
+		}
 		if ($filters != null && $filters['typologyid'] != null && $filters['typologyid']!= "0") {
 			$options['data']['$filter'] .= ' and TypologyId eq ' .$filters['typologyid'];
 		}

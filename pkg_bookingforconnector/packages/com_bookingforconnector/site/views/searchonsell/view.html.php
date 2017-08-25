@@ -5,12 +5,8 @@
  * @license   GNU General Public License version 3, or later
  */
 
-
 // No direct access to this file
 defined('_JEXEC') or die('Restricted access');
-
-// import Joomla view library
-jimport('joomla.application.component.view');
 
 /**
  * HTML View class for the HelloWorld Component
@@ -25,7 +21,7 @@ class BookingForConnectorViewSearchOnSell extends BFCView
 	protected $typologies = null;
 
 	// Overwriting JView display method
-	function display($tpl = NULL, $preparecontent = false) 
+	function display($tpl = NULL) 
 	{
 		// Initialise variables
 		$document 	= JFactory::getDocument();
@@ -45,17 +41,8 @@ class BookingForConnectorViewSearchOnSell extends BFCView
 		$sortColumn 	= $state->get('list.ordering');
 		$sortDirection 	= $state->get('list.direction');
 
-		$typologies = $this->getModel()->getMasterTypologies(true,$language);
-
-		
-		// add stylesheet
-		JHTML::stylesheet('components/com_bookingforconnector/assets/css/bookingfor.css');
-		JHTML::stylesheet('components/com_bookingforconnector/assets/css/bookingfor-responsive.css');
-
-		// load scripts
-		$document->addScript('components/com_bookingforconnector/assets/js/bf.js');
-		$document->addScript('components/com_bookingforconnector/assets/js/jquery.xml2json.js');
-		$document->addScript('components/com_bookingforconnector/assets/js/jquery.shorten.js');
+//		$typologies = $this->getModel()->getMasterTypologies(true,$language);
+		bfi_setSessionFromSubmittedData();
 
 		// Check for errors.
 		if (count($errors = $this->get('Errors'))) {
@@ -89,18 +76,18 @@ class BookingForConnectorViewSearchOnSell extends BFCView
 			$document->addScriptDeclaration('callAnalyticsEEc("addImpression", ' .json_encode($allobjects) . ', "list");');
 		}
 				
-		$this->assignRef('state', $state);
-		$this->assignRef('params', $params);
-		$this->assignRef('items', $items);
-		$this->assignRef('pagination', $pagination);
-		$this->assignRef('document', $document);
-		$this->assignRef('language', $language);
-		$this->assignRef('hashunsubscribe', $hashunsubscribe);
-		$this->assignRef('typologies', $typologies);
-		$this->assignRef('config', $config);
-		$this->assignRef('analyticsEnabled', $analyticsEnabled);
+		$this->state = $state;
+		$this->params = $params;
+		$this->items = $items;
+		$this->pagination = $pagination;
+		$this->document =  $document;
+		$this->language = $language;
+		$this->hashunsubscribe = $hashunsubscribe;
+//		$this->typologies = $typologies;
+		$this->config = $config;
+		$this->analyticsEnabled = $analyticsEnabled;
 		
 		// Display the view
-		parent::display($tpl, true);
+		parent::display($tpl);
 	}
 }

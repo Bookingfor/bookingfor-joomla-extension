@@ -26,35 +26,15 @@ $lang = JFactory::getLanguage();
 $lang->load('com_bookingforconnector', $pathbase, 'en-EN', true);
 $lang->load('com_bookingforconnector', $pathbase, $lang->getTag(), true);
 
-//-----------------------------------------------------------------------------------------
-//	implementazione css 
-//	per uno style personalizzato usare il seguente file css nella cartella css del template
-//	"mod_bookingforsearchbymerchanttype.css"
-//-----------------------------------------------------------------------------------------
-
-JHTML::stylesheet('modules/'.$module->module.'/assets/style.css');
-
-if (is_file(JPATH_SITE.'/templates/'.$mainframe->getTemplate().'/css/'.$module->module.".css")){
-	JHTML::stylesheet('templates/'.$mainframe->getTemplate().'/css/'.$module->module.".css");
-}
-
-$document->addStyleSheet('https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css');
-		$document->addStyleSheet('components/com_bookingforconnector/assets/js/bootstrap-select/css/bootstrap-select.min.css');
-$document->addStyleSheet('//ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css');
-$document->addScript('//ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js');
-//		$document->addScript('components/com_bookingforconnector/assets/js/bootstrap-select/js/bootstrap-select.min.js');
-$document->addScript('components/com_bookingforconnector/assets/js/bf.js');
-
-JHTML::stylesheet('components/com_bookingforconnector/assets/css/bookingfor.css');
-JHTML::stylesheet('modules/'.$module->module.'/assets/css/style.css');
-
-JHTML::script('components/com_bookingforconnector/assets/js/jquery.blockUI.js');
+bfi_load_scripts();
 
 
-JHTML::stylesheet('modules/'.$module->module.'/assets/css/slick-theme.css');
-$document->addStyleSheet('//cdn.jsdelivr.net/jquery.slick/1.6.0/slick.css');
-$document->addScript('//cdn.jsdelivr.net/jquery.slick/1.6.0/slick.min.js');
+//JHTML::stylesheet('modules/'.$module->module.'/assets/css/slick-theme.css');
+//$document->addStyleSheet('//cdn.jsdelivr.net/jquery.slick/1.6.0/slick.css');
+//$document->addScript('//cdn.jsdelivr.net/jquery.slick/1.6.0/slick.min.js');
 
-
+JHTML::stylesheet('components/com_bookingforconnector/assets/js/slick/slick.css');
+JHTML::stylesheet('components/com_bookingforconnector/assets/js/slick/slick-theme.css');
+JHTML::script('components/com_bookingforconnector/assets/js/slick/slick.min.js');
 
 require JModuleHelper::getLayoutPath('mod_bookingformerchants', $params->get('layout', 'default'));

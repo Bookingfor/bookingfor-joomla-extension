@@ -23,12 +23,10 @@ class BookingForConnectorViewResources extends BFCView
 	protected $language = null;
 
 	// Overwriting JView display method
-	function display($tpl = null, $preparecontent = false) 
+	function display($tpl = null) 
 	{
-		JHtml::_('bootstrap.framework');
 
 		// Initialise variables
-		$config = JComponentHelper::getParams('com_bookingforconnector');
 		$state		= $this->get('State');
 		$items		= $this->get('Items');
 		$pagination	= $this->get('Pagination');
@@ -39,17 +37,6 @@ class BookingForConnectorViewResources extends BFCView
 		$language 	= $document->getLanguage();		
 		$params = $state->params;
 		
-		// add stylesheet
-		$document->addStyleSheet('components/com_bookingforconnector/assets/css/bookingfor.css');
-		$document->addStyleSheet('components/com_bookingforconnector/assets/css/bookingfor-responsive.css');
-		$document->addStyleSheet('//ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css');
-		$document->addStyleSheet('https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css');
-
-		// load scripts
-		$document->addScript('//ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js');
-		$document->addScript('components/com_bookingforconnector/assets/js/bf.js');
-		$document->addScript('components/com_bookingforconnector/assets/js/jquery.xml2json.js');
-		$document->addScript('components/com_bookingforconnector/assets/js/jquery.shorten.js');
 		// Check for errors.
 		if (count($errors = $this->get('Errors'))) {
 			BFCHelper::raiseWarning(500, implode("\n", $errors));
@@ -64,7 +51,6 @@ class BookingForConnectorViewResources extends BFCView
 		$this->assignRef('items', $items);
 		$this->assignRef('pagination', $pagination);
 		$this->assignRef('language', $language);
-		$this->assignRef('config', $config);
 		
 		// Display the view
 		parent::display($tpl);

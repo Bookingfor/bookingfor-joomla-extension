@@ -1,53 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
 <config>
-	<fieldset name="settings" label="CONFIG_SETTING_HEADER_LABEL" description="CONFIG_SETTING_HEADER_DESC">
-			<field name="wsurl" type="url" default="Subscription Code" size="150"  required="true" 
-			label="CONFIG_WSURL_LABEL"
-			description="CONFIG_WSURL_DESC"
-            class="input-large"/>
-			<field name="apikey" type="text" default="apykey" size="150" required="true" 
-			label="CONFIG_APIKEY_LABEL"
-			description="CONFIG_APIKEY_DESC"
-            class="input-large"/>
-			<field name="bootstrap" type="radio" default="2"
-				label="CONFIG_BOOTSTRAP_LABEL"
-				description="CONFIG_BOOTSTRAP_DESC"
-				class="btn-group">
-				<option value="2">2</option>
-				<option value="3">3</option>
-			</field>
+	<fieldset name="settings" label="CONFIG_SETTING_HEADER_LABEL" description="CONFIG_SETTING_HEADER_DESC"
+			addfieldpath="/administrator/components/com_bookingforconnector/models/fields"		
+	>
+			<field name="version" type="hidden" default="3.1.0"/>
+			<field name="wsurl" type="url" hint="Subscription Code" size="150"  required="true" 
+				label="CONFIG_WSURL_LABEL"
+				description="CONFIG_WSURL_DESC"
+				class="input-large"/>
+			<field name="apikey" hint="apykey" type="textarea" default="" rows="7" cols="5" filter="raw" required="true" 
+				label="CONFIG_APIKEY_LABEL"
+				description="CONFIG_APIKEY_DESC"
+				class="input-large"/>
 			<field name="isportal" type="radio" default="1"
 				label="CONFIG_ISPORTAL_LABEL"
 				description="CONFIG_ISPORTAL_DESC"
-				class="btn-group">
+				class="btn-group btn-group-yesno">
 				<option value="0">JNo</option>
 				<option value="1">JYes</option>
 			</field>
 			<field name="showdata" type="radio" default="1"
 				label="CONFIG_SHOWDATA_LABEL"
 				description="CONFIG_SHOWDATA_DESC"
-				class="btn-group">
+				class="btn-group btn-group-yesno">
+				<option value="0">JNo</option>
+				<option value="1">JYes</option>
+			</field>
+			<field name="bfi_sendtocart_key" type="radio" default="1"
+				label="CONFIG_SENDTOCART_LABEL"
+				description="CONFIG_SENDTOCART_DESC"
+				class="btn-group btn-group-yesno">
 				<option value="0">JNo</option>
 				<option value="1">JYes</option>
 			</field>
 			<field name="formlabel" type="text" default="mysite.com" size="50" required="true" 
-			label="CONFIG_FORMLABEL_LABEL"
-			description="CONFIG_FORMLABEL_DESC"
-            class="input-large"/>
-			<!-- <field name="imgurl" type="text" default="mysite/images/resources" size="50" required="false" 
-			label="CONFIG_IMGURL_LABEL"
-			description="CONFIG_IMGURL_DESC"
-            class="input-large"/> -->
+				label="CONFIG_FORMLABEL_LABEL"
+				description="CONFIG_FORMLABEL_DESC"
+				class="input-large"/>
+			<field
+				name="bfi_currentcurrency_key"
+				type="currencyexchanges"
+				label="COM_BOOKINGFORCONNECTOR_MERCHANTS_FIELD_CURRENTCURRENCY_LABEL"
+				description="COM_BOOKINGFORCONNECTOR_MERCHANTS_FIELD_CURRENTCURRENCY_DESC"
+			>	
+			</field>
 			<field name="posx" type="text" default="0" size="50" required="true" 
-			label="CONFIG_POSX_LABEL"
-			description="CONFIG_POSX_DESC"
-            class="input-large"/>
+				label="CONFIG_POSX_LABEL"
+				description="CONFIG_POSX_DESC"
+				class="input-large"/>
 			<field name="posy" type="text" default="0" size="50" required="true" 
-			label="CONFIG_POSY_LABEL"
-			description="CONFIG_POSY_DESC"
-            class="input-large"/>
+				label="CONFIG_POSY_LABEL"
+				description="CONFIG_POSY_DESC"
+				class="input-large"/>
 			<field name="googlemapskey" 
-				type="text" 
+				type="textarea" rows="3" cols="5" filter="raw"  
 				default="" 
 				size="50"
 				required="true" 
@@ -62,12 +68,22 @@
 				last="17" 
 				step="1"
 			/>
-			<field name="enablescalarrequest" type="radio" default="1"
-				label="CONFIG_ENABLESCALARREQUEST_LABEL"
-				description="CONFIG_ENABLESCALARREQUEST_DESC"
+			<field name="bfi_maxqtSelectable_key" 
+				type="integer" 
+				default="20" 
+				first="0" 
+				last="50" 
+				step="1"
+				label="CONFIG_MAXQTSELECTABLE_LABEL"
+				description="CONFIG_MAXQTSELECTABLE_DESCRIPTION"
 				class="btn-group">
-				<option value="0">JNo</option>
-				<option value="1">JYes</option>
+			</field>
+			<field name="bfi_defaultdisplaylist_key" type="list" default="0"
+				label="CONFIG_DEFAULTDISPLAYLIST_LABEL"
+				description="CONFIG_DEFAULTDISPLAYLIST_DESC"
+				class="btn-group">
+				<option value="0">List</option>
+				<option value="1">Grid</option>
 			</field>
 		
 		</fieldset>
@@ -118,27 +134,20 @@
 		<field name="usessl" type="radio" default="0"
 			label="CONFIG_SECURITY_USESSL_LABEL"
 			description="CONFIG_SECURITY_USESSL_DESCRIPTION"
-            class="btn-group">
+            class="btn-group btn-group-yesno">
 			<option value="0">JNo</option>
 			<option value="1">JYes</option>
 		</field>
 		<field name="ssllogo" type="textarea" default="" rows="10" cols="5" filter="raw"
-		label="CONFIG_SECURITY_SSLLOGO_LABEL"
-		description="CONFIG_SECURITY_SSLLOGO_DESC"
+			label="CONFIG_SECURITY_SSLLOGO_LABEL"
+			description="CONFIG_SECURITY_SSLLOGO_DESC"
 		/>
 	</fieldset>
 	<fieldset name="debug" label="CONFIG_DEBUG_HEADER_LABEL" description="CONFIG_DEBUG_HEADER_DESC">
-		<field name="usegzip" type="radio" default="1"
-			label="CONFIG_DEBUG_USEGZIP_LABEL"
-			description="CONFIG_DEBUG_USEGZIP_DESCRIPTION"
-            class="btn-group">
-			<option value="0">JNo</option>
-			<option value="1">JYes</option>
-		</field>
 		<field name="useproxy" type="radio" default="0"
 			label="CONFIG_DEBUG_USEPROXY_LABEL"
 			description="CONFIG_DEBUG_USEPROXY_DESCRIPTION"
-            class="btn-group">
+            class="btn-group btn-group-yesno">
 			<option value="0">JNo</option>
 			<option value="1">JYes</option>
 		</field>
@@ -147,19 +156,12 @@
 			description="CONFIG_DEBUG_PROXYURL_DESCRIPTION"
             class="input-large">
 		</field>
-		<field name="enablecache"  type="radio" default="1"
-			label="CONFIG_DEBUG_ENABLECACHE_LABEL"
-			description="CONFIG_DEBUG_ENABLECACHE_DESCRIPTION"
-            class="btn-group">
-			<option value="0">JNo</option>
-			<option value="1">JYes</option>
-		</field>
 	</fieldset>
 	<fieldset name="analyitics" label="CONFIG_ANALYTICS_HEADER_LABEL" description="CONFIG_ANALYTICS_HEADER_DESC">
 		<field name="gaenabled" type="radio" default="0"
 			label="CONFIG_ANALYTICS_GAENABLED_LABEL"
 			description="CONFIG_ANALYTICS_GAENABLED_DESC"
-            class="btn-group">
+            class="btn-group btn-group-yesno">
 			<option value="0">JNo</option>
 			<option value="1">JYes</option>
 		</field>
@@ -171,7 +173,30 @@
 		<field name="eecenabled" type="radio" default="0"
 			label="CONFIG_ANALYTICS_EECENABLED_LABEL"
 			description="CONFIG_ANALYTICS_EECENABLED_DESC"
-            class="btn-group">
+            class="btn-group btn-group-yesno">
+			<option value="0">JNo</option>
+			<option value="1">JYes</option>
+		</field>
+		<field name="bfi_criteoenabled_key" type="radio" default="0"
+			label="CONFIG_ANALYTICS_CRITEOENABLED_LABEL"
+			description="CONFIG_ANALYTICS_CRITEOENABLED_DESC"
+            class="btn-group btn-group-yesno">
+			<option value="0">JNo</option>
+			<option value="1">JYes</option>
+		</field>
+	</fieldset>
+	<fieldset name="performancesettings" label="CONFIG_PERFORMANCESETTINGS_HEADER_LABEL" description="CONFIG_PERFORMANCESETTINGS_HEADER_DESC">
+		<field name="usegzip" type="radio" default="1"
+			label="CONFIG_DEBUG_USEGZIP_LABEL"
+			description="CONFIG_DEBUG_USEGZIP_DESCRIPTION"
+            class="btn-group btn-group-yesno">
+			<option value="0">JNo</option>
+			<option value="1">JYes</option>
+		</field>
+		<field name="enablecache"  type="radio" default="1"
+			label="CONFIG_DEBUG_ENABLECACHE_LABEL"
+			description="CONFIG_DEBUG_ENABLECACHE_DESCRIPTION"
+            class="btn-group btn-group-yesno">
 			<option value="0">JNo</option>
 			<option value="1">JYes</option>
 		</field>

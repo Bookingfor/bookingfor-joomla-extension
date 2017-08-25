@@ -13,47 +13,11 @@ $user = JFactory::getUser();
 
 ?>
 <!-- {emailcloak=off} -->
-<div class="control-group">
-	<label class="control-label" for="orderId"><?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_ORDERS_VIEW_ORDERID') ?></label>
-	<div class="controls">
-		<input id="orderId" name="orderId" type="text" />
-	</div>
-</div>	
-<div class="control-group">
-	<label class="control-label" for="email"><?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_ORDERS_VIEW_EMAIL') ?></label>
-	<div class="controls">
-		<input id="email" name="email" type="text" value="<?php echo $user->email; ?>" />
-	</div>
+<div class="bfi_form_txt">
+	<label for="orderId"><?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_ORDERS_VIEW_ORDERID') ?></label> 
+	<input id="orderId" name="orderId" type="text" placeholder="<?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_ORDERS_VIEW_ORDERID') ?>" data-rule-required="true" data-rule-digits="true" data-msg-required="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_REQUIRED') ?>" data-msg-digits="<?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_ORDERS_VIEW_ORDERID_ERROR') ?>" aria-required="true" />
 </div>
-<script type="text/javascript">
-jQuery(function($)
-		{
-		    $("#formCheckMode").validate(
-		    {
-		        rules:
-		        {
-		        	orderId: "required",
-		            email:
-		            {
-		                required: true,
-		                email: true
-		            },
-		            accetto: "required"
-		        },
-		        messages:
-		        {
-		        	orderId: "<?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_ORDERS_VIEW_ORDERID_ERROR') ?>",
-		            email: "<?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_ORDERS_VIEW_EMAIL_ERROR') ?>"
-		        },
-		        highlight: function(label) {
-			    	$(label).closest('.control-group').removeClass('error').addClass('error');
-			    },
-			    success: function(label) {
-			    	label
-			    		.text('ok!').addClass('valid')
-			    		.closest('.control-group').removeClass('error').addClass('success');
-			    }
-		    });
-		});
-
-</script>
+<div class="bfi_form_txt">
+	<label for="email"><?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_ORDERS_VIEW_EMAIL') ?></label> 
+	<input id="email" name="email" type="email" value="" placeholder="<?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_ORDERS_VIEW_EMAIL') ?>" data-rule-required="true" data-rule-email="true" data-msg-required="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_REQUIRED') ?>" data-msg-email="<?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_ORDERS_VIEW_EMAIL_ERROR') ?>" aria-required="true" />
+</div>

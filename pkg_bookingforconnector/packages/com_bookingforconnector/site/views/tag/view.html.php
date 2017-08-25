@@ -9,9 +9,6 @@
 // No direct access to this file
 defined('_JEXEC') or die('Restricted access');
 
-$pathbase = JPATH_BASE . DIRECTORY_SEPARATOR . 'components' . DIRECTORY_SEPARATOR . 'com_bookingforconnector' . DIRECTORY_SEPARATOR;
-require_once $pathbase . '/helpers/paymentHelper.php';
-
 class BookingForConnectorViewTag extends BFCView
 {
 	protected $state = null;
@@ -22,7 +19,7 @@ class BookingForConnectorViewTag extends BFCView
 
 		
 	// Overwriting JView display method
-	function display($tpl = NULL, $preparecontent = false)
+	function display($tpl = NULL)
 	{
 
 		// Initialise variables
@@ -36,23 +33,13 @@ class BookingForConnectorViewTag extends BFCView
 		$language 	= $document->getLanguage();
 		$app = JFactory::getApplication();
 		$sitename = $app->get('sitename');
-		$config = JComponentHelper::getParams('com_bookingforconnector');
 		
-		$this->assignRef('state', $state);		
-		$this->assignRef('language', $language);
-		$this->assignRef('item', $item);		
-		$this->assignRef('sitename', $sitename);
-		$this->assignRef('config', $config);
 		$category = 0;
+		$showGrouped = 0;
 
 		if(!empty($item)) {
 			$category = $item->SelectionCategory;
-			
-			$show_grouped = BFCHelper::getVar('show_grouped',0);
-			$params['show_grouped'] = $show_grouped;
-			$params['onlystay'] = 'false';
-
-
+			$showGrouped  = BFCHelper::getVar('show_grouped',0);
 			if ($category  == 1) {
 				$items = $this->get('ItemsMerchants');
 				$pagination	= $this->get('Pagination');
@@ -64,47 +51,25 @@ class BookingForConnectorViewTag extends BFCView
 			if ($category == 4) {
 				$items = $this->get('ItemsResources');
 				$pagination	= $this->get('Pagination');
+				$showGrouped  = $params['show_grouped'];
 			}
 
-			$this->assignRef('items', $items);
-			$this->assignRef('pagination', $pagination);
+			$this->items = $items;
+			$this->pagination = $pagination;
 			
 			$pagination->setAdditionalUrlParam("filter_order", $sortColumn);
 			$pagination->setAdditionalUrlParam("filter_order_Dir", $sortDirection);
 			$pagination->setAdditionalUrlParam("newsearch",0);
 		}
-		$this->assignRef('category', $category);		
-		$this->assignRef('params', $params);
-		
-	
-		
-		
-		JHTML::stylesheet('https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css');
-		JHTML::stylesheet('components/com_bookingforconnector/assets/css/bookingfor.css');
-		JHTML::stylesheet('components/com_bookingforconnector/assets/css/bookingfor-responsive.css');
-		$document->addStyleSheet('components/com_bookingforconnector/assets/css/jquery.validate.css');
 
-		// load scripts
-		$document->addScript('components/com_bookingforconnector/assets/js/bf.js');
-		$document->addScript('components/com_bookingforconnector/assets/js/jquery.xml2json.js');
-		$document->addScript('components/com_bookingforconnector/assets/js/jquery.shorten.js');
-		$document->addScript('components/com_bookingforconnector/assets/js/jquery.validate.min.js');
-		$document->addScript('components/com_bookingforconnector/assets/js/additional-methods.min.js');		
-		$document->addScript('components/com_bookingforconnector/assets/js/jquery.form.js');
-		$document->addScript('components/com_bookingforconnector/assets/js/jquery.blockUI.js');
-		$document->addScript('components/com_bookingforconnector/assets/js/jquery.ui.touch-punch.min.js');
-
-		// Initialise variables
-
-				
-//		$params = $state->params;
-
-
-				
-
+		$this->state = $state;
+		$this->language = $language;
+		$this->item = $item;
+		$this->category = $category;
+		$this->showGrouped = $showGrouped ;
 		
 		// Display the view
-		parent::display($tpl, true);
+		parent::display($tpl);
 	}
 		
 }

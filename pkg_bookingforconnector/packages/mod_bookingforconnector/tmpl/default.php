@@ -97,95 +97,51 @@ $uriMerchantContacts = $uriMerchant .'&layout=contacts';
 $uriMerchantRedirect = $uriMerchant .'&layout=redirect&tmpl=component';
 
 
-$uriMerchantthanks = $uriMerchant .'&layout=thanks';
-$uriMerchantthanksKo = $uriMerchant .'&layout=errors';
-
 
 $route = JRoute::_($uriMerchant);
 
-$routeThanks = JRoute::_($uriMerchantthanks);
-$routeThanksKo = JRoute::_($uriMerchantthanksKo);
-
-$privacy = BFCHelper::GetPrivacy($language);
 
 $merchantLogo = JURI::root() . 'components/com_bookingforconnector/assets/images/defaults/default-s3.jpeg';
 if (!empty($merchant->LogoUrl)){
 	$merchantLogo = BFCHelper::getImageUrlResized('merchant',$merchant->LogoUrl, 'logobig');
 }
 
-
-$checkoutspan = '+1 day';
-$checkin = new JDate('now'); 
-$startDate = new JDate('now'); 
-$checkout = new JDate('now'); 
-$paxes = 2;
-
-$pars = BFCHelper::getSearchParamsSession();
-
-if (!empty($pars)){
-
-	if (!empty($pars['checkin'])){
-		$checkin = new JDate($pars['checkin']->format('Y-m-d')); 
-	}
-	if (!empty($pars['checkout'])){
-		$checkout = new JDate($pars['checkout']->format('Y-m-d')); 
-	}
-	if (!empty($pars['paxes'])) {
-		$paxes = $pars['paxes'];
-	}
-}
-
-if ($checkin < $startDate){
-	$checkin = clone $startDate;
-	$checkout = clone $checkin;
-    $checkout->modify($checkoutspan); 
-}
-
-if ($checkin == $checkout){
-    $checkout->modify($checkoutspan); 
-}
-
-if ($currentView == 'resource' && $currentlayout == 'form' ){
-		require JModuleHelper::getLayoutPath('mod_bookingforconnector', 'sidebarpaymentform');
-}else{
 ?>
-<div class="mod_bookingforconnector<?php echo $moduleclass_sfx ?> ">
-<div class="mod_bookingforconnector-inner">
-<?php if ($isportal):?>
-	<div class="mod_bookingforconnector-vcard-wrapper">
-		<div class="mod_bookingforconnector-vcard-logo"><a href="<?php echo $route?>"><img src="<?php echo $merchantLogo?>" /></a></div>	
-		<div class="mod_bookingforconnector-vcard-name">
+<div class="bfi-modbookingforconnector <?php echo $moduleclass_sfx ?> ">
+<div class="bfi-mod-bookingforconnector-inner">
+<?php if ($isportal){?>
+	<div class="bfi-mod-bookingforconnector-vcard-wrapper">
+		<div class="bfi-vcard-logo"><a href="<?php echo $route?>"><img src="<?php echo $merchantLogo?>" /></a></div>	
+		<div class="bfi-vcard-name bfi-text-center">
 			<a href="<?php echo $route?>"><?php echo  $merchant->Name?></a>
-			<div class="mod_bookingforconnector-vcard-rating">
+			<div class="bfi-item-rating">
 			<?php for($i = 0; $i < $merchant->Rating ; $i++) { ?>
 			  <i class="fa fa-star"></i>
 			<?php } ?>
 			</div>
 		</div>
-		<div class="merchant_info">
+		<div class="bfi-merchant-simple bfi-text-center">
 			<span class="street-address"><?php echo $indirizzo ?></span>, <span class="postal-code "><?php echo $cap ?></span> <span class="locality"><?php echo $comune ?></span> <span class="region">(<?php echo $provincia ?>)</span><br />
-			<span class="tel"><a  href="javascript:void(0);" onclick="getData(urlCheck,'merchantid=<?php echo $merchant->MerchantId?>&task=GetPhoneByMerchantId&language=' + cultureCode,this,'<?php echo  addslashes($merchant->Name) ?>','PhoneView')"  id="phone<?php echo $merchant->MerchantId?>"><?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_SHOWPHONE') ?></a></span> - <?php if ($merchantSiteUrl != ''):?>
+			<span class="tel"><a  href="javascript:void(0);" onclick="bookingfor.getData(bfi_variable.bfi_urlCheck,'merchantid=<?php echo $merchant->MerchantId?>&task=GetPhoneByMerchantId&language=' + bfi_variable.bfi_cultureCode,this,'<?php echo  addslashes($merchant->Name) ?>','PhoneView')"  id="phone<?php echo $merchant->MerchantId?>"><?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_SHOWPHONE') ?></a></span> - <?php if ($merchantSiteUrl != ''):?>
 				<span class="website"><?php echo JHTML::link(JRoute::_($uriMerchantRedirect,true,-1), JTEXT::_('MOD_BOOKINGFORCONNECTOR_MERCHANT_SITEGO'),'target="_blank"') ?></span>
 			<?php endif;?>
 		</div>
 	</div>
-	<ul class="mod_bookingforconnector-menu">
-		<?php if ($merchant->HasResources):?>
-				<li class="mod_bookingforconnector-menu-item <?php echo ($layout == 'resources' || $layout == 'resource' || $currentView=='resource' ) ? 'active' : '' ?>"><?php echo JHTML::link(JRoute::_($uriMerchantResources), '<i class="fa fa-bed" aria-hidden="true"></i> '.JTEXT::_('MOD_BOOKINGFORCONNECTOR_RESOURCES')) ?></li>
-		<?php endif;?>
-		<?php if ($merchant->HasOnSellUnits):?>
-				<li class="mod_bookingforconnector-menu-item <?php echo ($layout == 'onsellunits' || $layout == 'onsellunit') ? 'active' : '' ?>"><?php echo JHTML::link(JRoute::_($uriMerchantOnsellunits),  '<i class="fa fa-home" aria-hidden="true"></i> '.JTEXT::_('MOD_BOOKINGFORCONNECTOR_ONSELL')) ?></li>
-		<?php endif ?>	
-		<?php if ($merchant->HasResources):?>
-			<?php if ($merchant->HasOffers):?>
-				<li class="mod_bookingforconnector-menu-item <?php echo ($layout == 'offers' || $layout == 'offer') ? 'active' : '' ?>"><?php echo JHTML::link(JRoute::_($uriMerchantOffers),  '<i class="fa fa-percent" aria-hidden="true"></i> '.JTEXT::_('MOD_BOOKINGFORCONNECTOR_OFFERS')) ?></li>
-			<?php endif ?>
-		<?php endif;?>
-		<?php if ($merchant->RatingsContext !== 0) :?>
-			<li class="mod_bookingforconnector-menu-item <?php echo ($layout == 'ratings' || $layout == 'rating') ? 'active' : '' ?>"><?php echo JHTML::link(JRoute::_($uriMerchantRatings),  '<i class="fa fa-comments-o" aria-hidden="true"></i> '.JTEXT::_('MOD_BOOKINGFORCONNECTOR_RATINGS')) ?></li>
-		<?php endif ?>	
+	<ul class="bfi-merchant-menu">
+		<?php if ($merchant->HasResources){?>
+				<li class="bfi-merchant-menu-item <?php echo ($layout == 'resources' || $layout == 'resource' || $currentView=='resource' ) ? 'active' : '' ?>"><?php echo JHTML::link(JRoute::_($uriMerchantResources), ' '.JTEXT::_('MOD_BOOKINGFORCONNECTOR_RESOURCES')) ?></li>
+		<?php }?>
+		<?php if ($merchant->HasOnSellUnits){?>
+				<li class="bfi-merchant-menu-item <?php echo ($layout == 'onsellunits' || $layout == 'onsellunit') ? 'active' : '' ?>"><?php echo JHTML::link(JRoute::_($uriMerchantOnsellunits),  ' '.JTEXT::_('MOD_BOOKINGFORCONNECTOR_ONSELL')) ?></li>
+		<?php } ?>	
+		<?php if ($merchant->HasResources){?>
+				<li class="bfi-merchant-menu-item <?php echo ($layout == 'offers' || $layout == 'offer') ? 'active' : '' ?>"><?php echo JHTML::link(JRoute::_($uriMerchantOffers),  ' '.JTEXT::_('MOD_BOOKINGFORCONNECTOR_OFFERS')) ?></li>
+		<?php }?>
+		<?php if ($merchant->RatingsContext !== 0) {?>
+			<li class="bfi-merchant-menu-item <?php echo ($layout == 'ratings' || $layout == 'rating') ? 'active' : '' ?>"><?php echo JHTML::link(JRoute::_($uriMerchantRatings),  ' '.JTEXT::_('MOD_BOOKINGFORCONNECTOR_RATINGS')) ?></li>
+		<?php } ?>	
 	</ul>
-<?php endif;?>
+<?php }?>
 		<?php 
 			$formdisplay = "none";
 			if ($layout  == 'default' && $currentView=='merchantdetails') {
@@ -194,20 +150,12 @@ if ($currentView == 'resource' && $currentlayout == 'form' ){
 		<?php 
 			}else{
 		?>
-		<span href="" class="opencontactform"><?php echo JTEXT::_('MOD_BOOKINGFORCONNECTOR_MERCHANT_OPENFORM') ?></span>
+		<span href="" class="bfi-opencontactform bfi-btn bfi-alternative"><?php echo JTEXT::_('MOD_BOOKINGFORCONNECTOR_MERCHANT_OPENFORM') ?></span>
 		<?php } ?>	
-
-
-
-
-
-
-
-	<div class="mod_bookingforconnector-contacts" style="display:<?php echo $formdisplay ?>">
+	<div class="bfi-contacts" style="display:<?php echo $formdisplay ?>">
 	<?php 
-
+$resourceType = strtolower($currentView);
 $cNationList = BFCHelper::parseArrayList(JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEW_CONSTANTS_NATIONSLIST'));
-//$cLanguageList = BFCHelper::parseArrayList(JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEW_CONSTANTS_LANGUAGESLIST'));
 
 $cultureCode = strtolower(substr($language, 0, 2));
 $nationCode = strlen($language) == 5 ? strtolower(substr($language, 3, 2)) : $cultureCode;
@@ -216,151 +164,187 @@ $nations = array_values(array_filter($keys, function($item) use($nationCode) {
 	return strtolower($item) == $nationCode; 
 	}
 ));
-$nation = !empty(count($nations)) ? $nations[0] : $cultureCode;
+$nation = !empty(count($nations)) ? strtoupper($nations[0]) : strtoupper($cultureCode);
 $culture="";
 
 $checkinId = uniqid('checkin');
 $checkoutId = uniqid('checkout');
 
+$checkin = new DateTime();
+$checkout = new DateTime();
+$checkout->modify('+1 day');
+
 $formRoute = "index.php?option=com_bookingforconnector&task=".$task ;
+
+$formRoute = "index.php?option=com_bookingforconnector&task=".$task; 
+$routeThanks = JRoute::_($uriMerchant .'&layout=thanks');
+$routeThanksKo = JRoute::_($uriMerchant .'&layout=errors');
+
+$privacy = BFCHelper::GetPrivacy($language);
+$additionalPurpose = BFCHelper::GetAdditionalPurpose($language);
+$formlabel = COM_BOOKINGFORCONNECTOR_FORM_KEY;
 
 $minCapacityPaxes = 0;
 $maxCapacityPaxes = 12;
+$checkoutspan = '+1 day';
+$checkin = new DateTime();
+$checkout = new DateTime();
+$paxes = 2;
+$pars = BFCHelper::getSearchParamsSession();
+if (!empty($pars)){
 
+	$checkin = !empty($pars['checkin']) ? $pars['checkin'] : new DateTime();
+	$checkout = !empty($pars['checkout']) ? $pars['checkout'] : new DateTime();
+
+	if (!empty($pars['paxes'])) {
+		$paxes = $pars['paxes'];
+	}
+	if (!empty($pars['merchantCategoryId'])) {
+		$merchantCategoryId = $pars['merchantCategoryId'];
+	}
+	if (!empty($pars['paxages'])) {
+		$paxages = $pars['paxages'];
+	}
+	if (empty($pars['checkout'])){
+		$checkout->modify($checkoutspan); 
+	}
+}
+$checkinId = uniqid('checkin');
+$checkoutId = uniqid('checkout');
+$idform = uniqid("merchantdetailscontacts");
 
 ?>
-		<form method="post" id="merchantdetailscontacts" class="form-validate" action="<?php echo $formRoute; ?>">
-			<div class="mod_bookingforconnector_form-field">
-			<div class="mod_bookingforconnector_form-title"><?php echo JTEXT::_('MOD_BOOKINGFORCONNECTOR_MERCHANT_FORM_TITLE');?></div>
-				<div class="<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_ROW ?>">   
-					<div class="<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>12">
-						<input placeholder="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_NAME'); ?> *" type="text" value="" size="50" name="form[Name]" id="Name" required  title="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_NAME_REQUIRED'); ?>">
-					</div><!--/span-->
-					<div class="<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>12">
-						<input placeholder="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_SURNAME'); ?> *" type="text" value="" size="50" name="form[Surname]" id="Surname" required  title="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_SURNAME_REQUIRED'); ?>">
-					</div><!--/span-->
-					<div class="<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>12">
-						<input placeholder="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_EMAIL'); ?> *" type="email" value="" size="50" name="form[Email]" id="Email" required  title="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_EMAIL_REQUIRED'); ?>">
-					</div><!--/span-->
-					<div class="<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>12">
-						<input placeholder="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_PHONE'); ?> *" type="text" value="" size="20" name="form[Phone]" id="Phone" required  title="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_PHONE_REQUIRED'); ?>">
-					</div><!--/span-->
-					<div class="<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>12">
-						<input placeholder="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_ADDRESS'); ?>" type="text" value="" size="50" name="form[Address]" id="Address"   title="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_ADDRESS_REQUIRED'); ?>">
-					</div><!--/span-->
-					<div class="<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>12">
-						<input placeholder="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_CAP'); ?>" type="text" value="" size="20" name="form[Cap]" id="Cap"   title="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_CAP_REQUIRED'); ?>">
-					</div><!--/span-->
-					<div class="<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>12">
-						<input placeholder="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_CITY'); ?>" type="text" value="" size="50" name="form[City]" id="City"   title="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_CITY_REQUIRED'); ?>">
-					</div><!--/span-->
-					<div class="<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>12">
-						<input placeholder="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_PROVINCIA'); ?>" type="text" value="" size="20" name="form[Provincia]" id="Provincia"   title="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_PROVINCIA_REQUIRED'); ?>">
-					</div><!--/span-->
-					<div class="<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>12">
-						<?php echo JHTML::_('select.genericlist',$cNationList, 'form[Nation]','','value', 'text', $nation) ?>
-						<br />
-					</div><!--/span-->
-<?php if(isset($resource)) :?>		
-					<div class="<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>12">
+	<form method="post" id="<?php echo $idform ?>" class="form-validate merchantdetailscontacts" action="<?php echo $formRoute; ?>" novalidate="novalidate">
+		<div class="bfi-form-field">
+				<div class="bfi_form-title"><?php echo JTEXT::_('MOD_BOOKINGFORCONNECTOR_MERCHANT_OPENFORM') ?></div>
+				<?php if(isset($resource)) {?>		
+					<div class="">
 						<?php echo $resource->Name; ?>
 					</div><!--/span-->
+				<?php } ?>	
+
+				<div class="bfi_form_txt">
+					<input placeholder="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_NAME'); ?> *" type="text" value="" size="50" name="form[Name]" id="Name" required  title="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_NAME_REQUIRED'); ?>">
+				</div>
+				<div class="bfi_form_txt">
+					<input placeholder="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_SURNAME'); ?> *" type="text" value="" size="50" name="form[Surname]" id="Surname" required  title="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_SURNAME_REQUIRED'); ?>">
+				</div>
+				<div class="bfi_form_txt">
+					<input placeholder="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_EMAIL'); ?> *" type="email" value="" size="50" name="form[Email]" id="Email" required  title="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_EMAIL_REQUIRED'); ?>">
+				</div>
+				<div class="bfi_form_txt">
+					<input placeholder="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_PHONE'); ?> *" type="text" value="" size="50" name="form[Phone]" id="Phone" required  title="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_PHONE_REQUIRED'); ?>">
+				</div>
+				<div class="bfi_form_txt">
+					<input placeholder="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_ADDRESS'); ?>" type="text" value="" size="50" name="form[Address]" id="Address"   title="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_ADDRESS_REQUIRED'); ?>">
+				</div>
+				<div class="bfi_form_txt">
+					<input placeholder="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_CAP'); ?>" type="text" value="" size="50" name="form[Cap]" id="Cap"   title="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_CAP_REQUIRED'); ?>">
+				</div>
+				<div class="bfi_form_txt">
+					<input placeholder="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_CITY'); ?>" type="text" value="" size="50" name="form[City]" id="City"   title="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_CITY_REQUIRED'); ?>">
+				</div>
+				<div class="bfi_form_txt">
+					<input placeholder="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_PROVINCIA'); ?>" type="text" value="" size="50" name="form[Provincia]" id="Provincia"   title="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_PROVINCIA_REQUIRED'); ?>">
+				</div>
+				<div class="bfi_form_txt">
+					<?php echo JHTML::_('select.genericlist',$cNationList, 'form[Nation]','','value', 'text', $nation) ?>
+				</div>
+<?php if(isset($resource)) {?>		
+				<div class="bfi-hide">
+					<?php echo $resource->Name; ?>
+				</div><!--/span-->
 				<input type="hidden" id="resourceId" name="form[resourceId]" value="<?php echo $resource->ResourceId;?>" > 
 <?php 
 $minCapacityPaxes = $resource->MinCapacityPaxes;
 $maxCapacityPaxes = $resource->MaxCapacityPaxes;
+if(empty($maxCapacityPaxes)) {
+	$maxCapacityPaxes = 10;
+}
+
  ?>
-<?php endif;  ?>
-		<?php if ($merchant->HasResources && $layout !== 'onsellunits' && $layout !== 'onsellunit' && $currentView !== 'onsellunit'):?>
-						
-					<div class="<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>6 inline-field-right">
-						<label><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_CHECKIN'); ?> </label>
-					<?php 
-						echo htmlHelper::calendar(
-							$checkin->format('m/d/Y'), 
-							'form[CheckIn]', 
-							$checkinId, 
-							'm/d/Y' /*input*/, 
-							'd/m/Y' /*output*/, 
-							'dd/mm/yy', 
-							array('class' => ''), 
-							true, 
-							array(
-							   'numberOfMonths' => 2,
-								'minDate' => '\'+0d\'',
-								'onClose' => 'function(dateText, inst) { jQuery(this).attr("disabled", false); }',
-								'beforeShow' => 'function(dateText, inst) { jQuery(this).attr("disabled", true); }',
-								'onSelect' => 'function(date) { checkDate'.$checkinId.'(jQuery, jQuery(this), date); }',
-								'changeMonth' => 'false',
-								'changeYear' => 'false'
-							)
-						) ?>
-					</div><!--/span-->
-					<div class="<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>6 inline-field-left">
-						<label><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_CHECKOUT'); ?> </label>
-							<?php 
-								echo htmlHelper::calendar(
-									$checkout->format('m/d/Y'), 
-									'form[CheckOut]', 
-									$checkoutId, 
-									'm/d/Y' /*input*/, 
-									'd/m/Y' /*output*/, 
-									'dd/mm/yy', 
-									array('class' => ''),
-									true, 
-									array(
-									   'numberOfMonths' => 2,
-										'onClose' => 'function(dateText, inst) { jQuery(this).attr("disabled", false); }',
-										'beforeShow' => 'function(dateText, inst) { jQuery(this).attr("disabled", true); }',
-										'minDate' => '\'+1d\'',
-										'changeMonth' => 'false',
-										'changeYear' => 'false'
-									)
-								) ?>
-					</div><!--/span-->
-					<div class="<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>12">
-						<label><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_TOTPERSONS'); ?> </label>
-							<?php echo JHTML::_('select.integerlist',$minCapacityPaxes,$maxCapacityPaxes,1, 'form[Totpersons]', null, 2)?>
-					</div><!--/span-->
-		<?php endif ?>	
-					<div class="<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>12">
-						<br />
-						<textarea placeholder="<?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_NOTES') ?>" name="form[note]" class="<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>12" style="height:200px;" ></textarea>    
+<?php }  ?>
+		<?php if ($merchant->HasResources && $layout !== 'onsellunits' && $layout !== 'onsellunit' && $resourceType !== 'onsellunit'){?>
+				<div class="bfi-row">   
+					<div class="bfi-col-md-6 bfi-inline-field-right">
+						<div class="bfi-inline-field"><label><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_CHECKIN'); ?> </label></div>
+						<input type="text" name="form[CheckIn]" id="<?php echo $checkinId ?>" value="<?php echo $checkin->format('d/m/Y') ?>" class="ui-datepicker-simple" />	
 					</div>
-					<div class="<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>12" style="display:none;">
-						<br />
-						<label id="mbfcPrivacyTitle">
-						<div class="pull-right" style="cursor:pointer;color:red">&nbsp;<i class="fa fa-times-circle" aria-hidden="true" onclick="jQuery('.agreeprivacy').popover('hide');"></i></div>
-						<?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_PRIVACY') ?>
-						</label>
-						<textarea id="mbfcPrivacyText" name="form[privacy]" class="<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>12" style="height:200px;" readonly ><?php echo $privacy ?></textarea>    
-					</div>
-					<div class="<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>12 checkbox-wrapper">
-						<input name="form[accettazione]" class="checkbox" id="agree" aria-invalid="true" aria-required="true" type="checkbox" required title="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_CONFIRM_ERROR'); ?>">
-						<label class="agreeprivacy"><?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_CONFIRM') ?></label>
+					<div class="bfi-col-md-6 bfi-inline-field-left">
+						<div class="bfi-inline-field"><label><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_CHECKOUT'); ?></label></div>
+						<input type="text" name="form[CheckOut]" id="<?php echo $checkoutId ?>" value="<?php echo $checkout->format('d/m/Y') ?>" class="ui-datepicker-simple" />	
 					</div>
 				</div>
-<?php
-JPluginHelper::importPlugin('captcha');
-$dispatcher = JDispatcher::getInstance();
-$dispatcher->trigger('onInit','recaptchabfconn');
-$recaptcha = $dispatcher->trigger('onDisplay', array(null, 'recaptchabfconn', 'class=""'));
-echo (isset($recaptcha[0])) ? $recaptcha[0] : '';
-?>
-<div id="recaptcha-error-bfconn" style="display:none"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_CAPTCHA_REQUIRED') ?></div>
-
-				<input type="hidden" id="actionform" name="actionform" value="formlabel" />
-				<input type="hidden" name="form[merchantId]" value="<?php echo $merchant->MerchantId;?>" > 
-				<input type="hidden" id="orderType" name="form[orderType]" value="<?php echo $orderType ?>" />
-				<input type="hidden" id="cultureCode" name="form[cultureCode]" value="<?php echo $language;?>" />
-				<input type="hidden" id="Fax" name="form[Fax]" value="" />
-				<input type="hidden" id="VatCode" name="form[VatCode]" value="" />
-				<input type="hidden" id="label" name="form[label]" value="" />
-				<input type="hidden" id="redirect" name="form[Redirect]" value="<?php echo $routeThanks;?>" />
+				<div class="bfi-inline-field-pers"><label><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_TOTPERSONS'); ?> </label></div>
+				<div class="bfi_form_txt">
+					<?php echo JHTML::_('select.integerlist',$minCapacityPaxes,$maxCapacityPaxes,1, 'form[Totpersons]', 'class="bfi_input_select"', 2)?>
+				</div>
+		<?php } ?>	
+		<div class="bfi-row">
+            <div class="bfi-col-md-12" style="padding:0;">
+              <textarea name="form[note]" style="height:200px;" class="bfi-col-md-12" placeholder="<?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_NOTES') ?>"></textarea>    
+            </div>
+			<div class="bfi-col-md-12" style="display:none;">
+				<br />
+				<label id="mbfcPrivacyTitle"><?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_PRIVACY') ?></label>
+				<textarea id="mbfcPrivacyText" name="form[privacy]" class="bfi-col-md-12" style="height:200px;" readonly ><?php echo $privacy ?></textarea>    
 			</div>
-			<button type="submit" ><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_BUTTONSUBMIT'); ?></button>
-		<script type="text/javascript">
-		<!--
+        </div>
+			
+		<div class="bfi-row">
+             <div class="bfi-col-md-12 bfi-checkbox-wrapper">
+		 	     <input name="form[accettazione]" class="checkbox" id="agree" aria-invalid="true" aria-required="true" type="checkbox" required title="<?php echo JTEXT::_('MOD_BOOKINGFORSEARCH_ERROR_REQUIRED') ?>">
+			     <label  class="bfi-agreeprivacy"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RATING_CONFIRM') ?></label>
+			</div>
+		</div><!--/row-->
+		<div class="bfi-row" style="display:none;">
+			<div class="bfi-col-md-12">
+				<label id="mbfcAdditionalPurposeTitle"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_ADDITIONALPURPOSE_TITLE') ?></label>
+				<textarea id="mbfcAdditionalPurposeText" name="form[additionalPurpose]" class="bfi-col-md-12" style="height:200px;" readonly ><?php echo $additionalPurpose ?></textarea>    
+			</div>
+		</div><!--/row-->
+		<div class="bfi-row" style="display:<?php echo empty($additionalPurpose)?"none":"";?>">
+			<div class="bfi-col-md-12 bfi-checkbox-wrapper">
+				<input name="form[accettazioneadditionalPurpose]" class="checkbox" id="agreeadditionalPurpose" aria-invalid="true" aria-required="true" required type="checkbox" title="<?php echo JTEXT::_('MOD_BOOKINGFORSEARCH_ERROR_REQUIRED') ?>">
+				<label class="agreeadditionalPurpose"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_ADDITIONALPURPOSE') ?></label>
+			</div>
+		</div>
+
+	<?php
+	JPluginHelper::importPlugin('captcha');
+	$dispatcher = JDispatcher::getInstance();
+	$dispatcher->trigger('onInit','recaptcha');
+	$recaptcha = $dispatcher->trigger('onDisplay', array(null, 'recaptcha', 'class=""'));
+	echo (isset($recaptcha[0])) ? $recaptcha[0] : '';
+	?>
+	<div id="recaptcha-error" style="display:none"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_CAPTCHA_REQUIRED') ?></div>
+
+			<input type="hidden" id="actionform" name="actionform" value="formlabel" />
+			<input type="hidden" name="form[merchantId]" value="<?php echo $merchant->MerchantId;?>" > 
+			<input type="hidden" id="orderType" name="form[orderType]" value="<?php echo $orderType ?>" />
+			<input type="hidden" id="cultureCode" name="form[cultureCode]" value="<?php echo $language;?>" />
+			<input type="hidden" id="Fax" name="form[Fax]" value="" />
+			<input type="hidden" id="VatCode" name="form[VatCode]" value="" />
+			<input type="hidden" id="label" name="form[label]" value="" />
+			<input type="hidden" id="redirect" name="form[Redirect]" value="<?php echo $routeThanks;?>" />
+			<input type="hidden" id="redirecterror" name="Redirecterror" value="<?php echo $routeThanksKo;?>" />
+			<input type="hidden" id="formCulture" name="form[Culture]" value="<?php echo $language;?>" />
+			<div ><button type="submit" class="bfi-btn"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_BUTTONSUBMIT'); ?></button></div>
+	</div>
+</form>
+
+<script type="text/javascript">
+<!--
+jQuery(function($){
+		jQuery(".opencontactform").click(function(e) {
+			jQuery(this).hide();
+			jQuery(".mod_bookingforconnector-contacts").slideDown("slow",function() {
+				if (jQuery.prototype.masonry){
+					jQuery('.main-siderbar, .main-siderbar1').masonry('reload');
+				}
+			});
+		});
+<?php if ($merchant->HasResources && $layout !== 'onsellunits' && $layout !== 'onsellunit' && $resourceType !== 'onsellunit'){?>
 		function checkDate<?php echo $checkinId?>($, obj, selectedDate) {
 			instance = obj.data("datepicker");
 			date = $.datepicker.parseDate(
@@ -371,76 +355,160 @@ echo (isset($recaptcha[0])) ? $recaptcha[0] : '';
 			d.setDate(d.getDate() + 1);
 			$("#<?php echo $checkoutId?>").datepicker("option", "minDate", d);
 		}
+
+		var <?php echo $checkinId?> = null;
+		jQuery(function($) {
+			<?php echo $checkinId?> = function() { $("#<?php echo $checkinId?>").datepicker({
+				defaultDate: "+2d"
+				,dateFormat: "dd/mm/yy"
+				, numberOfMonths: parseInt("<?php echo COM_BOOKINGFORCONNECTOR_MONTHINCALENDAR;?>")
+				, minDate: '+0d'
+				, onClose: function(dateText, inst) { jQuery(this).attr("disabled", false); }
+				, beforeShow: function(dateText, inst) { 
+					jQuery(this).attr("disabled", true);
+					jQuery(inst.dpDiv).addClass('bfi-calendar');
+					jQuery('#ui-datepicker-div').attr('data-before',"");
+					jQuery('#ui-datepicker-div').addClass("bfi-checkin");
+					jQuery('#ui-datepicker-div').removeClass("bfi-checkout");
+					setTimeout(function() {
+						jQuery("#ui-datepicker-div div.bfi-title").remove();
+						jQuery("#ui-datepicker-div").prepend( "<div class=\"bfi-title\">Check-in</div>" );
+					}, 1);
+					}
+				, onSelect: function(date) { checkDate<?php echo $checkinId?>(jQuery, jQuery(this), date); }
+				, changeMonth: false
+				, changeYear: false
+			})};
+			<?php echo $checkinId?>();
+		});
 		
-		jQuery( window ).resize(function() {
-		  jQuery('.agreeprivacy').popover('hide');
+		var <?php echo $checkoutId?> = null;
+		jQuery(function($) {
+			<?php echo $checkoutId?> = function() { $("#<?php echo $checkoutId?>").datepicker({
+				defaultDate: "+2d"
+				,dateFormat: "dd/mm/yy"
+				, numberOfMonths: parseInt("<?php echo COM_BOOKINGFORCONNECTOR_MONTHINCALENDAR;?>")
+				, onClose: function(dateText, inst) { jQuery(this).attr("disabled", false); }
+				, beforeShow: function(dateText, inst) { 
+					jQuery(this).attr("disabled", true); 
+					jQuery(inst.dpDiv).addClass('bfi-calendar');
+					jQuery('#ui-datepicker-div').attr('data-before',"");
+					jQuery('#ui-datepicker-div').removeClass("bfi-checkin");
+					jQuery('#ui-datepicker-div').addClass("bfi-checkout");
+					setTimeout(function() {
+						jQuery("#ui-datepicker-div div.bfi-title").remove();
+						jQuery("#ui-datepicker-div").prepend( "<div class=\"bfi-title\">Check-out</div>" );
+					}, 1);
+					}
+				, minDate: '+1d'
+				, changeMonth: false
+				, changeYear: false
+			})};
+			<?php echo $checkoutId?>();
+		});
+		jQuery(".merchantdetailscontacts .ui-datepicker-simple").click(function() {
+			jQuery(".ui-datepicker-calendar td").click(function() {
+				if (jQuery(this).hasClass('ui-state-disabled') == false) {
+					jQuery(".merchantdetailscontacts .ui-datepicker-simple").each(function() {
+						jQuery(this).addClass("activeclass");
+					});
+					jQuery(".merchantdetailscontacts .ui-datepicker-simple").removeClass("activeclass");
+					jQuery("#ui-datepicker-div").css("top", jQuery(this).offset().top + 5 + "px");
+				}
+			});
+		})
+		jQuery(".merchantdetailscontacts .ui-datepicker-simple").click(function() {
+			jQuery("#ui-datepicker-div").css("top", jQuery(this).offset().top + 5 + "px");
+			jQuery(".merchantdetailscontacts .ui-datepicker-simple").each(function() {
+				jQuery(this).removeClass("activeclass");
+			});
+			jQuery(this).addClass("activeclass");
 
 		});
+<?php } ?>	
 
-		jQuery(function($){
-			jQuery(".opencontactform").click(function(e) {
-				jQuery(this).hide();
-				jQuery(".mod_bookingforconnector-contacts").slideDown("slow",function() {
-					if (jQuery.prototype.masonry){
-						jQuery('.main-siderbar, .main-siderbar1').masonry('reload');
-					}
-				});
+		jQuery(".bfi-opencontactform").click(function(e) {
+			jQuery(this).hide();
+			jQuery(".bfi-contacts").slideDown("slow",function() {
+				if (jQuery.prototype.masonry){
+					jQuery('.main-siderbar, .main-siderbar1').masonry('reload');
+				}
 			});
+		});
 
-			jQuery('.agreeprivacy').popover({
-				title : jQuery("#mbfcPrivacyTitle").html(),
-				content : jQuery("#mbfcPrivacyText").val(),
-				container: "body",
-				placement:"top"
-			}); 
+		var bfi_wuiP_width= 400;
+		var bfi_wuiP_height= 350;
+		if(jQuery(window).width()<bfi_wuiP_width){
+			bfi_wuiP_width = jQuery(window).width()*0.9;
+		}
+		if(jQuery(window).height()<bfi_wuiP_height){
+			bfi_wuiP_height = jQuery(window).height()*0.9;
+		}
 
+		jQuery('.bfi-agreeprivacy').webuiPopover({
+			title : jQuery("#mbfcPrivacyTitle").html(),
+			content : bookingfor.nl2br(jQuery("#mbfcPrivacyText").val()),
+			width:bfi_wuiP_width,
+			height:bfi_wuiP_height,
+			container: "body",
+			placement:"top",
+			style:'bfi-webuipopover'
+		}); 
+		jQuery('.agreeadditionalPurpose').webuiPopover({
+			title : jQuery("#mbfcAdditionalPurposeTitle").html(),
+			content :  bookingfor.nl2br(jQuery("#mbfcAdditionalPurposeText").val()),
+			width:bfi_wuiP_width,
+			height:bfi_wuiP_height,
+			container: "body",
+			placement:"top",
+			style:'bfi-webuipopover'
+		}); 
+		jQuery( window ).resize(function() {
+		  jQuery('.bfi-agreeprivacy').webuiPopover('hide');
+		  jQuery('.agreeadditionalPurpose').webuiPopover('hide');
+		});
 
-			
-					$("#merchantdetailscontacts").validate(
-					{
-						invalidHandler: function(form, validator) {
-							var errors = validator.numberOfInvalids();
-							if (errors) {
-								/*alert(validator.errorList[0].message);*/
-								validator.errorList[0].element.focus();
-							}
-						},
-						//errorPlacement: function(error, element) { //just nothing, empty  },
-						highlight: function(label) {
-							//$(label).removeClass('error').addClass('error');
-							//$(label).closest('.control-group').removeClass('error').addClass('error');
-						},
-						success: function(label) {
-							//label.addClass("valid").text("Ok!");
-		//					$(label).remove();
-							//label.hide();
-							//label.removeClass('error');
-							//label.closest('.control-group').removeClass('error');
-						},
-						submitHandler: function(form) {
-							if (typeof grecaptcha === 'object') {
-								var response = grecaptcha.getResponse('recaptchabfconn');
-								//recaptcha failed validation
-								if(response.length == 0) {
-									$('#recaptcha-error-bfconn').show();
-									return false;
-								}
-								//recaptcha passed validation
-								else {
-									$('#recaptcha-error').hide();
-								}					 
-							}
-							form.submit();
-						}
+		$("#<?php echo $idform ?>").validate(
+		{
+			invalidHandler: function(form, validator) {
+				var errors = validator.numberOfInvalids();
+				if (errors) {
+					/*alert(validator.errorList[0].message);*/
+					validator.errorList[0].element.focus();
+				}
+			},
+			//errorPlacement: function(error, element) { //just nothing, empty  },
+			highlight: function(label) {
+				//$(label).removeClass('error').addClass('error');
+				//$(label).closest('.control-group').removeClass('error').addClass('error');
+			},
+			success: function(label) {
+				//label.addClass("valid").text("Ok!");
+//					$(label).remove();
+				//label.hide();
+				//label.removeClass('error');
+				//label.closest('.control-group').removeClass('error');
+			},
+			submitHandler: function(form) {
+				if (typeof grecaptcha === 'object') {
+					var response = grecaptcha.getResponse();
+					//recaptcha failed validation
+					if(response.length == 0) {
+						$('#recaptcha-error').show();
+						return false;
+					}
+					//recaptcha passed validation
+					else {
+						$('#recaptcha-error').hide();
+					}					 
+				}
+				form.submit();
+			}
 
-					});
-				});
-
-
-			//-->
-			</script>	
-		</form>
+		});
+	});
+//-->
+</script>
 	</div>
 </div>	<!-- inner -->
 </div>	<!-- module -->
-<?php } ?>

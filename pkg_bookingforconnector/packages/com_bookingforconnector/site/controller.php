@@ -9,10 +9,7 @@
 defined('_JEXEC') or die('Restricted access');
 
 // import Joomla controller library
-jimport('joomla.application.component.controller');
 require_once( JPATH_COMPONENT. DIRECTORY_SEPARATOR .'helpers/BFCHelper.php' );
-require_once( JPATH_COMPONENT. DIRECTORY_SEPARATOR .'helpers/FormHelper.php' );
-require_once( JPATH_COMPONENT. DIRECTORY_SEPARATOR .'helpers/RSFormHelper.php' );
 /**
  * Hello World Component Controller
  */
@@ -73,7 +70,7 @@ class BookingForConnectorController extends JControllerLegacy
 		if(empty($formData)){
 		}
 		$ccdata = null;
-		$ccdata = json_encode(RSFormHelper::getCCardData($formData));
+		$ccdata = json_encode(BFCHelper::getCCardData($formData));
 		$ccdata = BFCHelper::encrypt($ccdata);
 		$orderId=BFCHelper::getVar('OrderId');
 		$order = BFCHelper::updateCCdata(
@@ -98,7 +95,7 @@ class BookingForConnectorController extends JControllerLegacy
 
 		if(empty($formData)){
 		}
-		$customer = RSFormHelper::getCustomerData($formData);
+		$customer = BFCHelper::getCustomerData($formData);
 
 		$suggestedStay = json_decode($formData['staysuggested']);
 		$req = json_decode($formData['stayrequest'], true);
@@ -117,10 +114,10 @@ class BookingForConnectorController extends JControllerLegacy
 //					."|"."accettazione:".$formData['confirmprivacy'];
 		
 		$ccdata = null;
-		if (RSFormHelper::canAcquireCCData($formData)) { 
-			$ccdata = json_encode(RSFormHelper::getCCardData($formData));
+		if (BFCHelper::canAcquireCCData($formData)) { 
+			$ccdata = json_encode(BFCHelper::getCCardData($formData));
 			$ccdata = BFCHelper::encrypt($ccdata);
-//			$ccdata = RSFormHelper::getCCardData($formData);
+//			$ccdata = BFCHelper::getCCardData($formData);
 			}
 		$orderData =  BFCHelper::prepareOrderData($formData, $customer, $suggestedStay, $otherData, $ccdata);
 		$orderData['pricetype'] = $req['pricetype'];
@@ -352,14 +349,14 @@ class BookingForConnectorController extends JControllerLegacy
 //			}
 //		}
 //		if($checkrecaptcha){
-		$customer = RSFormHelper::getCustomerData($formData);
+		$customer = BFCHelper::getCustomerData($formData);
 		$suggestedStay = null;
 		$redirect = $formData['Redirect'];
 		// create otherData (string)
-		$numAdults = RSFormHelper::getOptionsFromSelect($formData,'Totpersons');
+		$numAdults = BFCHelper::getOptionsFromSelect($formData,'Totpersons');
 		
 		$otherData = "persone:".$numAdults."|"
-			."accettazione:".RSFormHelper::getOptionsFromSelect($formData,'accettazione');
+			."accettazione:".BFCHelper::getOptionsFromSelect($formData,'accettazione');
 		// create SuggestedStay
 		$startDate = null;
 		$endDate = null;
@@ -445,13 +442,13 @@ class BookingForConnectorController extends JControllerLegacy
 //		}else{
 
 
-		$customer = RSFormHelper::getCustomerData($formData);
+		$customer = BFCHelper::getCustomerData($formData);
 		$suggestedStay = null;
 		$redirect = $formData['Redirect'];
 		// create otherData (string)
-		$otherData = "persone:".RSFormHelper::getOptionsFromSelect($formData,'Totpersons')."|"
-			."accettazione:".RSFormHelper::getOptionsFromSelect($formData,'accettazione');
-		$numAdults = RSFormHelper::getOptionsFromSelect($formData,'Totpersons');
+		$otherData = "persone:".BFCHelper::getOptionsFromSelect($formData,'Totpersons')."|"
+			."accettazione:".BFCHelper::getOptionsFromSelect($formData,'accettazione');
+		$numAdults = BFCHelper::getOptionsFromSelect($formData,'Totpersons');
 		// create SuggestedStay
 		$startDate = null;
 		$endDate = null;
@@ -537,7 +534,7 @@ class BookingForConnectorController extends JControllerLegacy
 	function sendOnSellrequest(){ //Richiesta informazioni Vendita (infoRequestB)
 		$formData = BFCHelper::getArray('form');
 
-		$customer = RSFormHelper::getCustomerData($formData);
+		$customer = BFCHelper::getCustomerData($formData);
 		$suggestedStay = null;
 		$redirect = $formData['Redirect'];
 		$redirecterror = $formData['Redirecterror'];
@@ -564,7 +561,7 @@ class BookingForConnectorController extends JControllerLegacy
 				$otherData["onsellunitid:"] = "onsellunitid:" . $formData['resourceId'];
 		}
 		if (!empty($formData['accettazione']))  {
-				$otherData["accettazione:"] = "accettazione:" . RSFormHelper::getOptionsFromSelect($formData,'accettazione');
+				$otherData["accettazione:"] = "accettazione:" . BFCHelper::getOptionsFromSelect($formData,'accettazione');
 		}
 		
 				
@@ -618,7 +615,7 @@ class BookingForConnectorController extends JControllerLegacy
 	function sendOffer(){ //Richiesta informazioni pacchetto (in divenire) (infoRequestE)
 		$formData = BFCHelper::getArray('form');
 
-		$customer = RSFormHelper::getCustomerData($formData);
+		$customer = BFCHelper::getCustomerData($formData);
 		$suggestedStay = null;
 		$paxages = BFCHelper::getStayParam('paxages');
 		$redirect = $formData['Redirect'];
@@ -627,7 +624,7 @@ class BookingForConnectorController extends JControllerLegacy
 		// create otherData (string)
 		$otherData = 'offerId:'.$formData['offerId']."|"		
 					."persone:".$formData['persons']."|"
-					."accettazione:".RSFormHelper::getOptionsFromSelect($formData,'accettazione')."|"
+					."accettazione:".BFCHelper::getOptionsFromSelect($formData,'accettazione')."|"
 					."paxages:". implode(',',$paxages)."|"
 					."checkin_eta_hour:".$formData['checkin_eta_hour'];
 		
@@ -712,18 +709,18 @@ class BookingForConnectorController extends JControllerLegacy
 	function sendScalarRequest(){
 		$formData = BFCHelper::getArray('form');
 
-		$customer = RSFormHelper::getCustomerData($formData);
+		$customer = BFCHelper::getCustomerData($formData);
 
 		$redirect = $formData['Redirect'];
 
 // create otherData (string)
-		$otherData = "adulti:".RSFormHelper::getOptionsFromSelect($formData,'TotPersons')."|"
-			."bambini:".RSFormHelper::getOptionsFromSelect($formData,'Totchildrens')."|"
+		$otherData = "adulti:".BFCHelper::getOptionsFromSelect($formData,'TotPersons')."|"
+			."bambini:".BFCHelper::getOptionsFromSelect($formData,'Totchildrens')."|"
 			."etabambini:".$formData['ChildrenAge']."|"
-			."tipologiastruttura:".RSFormHelper::getOptionsFromSelect($formData,'merchantcategory')."|"
-			."trattamento:".RSFormHelper::getOptionsFromSelect($formData,'treatments')."|"
-			."maxrisposte:".RSFormHelper::getOptionsFromSelect($formData,'Maxresponse')."|"
-			."accettazione:".RSFormHelper::getOptionsFromSelect($formData,'accettazione');
+			."tipologiastruttura:".BFCHelper::getOptionsFromSelect($formData,'merchantcategory')."|"
+			."trattamento:".BFCHelper::getOptionsFromSelect($formData,'treatments')."|"
+			."maxrisposte:".BFCHelper::getOptionsFromSelect($formData,'Maxresponse')."|"
+			."accettazione:".BFCHelper::getOptionsFromSelect($formData,'accettazione');
 
 		$suggestedStay = null;
 		// create SuggestedStay
@@ -942,7 +939,7 @@ class BookingForConnectorController extends JControllerLegacy
 	
 	}
 	function GetCondominiumsByIds(){
-		$listsId=BFCHelper::getVar('condominiumsId');
+		$listsId=BFCHelper::getVar('ids');
 		$language=BFCHelper::getVar('language');
 		$return = BFCHelper::GetCondominiumsByIds($listsId,$language);
 		echo $return;      
@@ -974,10 +971,21 @@ class BookingForConnectorController extends JControllerLegacy
 		if (!empty($return)){
 				$return = json_encode($return);
 		}
-		echo $return;      
+		echo json_encode($return);      
 		$app = JFactory::getApplication();
 		$app->close();
 	}
+
+	function getResourceGroups(){
+		$return = BFCHelper::getTags("","4"); //getTags
+		if (!empty($return)){
+				$return = json_encode($return);
+		}
+		echo json_encode($return);      
+		$app = JFactory::getApplication();
+		$app->close();
+	}
+
 
 	function getMerchantGroupsByMerchantId(){
 		$merchantId=BFCHelper::getVar('merchantid');
@@ -1173,7 +1181,7 @@ class BookingForConnectorController extends JControllerLegacy
  		
 //		//Creazione utente se non esistente
 
-		$customer = RSFormHelper::getCustomerData($formData);
+		$customer = BFCHelper::getCustomerData($formData);
 
 		$userNotes = $formData['note'];
 		$cultureCode = $formData['cultureCode'];
@@ -1184,6 +1192,21 @@ class BookingForConnectorController extends JControllerLegacy
 		$bookingTypeSelected = $formData['bookingtypeselected'];
 
 		$suggestedStays =  BFCHelper::CreateOrder($OrderJson,$cultureCode,$bookingTypeSelected);
+
+		$listCartorderid = array();
+		// recupero tutti i cartorderid per la cancellazione del carrello
+// WP =>			$orderModel = json_decode(stripslashes($OrderJson));
+			$orderModel = json_decode($OrderJson);
+            if ($orderModel->Resources != null && count($orderModel->Resources) > 0 )
+            {
+                foreach ($orderModel->Resources as $resource)
+                {
+					if(!empty($resource->CartOrderId)){
+						$listCartorderid[] = $resource->CartOrderId;
+					}
+				}
+			}
+		$listCartorderidstr = implode(",",$listCartorderid);
 
 //		$suggestedStay = json_decode(stripslashes($formData['staysuggested']));
 //		$req = json_decode(stripslashes($formData['stayrequest']), true);
@@ -1199,8 +1222,8 @@ class BookingForConnectorController extends JControllerLegacy
 //		$customerDatas = array($customerData);
 
 		$ccdata = null;
-		if (RSFormHelper::canAcquireCCData($formData)) { 
-			$ccdata = json_encode(RSFormHelper::getCCardData($formData));
+		if (BFCHelper::canAcquireCCData($formData)) { 
+			$ccdata = json_encode(BFCHelper::getCCardData($formData));
 			$ccdata = BFCHelper::encrypt($ccdata);
 			}
 
@@ -1217,14 +1240,20 @@ class BookingForConnectorController extends JControllerLegacy
 				);
 
 //		$orderData =  BFCHelper::prepareOrderData($formData, $customer, $suggestedStay, $otherData, $ccdata);
-//		$orderData['pricetype'] = $req['pricetype'];
+		$orderData['pricetype'] = "";
+		if(isset($formData['pricetype'])){
+			$orderData['pricetype'] = $formData['pricetype'];
+		}
 		$orderData['label'] = $formData['label'];
 		$orderData['checkin_eta_hour'] = $formData['checkin_eta_hour'];
+		$orderData['merchantBookingTypeId'] = $formData['bookingtypeselected'];
+		$orderData['policyId'] = $formData['policyId'];
 
 		$processOrder = null;
 		if(!empty($isgateway) && ($isgateway =="true" ||$isgateway =="1")){
 			$processOrder=false;
 		}
+
 
 		$order = BFCHelper::setOrder(
                 $orderData['customerData'], 
@@ -1237,7 +1266,9 @@ class BookingForConnectorController extends JControllerLegacy
                 $orderData['label'], 
                 $orderData['cultureCode'], 
 				$processOrder,
-				''//$orderData['pricetype']
+				$orderData['pricetype'],
+				$orderData['merchantBookingTypeId'],
+				$orderData['policyId']
                 );
 
 		if (empty($order)){
@@ -1245,6 +1276,18 @@ class BookingForConnectorController extends JControllerLegacy
 			$redirect = $redirecterror;
 		}
 		if (!empty($order)){
+			// cancello il carrello
+			BFCHelper::setSession('hdnBookingType', '', 'bfi-cart');
+			BFCHelper::setSession('hdnOrderData', '', 'bfi-cart');
+			if(!empty($listCartorderidstr)){
+				$tmpUserId = BFCHelper::bfi_get_userId();
+				$currCart = BFCHelper::DeleteFromCartByExternalUser($tmpUserId, $cultureCode, $listCartorderidstr);
+//				$tmpUserId = bfi_get_userId();
+//				$model = new BookingForConnectorModelOrders;
+//				$currCart = $model->DeleteFromCartByExternalUser($tmpUserId, $cultureCode, $listCartorderidstr);
+			}	
+
+			
 			if(!empty($isgateway) && ($isgateway =="true" ||$isgateway =="1")){
 //WP->			$payment_page = get_post( bfi_get_page_id( 'payment' ) );
 //			$url_payment_page = get_permalink( $payment_page->ID );
@@ -1254,12 +1297,14 @@ class BookingForConnectorController extends JControllerLegacy
 			$redirect = JRoute::_('index.php?view=payment&orderId=' . $order->OrderId);
 
 			}else{
-//				$numAdults = 0;
-//				$persons= explode("|", $suggestedStay->Paxes);
-//				foreach($persons as $person) {
-//					$totper = explode(":", $person);
-//					$numAdults += (int)$totper[1];
-//				}
+				$numAdults = 0;
+				if(isset($suggestedStays->Paxes)){
+					$persons= explode("|", $suggestedStays->Paxes);
+					foreach($persons as $person) {
+						$totper = explode(":", $person);
+						$numAdults += (int)$totper[1];
+					}
+				}
 
 				$act = "OrderResource";
 				if(!empty($order->OrderType) && strtolower($order->OrderType) =="b"){
@@ -1283,7 +1328,7 @@ class BookingForConnectorController extends JControllerLegacy
 				 . '&totalamount=' . ($order->TotalAmount *100)
 				 . '&startDate=' . $startDate->format('Y-m-d')
 				 . '&endDate=' . $endDate->format('Y-m-d')
-//				 . '&numAdults=' . $numAdults
+				 . (!empty($numAdults)?'&numAdults=' . $numAdults:"")
 				;
 			}
 //			$urlredirpayment = JRoute::_('index.php?view=payment&orderId=' . $order->OrderId);
@@ -1298,18 +1343,14 @@ class BookingForConnectorController extends JControllerLegacy
 	}
 	
 	function addToCart(){
-		$OrderJson = stripslashes(BFCHelper::getVar("hdnOrderData"));
+		//clear session data from request
+		BFCHelper::setSession('hdnBookingType', '', 'bfi-cart');
+		BFCHelper::setSession('hdnOrderData', '', 'bfi-cart');
+//WP->		$OrderJson = stripslashes(BFCHelper::getVar("hdnOrderData"));
+		$OrderJson = (BFCHelper::getVar("hdnOrderData"));
 		$language = isset($_REQUEST['language']) ? $_REQUEST['language'] : '' ;
 		$return = null;
 		if(!empty($OrderJson)){
-			$recalculateOrder=BFCHelper::getVar("recalculateOrder");
-			if ($recalculateOrder == "1") {
-				$bookingType = stripslashes(BFCHelper::getVar("hdnBookingType"));
-				$currorder = BFCHelper::calculateOrder($OrderJson,$language,$bookingType);
-				$currorder->SearchModel->FromDate = $currorder->SearchModel->FromDate->format('d/m/Y');
-				$currorder->SearchModel->ToDate = $currorder->SearchModel->ToDate->format('d/m/Y');
-				$OrderJson = stripslashes(json_encode( $currorder ));
-			}			
 			$tmpUserId = BFCHelper::bfi_get_userId();
 			$currCart = BFCHelper::AddToCartByExternalUser($tmpUserId, $language, $OrderJson);
 			if(!empty($currCart)){
@@ -1323,7 +1364,7 @@ class BookingForConnectorController extends JControllerLegacy
 
 	function DeleteFromCart(){
 		$return = null;
-		$CartOrderId = stripslashes(BFCHelper::getVar("CartOrderId"));
+		$CartOrderId = stripslashes(BFCHelper::getVar("bfi_CartOrderId"));
 		$language = isset($_REQUEST['language']) ? $_REQUEST['language'] : '' ;
 		$redirect = JURI::root();
 		if(!empty($CartOrderId)){
@@ -1333,7 +1374,7 @@ class BookingForConnectorController extends JControllerLegacy
 //			$url_cart_page = get_permalink( $cartdetails_page->ID );
 //			wp_redirect($url_cart_page);
 //			exit;
-			$redirect = JRoute::_('index.php?view=cart');
+			$redirect = JRoute::_('index.php?option=com_bookingforconnector&view=cart');
 
 //			if(!empty($currCart)){
 //				$return = json_encode($currCart);
@@ -1354,8 +1395,170 @@ class BookingForConnectorController extends JControllerLegacy
 //		exit;
 	}
 
+	public function SearchByText() {
+		$return = '[]';
+		$term = stripslashes(BFCHelper::getVar("bfi_term"));
+		$maxresults = stripslashes(BFCHelper::getVar("bfi_maxresults"));
+		$onlyLocations = stripslashes(BFCHelper::getVar("bfi_onlyLocations"));
+		if(!isset($maxresults) || empty($maxresults)) {
+			$maxresults = 5;
+		} else {
+			$maxresults = (int)$maxresults;
+		}
+		$language = isset($_REQUEST['language']) ? $_REQUEST['language'] : '' ;
+		if(!empty($term)) {
+//			$model = new BookingForConnectorModelSearch;
+//			$results = $model->SearchResult($term, $language, $maxresults, $onlyLocations);
+			$results = BFCHelper::SearchByText($term, $language, $maxresults, $onlyLocations);
+			if(!empty($results)){
+				$return = json_encode($results);
+			}
+		}
+		echo $return;      
+		$app = JFactory::getApplication();
+		$app->close();
+	}
 
-}
+	function searchjson(){
+		bfi_setSessionFromSubmittedData();
+//		$model = new BookingForConnectorModelSearch;
+		JModelLegacy::addIncludePath(JPATH_ROOT. DIRECTORY_SEPARATOR .'components' . DIRECTORY_SEPARATOR . 'com_bookingforconnector'. DIRECTORY_SEPARATOR . 'models', 'BookingForConnectorModel');
+		$model = JModelLegacy::getInstance('Search', 'BookingForConnectorModel');
+		$items = $model->getItems(true,true);
+		echo $items;	
+		$app = JFactory::getApplication();
+		$app->close();
+	}
+
+	function searchonselljson(){
+		bfi_setSessionFromSubmittedData();
+//		$model = new BookingForConnectorModelSearch;
+		JModelLegacy::addIncludePath(JPATH_ROOT. DIRECTORY_SEPARATOR .'components' . DIRECTORY_SEPARATOR . 'com_bookingforconnector'. DIRECTORY_SEPARATOR . 'models', 'BookingForConnectorModel');
+		$model = JModelLegacy::getInstance('SearchOnSell', 'BookingForConnectorModel');
+		$items = $model->getItems(true,true);
+		echo $items;	
+		$app = JFactory::getApplication();
+		$app->close();
+	}
+
+	function getmarketinfomerchant(){
+		$resource_id=BFCHelper::getVar('merchantId');
+		$language=BFCHelper::getVar('language');
+		$merchant = BFCHelper::getMerchantFromServicebyId($resource_id);
+		$merchantName = BFCHelper::getLanguage($merchant->Name, $language, null, array('ln2br'=>'ln2br', 'striptags'=>'striptags')); 
+		$indirizzo = isset($merchant->AddressData->Address)?$merchant->AddressData->Address:"";
+		$cap = isset($merchant->AddressData->ZipCode)?$merchant->AddressData->ZipCode:""; 
+		$comune = isset($merchant->AddressData->CityName)?$merchant->AddressData->CityName:"";
+		$stato = isset($merchant->AddressData->StateName)?$merchant->AddressData->StateName:"";
+		
+		$db   = JFactory::getDBO();
+		$uri  = 'index.php?option=com_bookingforconnector&view=merchantdetails';
+		$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uri ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
+		$itemId = intval($db->loadResult());
+		$currUriMerchant = $uri.'&merchantId=' . $merchant->MerchantId . ':' . BFCHelper::getSlug($merchantName);
+		if ($itemId<>0)
+			$currUriMerchant.='&Itemid='.$itemId;
+		$routeMerchant = JRoute::_($currUriMerchant.'&fromsearch=1');
+
+//		$accommodationdetails_page = get_post( bfi_get_page_id( 'accommodationdetails' ) );
+//		$url_resource_page = get_permalink( $accommodationdetails_page->ID );
+
+		$output = '<div class="bfi-mapdetails">
+					<div class="bfi-item-title">
+						<a href="'.$routeMerchant.'" target="_blank">'.$merchant->Name.'</a> 
+					</div>
+					<div class="bfi-item-address"><span class="street-address">'.$indirizzo .'</span>, <span class="postal-code ">'.$cap .'</span> <span class="locality">'.$comune .'</span>, <span class="region">'.$stato .'</span></div>
+				</div>';    
+		die($output);    	
+	}
+
+	function getmarketinforesource(){
+		$resource_id=BFCHelper::getVar('resourceId');
+		$language=BFCHelper::getVar('language');
+		$resource = BFCHelper::GetResourcesById($resource_id);
+		$merchant = $resource->Merchant;
+		$resourceName = BFCHelper::getLanguage($resource->Name, $language, null, array('ln2br'=>'ln2br', 'striptags'=>'striptags')); 
+		$indirizzo = isset($resource->Address)?$resource->Address:"";
+		$cap = isset($resource->ZipCode)?$resource->ZipCode:""; 
+		$comune = isset($resource->CityName)?$resource->CityName:"";
+		$stato = isset($resource->StateName)?$resource->StateName:"";
+		
+		$db   = JFactory::getDBO();
+		$uri  = 'index.php?option=com_bookingforconnector&view=resource';
+		$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uri ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
+		$itemId = intval($db->loadResult());
+		$currUriresource = $uri.'&resourceId=' . $resource->ResourceId . ':' . BFCHelper::getSlug($resourceName);
+		if ($itemId<>0)
+			$currUriresource.='&Itemid='.$itemId;
+		if (!empty($resource->RateplanId)){
+			 $currUriresource .= "&pricetype=" . $resource->RateplanId;
+		}
+		$resourceRoute = JRoute::_($currUriresource.'&fromsearch=1');
+
+//		$accommodationdetails_page = get_post( bfi_get_page_id( 'accommodationdetails' ) );
+//		$url_resource_page = get_permalink( $accommodationdetails_page->ID );
+
+		$output = '<div class="bfi-mapdetails">
+					<div class="bfi-item-title">
+						<a href="'.$resourceRoute.'" target="_blank">'.$resource->Name.'</a> 
+					</div>
+					<div class="bfi-item-address"><span class="street-address">'.$indirizzo .'</span>, <span class="postal-code ">'.$cap .'</span> <span class="locality">'.$comune .'</span>, <span class="region">'.$stato .'</span></div>
+				</div>';    
+		die($output);    	
+	}
+	function getmarketinfocondominium(){
+		$resource_id=BFCHelper::getVar('resourceId');
+		$language=BFCHelper::getVar('language');
+		$resource = BFCHelper::getCondominiumFromServicebyId($resource_id);
+		$resourceName = BFCHelper::getLanguage($resource->Name, $language, null, array('ln2br'=>'ln2br', 'striptags'=>'striptags')); 
+		$indirizzo = isset($resource->Address)?$resource->Address:"";
+		$cap = isset($resource->ZipCode)?$resource->ZipCode:""; 
+		$comune = isset($resource->CityName)?$resource->CityName:"";
+		$stato = isset($resource->StateName)?$resource->StateName:"";
+		
+		$db   = JFactory::getDBO();
+		$uri  = 'index.php?option=com_bookingforconnector&view=condominium';
+		$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uri ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
+		$itemId = intval($db->loadResult());
+		$currUriresource = $uri.'&resourceId=' . $resource->CondominiumId . ':' . BFCHelper::getSlug($resourceName);
+		if ($itemId<>0)
+			$currUriresource.='&Itemid='.$itemId;
+		$resourceRoute = JRoute::_($currUriresource.'&fromsearch=1');
+
+//		$condominiumdetails_page = get_post( bfi_get_page_id( 'condominiumdetails' ) );
+//		$url_condominium_page = get_permalink( $condominiumdetails_page->ID );
+//		$routeCondominium = $url_condominium_page . $resource->CondominiumId.'-'.BFI()->seoUrl($resource->Name);
+
+		$output = '<div class="bfi-mapdetails">
+					<div class="bfi-item-title">
+						<a href="'.$resourceRoute.'" target="_blank">'.$resource->Name.'</a> 
+					</div>
+					<div class="bfi-item-address"><span class="street-address">'.$indirizzo .'</span>, <span class="postal-code ">'.$cap .'</span> <span class="locality">'.$comune .'</span>, <span class="region">'.$stato .'</span></div>
+				</div>';    
+		die($output);    	
+	}
+
+	function GetServicesByIds(){
+		$listsId=isset($_REQUEST['ids']) ? $_REQUEST['ids'] : '' ;  
+		$language= isset($_REQUEST['language']) ? $_REQUEST['language'] : '' ;
+		$return = BFCHelper::GetServicesByIds($listsId,$language);
+		echo json_encode($return);      	
+		$app = JFactory::getApplication();
+		$app->close();
+	}
+
+	public function bfi_change_currency(){ 
+		$return = "";
+		if(isset($_REQUEST['bfiselectedcurrency'])){ 
+			$return = bfi_set_currentCurrency($_REQUEST['bfiselectedcurrency']);
+		} 
+		echo json_encode($return);      	
+		$app = JFactory::getApplication();
+		$app->close();
+	} 
+
+
+}	
 
 
 

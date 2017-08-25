@@ -123,30 +123,34 @@ class plgSearchBookingforconnectorResource extends JPlugin
 		$rows = array();
 
 		$resources = BFCHelper::getResourcesSearch($text,0,$limit,$order,$direction);
-		$document 	= JFactory::getDocument();
-		$language 	= $document->getLanguage();
-		
-		/* we have to find the itemid for the target page */ 
-		$db   = JFactory::getDBO();
-		$lang = JFactory::getLanguage()->getTag();
-		$uri  = 'index.php?option=com_bookingforconnector&view=resource';
-		
-		$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uri .'%' ) .' AND language='. $db->Quote($lang) .' LIMIT 1' );
-		
-		$itemId = ($db->getErrorNum())? 0 : intval($db->loadResult());
-		
-		//The 'output' of the displayed link
-		foreach($resources as $resource) {
-			//$rows[$key]->href = 'index.php?option=com_bookingforconnector&view=merchantdetails&merchantId=' . $merchant->MerchantId . ':' . BFCHelper::getSlug($merchant->Name);
-			$resourceName = BFCHelper::getLanguage($resource->Name, $language);
-			$rows[] = (object) array(
-					'href'        => Jroute::_('index.php?Itemid='.$itemId.'&option=com_bookingforconnector&view=resource&resourceId=' . $resource->ResourceId . ':' . BFCHelper::getSlug($resourceName)),
-					'title'       => $resourceName,
-					'created'     => null,
-					'section'     => $section,
-					'text'        => BFCHelper::getLanguage($resource->Description, $language, null, array('ln2br'=>'ln2br', 'striptags'=>'striptags')),
-					'browsernav'  => '0'
-					);
+		if(!empty( $resources  )){
+			$document 	= JFactory::getDocument();
+			$language 	= $document->getLanguage();
+				
+					
+			/* we have to find the itemid for the target page */ 
+			$db   = JFactory::getDBO();
+			$lang = JFactory::getLanguage()->getTag();
+			$uri  = 'index.php?option=com_bookingforconnector&view=resource';
+			
+			$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uri .'%' ) .' AND (language='. $db->Quote($lang) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
+			
+			$itemId = ($db->getErrorNum())? 0 : intval($db->loadResult());
+			
+			//The 'output' of the displayed link
+			foreach($resources as $resource) {
+				//$rows[$key]->href = 'index.php?option=com_bookingforconnector&view=merchantdetails&merchantId=' . $merchant->MerchantId . ':' . BFCHelper::getSlug($merchant->Name);
+				$resourceName = BFCHelper::getLanguage($resource->ResName, $language);
+				$resource->Description = "";
+				$rows[] = (object) array(
+						'href'        => Jroute::_('index.php?Itemid='.$itemId.'&option=com_bookingforconnector&view=resource&resourceId=' . $resource->ResourceId . ':' . BFCHelper::getSlug($resourceName)),
+						'title'       => $resourceName,
+						'created'     => null,
+						'section'     => $section,
+						'text'        => BFCHelper::getLanguage($resource->Description, $language, null, array('ln2br'=>'ln2br', 'striptags'=>'striptags')),
+						'browsernav'  => '0'
+						);
+			}
 		}
 
 		//Return the search results in an array

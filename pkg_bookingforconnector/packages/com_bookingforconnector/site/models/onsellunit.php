@@ -34,9 +34,9 @@ class BookingForConnectorModelOnSellUnit extends JModelItem
 	{
 		parent::__construct($config);
 		$this->helper = new wsQueryHelper(COM_BOOKINGFORCONNECTOR_WSURL, COM_BOOKINGFORCONNECTOR_APIKEY);
-		$this->urlResource = '/ResourceonsellView(%d)'; //GetResourceOnSellById
-		$this->urlUnitServices = '/ResourceonsellView(%d)/Unit/Services'; //GetResourceOnSellServicesByResourceId
-		$this->urlUnit = '/ResourceonsellView(%d)'; //GetResourceOnSellById
+		$this->urlResource = '/GetResourceOnSellByIdSimple';
+		$this->urlUnitServices = '/GetResourceOnSellServicesByResourceId';
+		$this->urlUnit = '/GetResourceOnSellByIdSimple';
 		$this->urlUnits = '/ResourceonsellView'; //NON UTILIZZATO
 		$this->urlResourceCounter = '/OnSellUnitCounter';
 	}
@@ -78,65 +78,60 @@ class BookingForConnectorModelOnSellUnit extends JModelItem
 		return $res;
 	}	
 
-	public function getResourceFromService() {
-		$params = $this->getState('params');
-		$resourceId = $params['resourceId'];
-		$resourceIdRef = $params['resourceId'];
+	public function getResourceFromServicebyId($resourceId, $language ="") {
+		$resourceId = $resourceId;
+		$resourceIdRef = $resourceId;
+		if(empty( $language )){
+			$language = JFactory::getLanguage()->getTag();
+		}
+		
 		$options = array(
-				'path' => sprintf($this->urlResource, $resourceId),
+				'path' => $this->urlResource,
 				'data' => array(
-					'$format' => 'json'
-					//,'$expand' => 'Merchant,Services'
-					//,'$expand' => 'Merchant/MerchantType,OnSellUnit/Services'
+					'$format' => 'json',
+					'cultureCode' => BFCHelper::getQuotedString($language),
+					'id' =>$resourceId
 				)
 			);
 		
 		$url = $this->helper->getQuery($options);
-		$cultureCode = JFactory::getLanguage()->getTag();
 		
 		$resource = null;
 		
 		$r = $this->helper->executeQuery($url);
 		if (isset($r)) {
 			$res = json_decode($r);
-			//$resource = $res->d->results ?: $res->d;
-			if (!empty($res->d->results)){
-				$resource = $res->d->results;
+			if (!empty($res->d->GetResourceOnSellByIdSimple)){
+				$resource = $res->d->GetResourceOnSellByIdSimple;
 			}elseif(!empty($res->d)){
 				$resource = $res->d;
 			}
 			$resource->Merchant=BFCHelper::getMerchantFromServicebyId($resource->MerchantId);
-//		$resource->Services = $resource->OnSellUnit->Services;
-			if (!empty($resource->ServiceIdList)){
-				$services=BFCHelper::GetServicesByIds($resource->ServiceIdList,$cultureCode);
-				$resource->Services = $services;
-				if (count($resource->Services) > 0){
-					$tmpservices = array();
-					foreach ($resource->Services as $service){
-						$tmpservices[] = $service->Name;
-					}
-//					$services = implode(', ',$tmpservices);
-				}
-				$resource->Services = $services;
-			}
-
 		}
 		return $resource;
 	}	
+
+	public function getResourceFromService() {
+		$params = $this->getState('params');
+		$resourceId = $params['resourceId'];
+		return $this->getResourceFromServicebyId($resourceId);
+	}
 	
 
 	public function getResourceServicesFromService($resourceId = null) {
 		$params = $this->getState('params');
+		$language = $GLOBALS['bfi_lang'];
 		if ($resourceId==null) {
 			$resourceId = $params['resourceId'];
 		}
 				
 		$options = array(
-				'path' => sprintf($this->urlUnitServices, $resourceId),
+				'path' => $this->urlUnitServices,
 				'data' => array(
-					'$filter' => 'Enabled eq true',
 					'$format' => 'json',
-					'orderby' => 'IsDefault asc'
+					'cultureCode' => BFCHelper::getQuotedString($cultureCode),
+					'id' =>$resourceId
+//					'orderby' => 'IsDefault asc'
 				)
 			);
 		

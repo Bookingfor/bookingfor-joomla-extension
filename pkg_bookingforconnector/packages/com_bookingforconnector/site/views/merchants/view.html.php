@@ -8,9 +8,6 @@
 // No direct access to this file
 defined('_JEXEC') or die('Restricted access');
 
-// import Joomla view library
-jimport('joomla.application.component.view');
-
 /**
  * HTML View class for the HelloWorld Component
  */
@@ -23,24 +20,11 @@ class BookingForConnectorViewMerchants extends BFCView
 	protected $language = null;
 
 	// Overwriting JView display method
-	function display($tpl = null, $preparecontent = false) 
+	function display($tpl = null) 
 	{
 
 		$document 	= JFactory::getDocument();
 		$language 	= $document->getLanguage();		
-		$config = JComponentHelper::getParams('com_bookingforconnector');
-		$app = JFactory::getApplication();
-
-		// add stylesheet
-		$document->addStyleSheet('components/com_bookingforconnector/assets/css/bookingfor.css');
-		$document->addStyleSheet('components/com_bookingforconnector/assets/css/bookingfor-responsive.css');
-		$document->addStyleSheet('//ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css');
-
-		// load scripts
-		$document->addScript('//ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js');
-		$document->addScript('components/com_bookingforconnector/assets/js/bf.js');
-		$document->addScript('components/com_bookingforconnector/assets/js/jquery.xml2json.js');
-		$document->addScript('components/com_bookingforconnector/assets/js/jquery.shorten.js');
 
 		// Initialise variables
 		$state		= $this->get('State');
@@ -76,14 +60,14 @@ class BookingForConnectorViewMerchants extends BFCView
 		$pagination->setAdditionalUrlParam("startswith", $startswith);
 		$pagination->setAdditionalUrlParam("searchseed", $searchseed);
 		
-		$this->assignRef('state', $state);
-		$this->assignRef('params', $params);
-		$this->assignRef('items', $items);
-		$this->assignRef('pagination', $pagination);
-		$this->assignRef('language', $language);
-		$this->assignRef('config', $config);
-		$this->assignRef('analyticsEnabled', $analyticsEnabled);
-		
+		$this->state = $state;
+		$this->language = $language;
+		$this->params = $params;
+		$this->items = $items;
+		$this->pagination = $pagination;
+		$this->analyticsEnabled = $analyticsEnabled;
+		$this->startswith = $startswith;
+
 		// Display the view
 		parent::display($tpl);
 	}

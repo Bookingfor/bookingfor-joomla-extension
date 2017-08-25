@@ -2,21 +2,17 @@
 /**
  * @package   Bookingforconnector
  * @copyright Copyright (c)2006-2016 Ipertrade
- * @license    GNU General Public License version 2 or later; see LICENSE
+ * @license   GNU General Public License version 2 or later; see LICENSE
  */
 
 // No direct access to this file
 defined('_JEXEC') or die('Restricted access');
 
-// import Joomla modelitem library
-jimport('joomla.application.component.modellist');
 set_time_limit(300);
 $pathbase = JPATH_SITE . DIRECTORY_SEPARATOR . 'components' . DIRECTORY_SEPARATOR . 'com_bookingforconnector' . DIRECTORY_SEPARATOR;
 
 require_once $pathbase . 'defines.php';
 require_once $pathbase . '/helpers/wsQueryHelper.php';
-require_once $pathbase . '/helpers/BFCHelper.php';
-require_once $pathbase . '/helpers/FormHelper.php';
 
 /**
  * BookingForConnectorModelMerchants Model
@@ -24,34 +20,29 @@ require_once $pathbase . '/helpers/FormHelper.php';
 class BookingForConnectorModelSearch extends JModelList
 {
 	private $urlSearch = null;
-	private $urlSearchAllCount = null;
-	private $urlSearchAllCountMerchant = null;
-	private $urlSearchByMerchant = null;
 	private $urlMasterTypologies = null;
-	private $urlStay = null;
-	private $urlAllRatePlansStay = null;
 	private $helper = null;
 	private $currentOrdering = null;
 	private $currentDirection = null;
 	private $count = null;
+	private $currentData = null;
+	private $params = null;
+	private $itemPerPage = null;
+	private $direction = null;
 	
 	public function __construct($config = array())
 	{
 		parent::__construct($config);
-		$this->helper = new wsQueryHelper(COM_BOOKINGFORCONNECTOR_WSURL, COM_BOOKINGFORCONNECTOR_APIKEY);
+		$this->helper = new wsQueryHelper(null, null);
 		$this->urlMasterTypologies = '/GetMasterTypologies';
-		$this->urlSearchByMerchant = '/SearchByMerchant';
-		$this->urlStay = '/GetStay';
-		$this->urlAllRatePlansStay = '/GetAllRatePlansStay';
-		
+		$this->urlSearchResult = '/SearchResult';
 		$this->urlSearch = '/SearchAllLiteNew';
-		$this->urlSearchAllCount = '/SearchAllCountPlus';
-		$this->urlSearchAllCountMerchant = '/SearchAllCountMerchant';
 	}
 	
 	public function applyDefaultFilter(&$options) {
-		$params = $this->getState('params');
-				
+		$params = $_SESSION['search.params'];
+
+		$searchid = isset($params['searchid']) ? $params['searchid'] : '';
 		$masterTypeId = $params['masterTypeId'];
 		$checkin = $params['checkin'];
 		$checkout = $params['checkout'];
@@ -62,16 +53,29 @@ class BookingForConnectorModelSearch extends JModelList
 		$merchantId = $params['merchantId'];
 		$tags = isset($params['tags'])?$params['tags']:"";
 		$searchtypetab = $params['searchtypetab'];
+		$stateIds = $params['stateIds'];
+		$regionIds = $params['regionIds'];
+		$cityIds = $params['cityIds'];
+		$merchantIds = $params['merchantIds'];
+		$merchantTagIds = $params['merchantTagIds'];
+		$productTagIds = $params['productTagIds'];
+		
 		$availabilitytype = $params['availabilitytype'];
+		$itemtypes = $params['itemtypes'];
+		$groupresulttype = $params['groupresulttype'];
 
 		$cultureCode = $params['cultureCode'];
-	
-		$filter = '';
 		
+		$filters = $params['filters'];
+//				$filtersselected = BFCHelper::getFilterSearchParamsSession();
+		if(empty($filters)){
+			$filters = BFCHelper::getFilterSearchParamsSession();		
+		}
 		$resourceName = $params['resourceName'].'';
 		$refid = $params['refid'].'';
 		if (!empty($refid) or !empty($resourceName))  {
 			$options['data']['calculate'] = 0;
+			$options['data']['checkAvailability'] = 0;
 			
 			if (isset($refid) && $refid <> "" ) {
 				$options['data']['refId'] = '\''.$refid.'\'';
@@ -84,121 +88,236 @@ class BookingForConnectorModelSearch extends JModelList
 			$onlystay = $params['onlystay'];
 				
 			$options['data']['calculate'] = $onlystay;
+			$options['data']['checkAvailability'] = $onlystay;
 			
 			if (isset($params['locationzone']) ) {
 				$locationzone = $params['locationzone'];
 			}
 			if (isset($masterTypeId) && $masterTypeId > 0) {
-				$options['data']['masterTypeId'] = $masterTypeId;
+				$options['data']['masterTypeIds'] = '\'' .$masterTypeId.'\'';
 			}
 
 			if (!empty($merchantCategoryId) && $merchantCategoryId > 0) {
-				$options['data']['merchantCategoryId'] = $merchantCategoryId;
+				$options['data']['merchantCategoryIds'] = '\'' .$merchantCategoryId.'\'';
 			}
 			
-			if ((isset($checkin)) && (isset($duration) && $duration > 0)) {
+			if(empty($duration)){
+				$duration = 0;
+			}
+			if ((isset($checkin))) {
 				$options['data']['checkin'] = '\'' . $checkin->format('Ymd') . '\'';
 				$options['data']['duration'] = $duration;
 			}
+
 			if (isset($availabilitytype) ) {
 				$options['data']['availabilityTypes'] = '\'' .$availabilitytype .'\'';
 			}
+			if (isset($itemtypes) ) {
+				$options['data']['itemTypeIds'] = '\'' .$itemtypes .'\'';
+			}
 
-			if ($searchtypetab==0 || $searchtypetab=="0") {
-				$options['data']['itemTypeIds'] = '\'0\'';
+			if (isset($groupresulttype) ) {
+				$options['data']['groupResultType'] = $groupresulttype;
+//				if ($groupresulttype==1 || $groupresulttype==2) { //onbly for merchants 
+					$options['data']['getBestGroupResult'] = 1;
+//				}
 			}
-			if ($searchtypetab==1 || $searchtypetab=="1" ) {
-				$options['data']['itemTypeIds'] = '\'1\'';
+
+			$points = isset($params['points']) ? $params['points'] : '' ;
+			if (isset($points) && $points !='') {
+				$options['data']['points'] = '\'' . $points. '\'';
 			}
-			if ($searchtypetab==2 || $searchtypetab=="2" ) {
-				$options['data']['itemTypeIds'] = '\'1\'';
-				$options['data']['availabilityTypes'] = '\'2,3\'';
-				$options['data']['duration'] = 1;
-			}
-			
+
 			if (isset($persons) && $persons > 0) {
 				$options['data']['paxes'] = $persons;
 				if (isset($paxages)) {
 					$options['data']['paxages'] = '\'' . implode('|',$paxages) . '\'';
+					// ciclo per aggiungere i dati
+					$newpaxages = array();
+					foreach ($paxages as $age) {
+						if ($age >= BFCHelper::$defaultAdultsAge) {
+							if ($age >= BFCHelper::$defaultSenioresAge) {
+								array_push($newpaxages, $age.":".bfiAgeType::$Seniors);
+							} else {
+								array_push($newpaxages, $age.":".bfiAgeType::$Adult);
+							}
+						} else {
+							array_push($newpaxages, $age.":".bfiAgeType::$Reduced);
+						}
+					}
+
+					$options['data']['paxages'] = '\'' . implode('|',$newpaxages) . '\'';
 				}else{
-					$px = array_fill(0,$persons,BFCHelper::$defaultAdultsAge);
+					$px = array_fill(0,$persons,BFCHelper::$defaultAdultsAge.":".bfiAgeType::$Adult);
 					$options['data']['paxages'] = '\'' . implode('|',$px) . '\'';
 				}
 			}
 			
-				$options['data']['pricetype'] = '\'' . 'rateplan' . '\'';
+//				$options['data']['pricetype'] = '\'' . 'rateplan' . '\'';
 
-			if (isset($locationzone) && $locationzone > 0) {
-				$options['data']['zoneId'] = $locationzone;
+			if (isset($locationzone) && $locationzone !='' && $locationzone !='0') {
+				$options['data']['zoneIds'] = '\''. $locationzone . '\'';
 			}
 			
 			if (!empty($tags)) {
-				$options['data']['tagids'] = '\''. $tags.'\'';
+				$options['data']['tagids'] = '\'' . $tags . '\'';
 			}				
 		}
 
-		
+
 		if (isset($cultureCode) && $cultureCode !='') {
 			$options['data']['cultureCode'] = '\'' . $cultureCode. '\'';
+		}
+		if (isset($searchid) && $searchid !='') {
+			$options['data']['searchid'] = '\'' . $searchid. '\'';
+		}
+
+		if (isset($searchid) && $searchid !='') {
+			$options['data']['searchid'] = '\'' . $searchid. '\'';
 		}
 		
 		if (isset($merchantId) && $merchantId > 0) {
 			$options['data']['merchantid'] = $merchantId;
 		}
 
-		if ($filter!='')
-			$options['data']['$filter'] = $filter;
-	}
-	
-	private function purgeSessionValues($session, $searchid) {
-		$filtersKey = $this->getFiltersKey();	
-		$keys = array(
-			'search.' . $searchid . '.count', 
-			'search.' . $searchid . '.results',
-			'search.' . $searchid . '.' . $filtersKey . '.results',
-			'search.filterparams'
-		);
-		foreach ($keys as $key) {
-			BFCHelper::setSession($key, null, 'com_bookingforconnector');
+		if (isset($stateIds) && $stateIds !='') {
+			$options['data']['stateIds'] = '\'' . $stateIds. '\'';
 		}
+
+		if (isset($regionIds) && $regionIds !='') {
+			$options['data']['regionIds'] = '\'' . $regionIds. '\'';
+		}
+
+		if (isset($cityIds) && $cityIds !='') {
+			$options['data']['cityIds'] = '\'' . $cityIds. '\'';
+		}
+
+		if (isset($merchantIds) && $merchantIds !='') {
+			$options['data']['merchantsList'] = '\'' . $merchantIds. '\'';
+		}
+
+		if (isset($merchantTagIds) && $merchantTagIds !='') {
+			$options['data']['merchantTagsIds'] = '\'' . $merchantTagIds. '\'';
+		}
+
+		if (isset($productTagIds) && $productTagIds !='') {
+			$options['data']['tagids'] = '\'' . $productTagIds. '\'';
+		}
+
+
+
+		if (!empty($this->currentOrdering )) {
+			$options['data']['orderby'] = '\'' . $this->currentOrdering . '\'';
+			$options['data']['ordertype'] = '\'' . $this->currentDirection . '\'';
+		}
+
+//filters[price]:200;
+//filters[resourcescategories]:6
+//filters[rating]:0
+//filters[avg]:0
+//filters[meals]:
+//filters[merchantsservices]:
+//filters[resourcesservices]:
+//filters[zones]:
+//filters[bookingtypes]:
+//filters[offers]:
+//filters[tags]:
+//filters[rooms]:
+//filters[paymodes]:			
+		if(!empty( $filters )){
+			if(!empty( $filters['price'] )){
+				$options['data']['priceRange'] = BFCHelper::getQuotedString($filters['price']) ;
+			}
+			if(!empty( $filters['resourcescategories'] )){
+				$options['data']['masterTypeIds'] = BFCHelper::getQuotedString(str_replace("|",",",$filters['resourcescategories'])) ;
+			}
+			if(!empty( $filters['rating'] )){
+				$options['data']['ratingIds'] = BFCHelper::getQuotedString(str_replace("|",",",$filters['rating'])) ;
+			}
+			if(!empty( $filters['avg'] )){
+				if (isset($groupresulttype) ) {
+					if ($groupresulttype==1 ) { //onbly for merchants 
+						$options['data']['mrcAvgs'] = BFCHelper::getQuotedString(str_replace("|",",",$filters['avg'])) ;
+					}else{
+						$options['data']['resAvgs'] = BFCHelper::getQuotedString(str_replace("|",",",$filters['avg'])) ;
+					}
+				}else{
+					$options['data']['resAvgs'] = BFCHelper::getQuotedString(str_replace("|",",",$filters['avg'])) ;
+				}
+			}
+			if(!empty( $filters['meals'] )){
+				$options['data']['includedMeals'] = BFCHelper::getQuotedString(str_replace("|",",",$filters['meals'])) ;
+			}
+			if(!empty( $filters['merchantsservices'] )){
+				$options['data']['merchantServiceIds'] = BFCHelper::getQuotedString(str_replace("|",",",$filters['merchantsservices'])) ;
+			}
+			if(!empty( $filters['resourcesservices'] )){
+				$options['data']['resourceServiceIds'] = BFCHelper::getQuotedString(str_replace("|",",",$filters['resourcesservices'])) ;
+			}
+			if(!empty( $filters['zones'] )){
+				$options['data']['zoneIds'] = BFCHelper::getQuotedString(str_replace("|",",",$filters['zones'])) ;
+			}
+			if(!empty( $filters['bookingtypes'] )){
+				$options['data']['requirePaymentsOnly'] = 1 ;
+			}
+			if(!empty( $filters['offers'] )){
+				$options['data']['discountedPriceOnly'] = 1 ;
+			}
+			if(!empty( $filters['tags'] )){
+				$options['data']['tagids'] = BFCHelper::getQuotedString(str_replace("|",",",$filters['tags'])) ;
+			}
+			if(!empty( $filters['rooms'] )){
+				$options['data']['bedRooms'] = BFCHelper::getQuotedString(str_replace("|",",",$filters['rooms'])) ;
+			}
+			if(!empty( $filters['paymodes'] )){
+				if (strpos($filters['paymodes'],"freecancellation")!== FALSE) {
+					$options['data']['freeCancellation'] = 1 ;
+				}
+				if (strpos($filters['paymodes'],"freepayment")!== FALSE) {
+					$options['data']['payOnArrival'] = 1 ;
+				}
+				if (strpos($filters['paymodes'],"freecc")!== FALSE) {
+					$options['data']['freeDeposit'] = 1 ;
+				}
+			}
+
+		}
+
+		
+//		if ($filters!='')
+//			$options['data']['$filter'] = $filter;
 	}
+
 	
 	public function getSearchResults($start, $limit, $ordering, $direction, $ignorePagination = false, $jsonResult = false) {
 
 		$this->currentOrdering = $ordering;
 		$this->currentDirection = $direction;
-		
-		$params = $this->getState('params');
+
+		$params = $_SESSION['search.params'];
+								
 		$searchid = isset($params['searchid']) ? $params['searchid'] : '';
 		$newsearch = isset($params['newsearch']) ? $params['newsearch'] : '0';
-
-		$pricerange = $params['pricerange'];
+//		$pricerange = $params['pricerange'];
 		$merchantResults = $params['merchantResults'];
 		$condominiumsResults = $params['condominiumsResults'];
-		
-		$sessionkey = 'search.' . $searchid . '.results';
+		$sessionkey = 'search.' . $searchid . '.results';			
 
-		$session = JFactory::getSession();
-		$results = null;
-								
-		if($newsearch == "0"){
+		//$session = JFactory::getSession();
+		$results = $this->currentData;
 
-			
-			$cachedresults = $session->get($sessionkey); 
-			try {
-				if (isset($cachedresults) && !empty($cachedresults) )
-				$results = (array)json_decode(gzuncompress(base64_decode($cachedresults)));
-		//			echo 'sessionkey: ',  $sessionkey, "<br />";
-				//$results = $cachedresults;
-			} catch (Exception $e) {
-	//			echo 'Exception: ',   $e->getMessage(), "<br />";
-				//echo 'Caught exception: ',  $e->getMessage(), "\n";
-			}
-		}else{
-			
+		if($newsearch == "1"){
 			BFCHelper::setFilterSearchParamsSession(null);
+		}else{
+			$filtersselected = BFCHelper::getArray('filters', null);
+			if ($filtersselected == null) { //provo a recuperarli dalla sessione...
+				$filtersselected = BFCHelper::getFilterSearchParamsSession();
+			}
+
+			BFCHelper::setFilterSearchParamsSession($filtersselected);
 		}
-		
+			
+
 		if ($results == null) {
 //			echo 'No result: <br />';
 			$options = array(
@@ -210,6 +329,17 @@ class BookingForConnectorModelSearch extends JModelList
 						'lite' => 1
 				)
 			);
+			
+			if(!$ignorePagination){
+				if (isset($start) && $start >= 0) {
+					$options['data']['skip'] = $start;
+				}
+				
+				if (isset($limit) && $limit > 0) {
+					$options['data']['topRresult'] = $limit;
+				}
+			}
+
 			$this->applyDefaultFilter($options);
 
 			$url = $this->helper->getQuery($options);
@@ -219,354 +349,64 @@ class BookingForConnectorModelSearch extends JModelList
 			$r = $this->helper->executeQuery($url);
 			if (isset($r)) {
 				$res = json_decode($r);
-//				$results = $res->d->results ?: $res->d;
-				if (!empty($res->d->results)){
-					$results = $res->d->results;
+				if (!empty($res->d->SearchAllLiteNew)){
+					$results = $res->d->SearchAllLiteNew;
 				}elseif(!empty($res->d)){
 					$results = $res->d;
 				}
-				try {				
-					if (!empty($results)) {
-//						shuffle($results);
-						$resultsCat = array();
-						$resultsBook = array();
-						$resultsCat = array_filter($results, function($result) {
-							return $result->IsCatalog ;
-						});
-						if (!empty($resultsCat)){
-							shuffle($resultsCat);
-							$resultsBook = array_filter($results, function($result) {
-								return !$result->IsCatalog ;
-							});
-							if (!empty($resultsBook)){
-								shuffle($resultsBook);
-								$results = array_merge($resultsBook,$resultsCat);
-							}else{
-								$results = $resultsCat;
-							}
-						}else{
-							shuffle($results);
-						}
-
-					}
-				} catch (Exception $e) {
-					//echo 'Caught exception: ',  $e->getMessage(), "\n";
-				}
 			}
-			// purge last searchid. clears unusable session data
-			
-//			$lastsearchid = BFCHelper::getSession('search.last', '', 'com_bookingforconnector');			
-//			
-//			if ($lastsearchid != '') {
-//				$this->purgeSessionValues($session, "booking");
-//				BFCHelper::setSession('search.last','', 'com_bookingforconnector');
-//				// purge static searchresult
-//				//BFCHelper::setSearchResult($lastsearchid, null);
-//			}
 
-			// saves parameters into session
-			BFCHelper::setSearchParamsSession($params);
-//			if(!empty($results)){
-//				if($pricerange !=='0' && strpos($pricerange,'|') !== false ){ // se ho un valore per pricerange diverso da 0 allora splitto per ; 
-//					$priceranges = explode("|", $pricerange);
-//					$pricemin = $priceranges[0];
-//					$pricemax = $priceranges[1];
-//
-//
-//					// price min filtering
-//					if ($pricemin > 0) {
-//						$results = array_filter($results, function($result) use ($pricemin) {
-//							return $result->Price >= $pricemin;
-//						});
-//					}
-//					// price max filtering
-//					if ($pricemax > 0) {
-//						$results = array_filter($results, function($result) use ($pricemax) {
-//							return $result->Price <= $pricemax;
-//						});
-//					}
-//				}
-//			}
-			
-		$onlystay = $params['onlystay'];
-		if(!empty($results) && $onlystay =='1'){
-				$results = array_filter($results, function($result) {
-//					return $result->Price >0 ;
-					return $result->IsCatalog || (!$result->IsCatalog && $result->Price > 0);
-				});
-		}
-
-		try {							
-			// save current search in session to disable all further calculations upon reordering and filtering
-			$compr = base64_encode(gzcompress(json_encode($results),1));
-		} catch (Exception $e) {
-			echo 'Caught exception: ',  $e->getMessage(), "\n";
-		}
-
-
-
-
-			$session->set($sessionkey, $compr); 
-			
-			//ciclo per filtrare i possibili filtri
-			$filtersenabled = array();
-			
-			$filtersenabled['count'] = 0;
-			
-			if(!empty($results)){
-			
-				$filtersenabled['count'] = count($results);
-			
-				//per condominiumsResults non \E8 necessario filtrare i condomini per caratteristiche, si basano sulle risorse
-				if ($merchantResults) {
-//					$tmpstars = array_unique(array_map(function ($i) { return $i->MrcRating; }, $results));
-//					$filtersenabled['stars'] = implode(',',$tmpstars);
-					$filtersenabled['stars'] = array_count_values(array_filter(array_map(function ($i) { return $i->MrcRating; }, $results)));
-//					$tmplocationzones = array_unique(array_map(function ($i) { return $i->MrcZoneId; }, $results));	
-//					$filtersenabled['locationzones'] = implode(',',$tmplocationzones);
-					$filtersenabled['locationzones'] = array_count_values(array_map(function ($i) { return $i->MrcZoneId; }, $results));	
-				}else{
-//					$tmpstars = array_unique(array_map(function ($i) { return $i->ResRating; }, $results));
-//					$filtersenabled['stars'] = implode(',',$tmpstars);
-					$filtersenabled['stars'] = array_count_values(array_filter(array_map(function ($i) { return $i->ResRating; }, $results)));
-//					$tmplocationzones = array_unique(array_map(function ($i) { return $i->ResZoneId; }, $results));	
-//					$filtersenabled['locationzones'] = implode(',',$tmplocationzones);
-					$filtersenabled['locationzones'] = array_count_values(array_map(function ($i) { return $i->ResZoneId; }, $results));	
-
-					$tmpRooms = array_count_values(array_map(function ($i) { return $i->Rooms; }, $results));	
-//					asort($tmpRooms);
-					ksort($tmpRooms);
-
-//					$filtersenabled['rooms'] = implode(',',$tmpRooms);
-					$filtersenabled['rooms'] =  $tmpRooms;
-
-				}
-
-				
-//				$tmpRateplanName = array_unique(array_map(function ($i) { return $i->RateplanName; }, $results));	
-//				$filtersenabled['rateplanname'] = implode(',',$tmpRateplanName);
-				$filtersenabled['rateplanname'] = array_count_values(array_filter(array_map(function ($i) { return $i->RateplanName; }, $results)));	
-
-//				$tmpmastertypologies = array_unique(array_map(function ($i) { return $i->MasterTypologyId; }, $results));	
-//				$filtersenabled['mastertypologies'] = implode(',',$tmpmastertypologies);
-				$filtersenabled['mastertypologies'] = array_count_values(array_map(function ($i) { return $i->MasterTypologyId; }, $results));	
-
-				
-				// elenco merchantGroup presenti nella ricerca
-//				$tmpmerchantgroups = array_unique(explode(",",array_reduce($results, 
-//						function($returnedList, $item){
-//							$val =  preg_replace('/\s+/', '', $item->MrcTagsIdList);
-//							if (!empty($val)) {
-//								$returnedList .= "," .$val;
-//							}
-//							return $returnedList;
-//						}
-//						)));
-//				foreach( $tmpmerchantgroups as $key => $value ) {
-//					if( empty( $tmpmerchantgroups[ $key ] ) )
-//						unset( $tmpmerchantgroups[ $key ] );
-//				}		
-//				$filtersenabled['merchantgroups'] = implode(',',$tmpmerchantgroups);
-				
-				$tmpmerchantgroups = array_count_values(explode(",",array_reduce($results, 
-						function($returnedList, $item){
-							$val =  preg_replace('/\s+/', '', $item->MrcTagsIdList);
-							if (!empty($val)) {
-								$returnedList .= "," .$val;
-							}
-							$resval =  preg_replace('/\s+/', '', $item->TagsIdList);
-							if (!empty($resval)) {
-								$returnedList .= "," .$resval;
-							}
-							return $returnedList;
-						}
-						)));
-//				foreach( $tmpmerchantgroups as $key => $value ) {
-//					if( empty( $tmpmerchantgroups[ $key ] ) )
-//						unset( $tmpmerchantgroups[ $key ] );
-//				}		
-				$filtersenabled['merchantgroups'] =  $tmpmerchantgroups;
-
-				// elenco Servizi presenti nella ricerca
-//				$tmpservices = array_unique(explode(",",array_reduce($results,
-//						function($returnedList, $item){
-//							$val =  preg_replace('/\s+/', '', $item->MrcServiceIdList);
-//							if (!empty($val)) {
-//								$returnedList .= "," .$val;
-//							}								
-//							$val =  preg_replace('/\s+/', '', $item->ResServiceIdList);
-//							if (!empty($val)) {
-//								$returnedList .= "," .$val;
-//							}
-//							
-//							return $returnedList;
-//						}
-//				)));
-//				foreach( $tmpservices as $key => $value ) {
-//					if( empty( $tmpservices[ $key ] ) )
-//						unset( $tmpservices[ $key ] );
-//				}
-//				$filtersenabled['services'] = implode(',',$tmpservices);
-				$tmpservices = array_count_values(explode(",",array_reduce($results,
-						function($returnedList, $item){
-							$val =  preg_replace('/\s+/', '', $item->ResServiceIdList);
-							if (!empty($val)) {
-								$returnedList .= "," .$val;
-							}
-							return $returnedList;
-						}
-				)));
-//				foreach( $tmpservices as $key => $value ) {
-//					if( empty( $tmpservices[ $key ] ) )
-//						unset( $tmpservices[ $key ] );
-//				}
-				$filtersenabled['services'] = $tmpservices;
-
-				$tmpservicesmerchants = array_count_values(explode(",",array_reduce($results,
-						function($returnedList, $item){
-							$val =  preg_replace('/\s+/', '', $item->MrcServiceIdList);
-							if (!empty($val)) {
-								$returnedList .= "," .$val;
-							}								
-							return $returnedList;
-						}
-				)));
-				$filtersenabled['servicesmerchants'] = $tmpservicesmerchants;
-				
-				// elenco BookingType presenti nella ricerca
-//				bookableonly
-//				$tmpbookingtype = array_unique(array_map(function ($i) { return $i->BookingType; }, $results));
-//				$tmpbookingtype = array_unique(array_map(function ($i) { return $i->IsBookable; }, $results));
-//				foreach( $tmpbookingtype as $key => $value ) {
-//					if( empty( $tmpbookingtype[ $key ] ) )
-//						unset( $tmpbookingtype[ $key ] );
-//				}
-//				$filtersenabled['bookingtypes'] = implode(',',$tmpbookingtype);
-				$filtersenabled['bookingtypes'] = array_count_values(array_filter(array_map(function ($i) { return intval($i->IsBookable); }, $results)));
-				
-//				$tmpoffers = array_unique(array_map(function ($i) { return $i->TotalPrice>$i->Price; }, $results));	
-//				$tmpoffers = array_unique(array_map(function ($i) { return !empty($i->DiscountId); }, $results));	
-//				$tmpoffers = array_unique(array_map(function ($i) { return $i->IsOffer; }, $results));
-//				foreach( $tmpoffers as $key => $value ) {
-//					if( empty( $tmpoffers[ $key ] ) )
-//						unset( $tmpoffers[ $key ] );
-//				}
-//				$filtersenabled['offers'] = implode(',',$tmpoffers);
-				$tmpoffers = array_count_values(array_filter(array_map(function ($i) { return intval($i->IsOffer && $i->TotalPrice>$i->Price); }, $results)));
-				$filtersenabled['offers'] = $tmpoffers;
-
-
-
-				$prices = array_map(function ($i) { return $i->Price; }, array_filter($results, function($rs) { return !$rs->IsCatalog; })) ;
-//				$prices = array_map(function ($i) { return $i->Price; }, $results) ;
-
-				if(!empty($prices )) {
-					$filtersenabled['pricemin'] = round(min($prices)-1, 0, PHP_ROUND_HALF_DOWN);
-					$filtersenabled['pricemax'] =  round(max($prices)+1, 0, PHP_ROUND_HALF_UP);
-				}
-
-
-			}
 						
+			$filtersenabled = array();
+			if(!empty($results)){
+				$filtersenabled = json_decode($results->FiltersString);
+				$params['merchantResults'] = ($results->GroupResultType==1);
+				$params['condominiumsResults'] = ($results->GroupResultType==2);
+				$merchantResults = $params['merchantResults'];
+				$condominiumsResults = $params['condominiumsResults'];
+			}
+			BFCHelper::setSearchParamsSession($params);
+			if($newsearch == "1"){
+				BFCHelper::setFirstFilterSearchParamsSession($filtersenabled);
+			}
 			BFCHelper::setEnabledFilterSearchParamsSession($filtersenabled);
 		}
+		$resultsItems = null;
 
-		$results = $this->filterResults($results);
-
-		// ordering is taking place here only for simple results, merchants are ordered by the grouping function
-		if(!empty($results)) {
-			if (isset($ordering) && !$merchantResults) {
-				$catValues = array();
-				foreach($results as $key => $row) {
-					$catValues[$key]  = $row->IsCatalog;
-				}
-
-				switch (strtolower($ordering)) {
-					case 'stay':
-						$pricesValues = array();
-						foreach($results as $key => $row) {
-							$pricesValues[$key]  = $row->TotalPrice;
-						}
-						array_multisort($catValues, SORT_ASC, $pricesValues, ($direction == 'desc' ? SORT_DESC : SORT_ASC), $results);
-	//					usort($results, function($a,$b) use ( $ordering, $direction) {
-	//						return BFCHelper::orderBy($a, $b, 'TotalPrice', $direction);
-	//					});
-						break;
-					case 'rooms':
-						$RoomsValues = array();
-						foreach($results as $key => $row) {
-							$RoomsValues[$key]  = $row->Rooms;
-						}
-						array_multisort($catValues, SORT_ASC, $RoomsValues, ($direction == 'desc' ? SORT_DESC : SORT_ASC), $results);
-	//					usort($results, function($a,$b) use ( $ordering, $direction) {
-	//						return BFCHelper::orderBy($a, $b, 'Rooms', $direction);
-	//					});
-						break;
-					case 'offer':
-						$discountValues = array();
-						foreach($results as $key => $row) {
-							$discountValues[$key]  = $row->PercentVariation;
-						}
-						array_multisort($catValues, SORT_ASC, $discountValues, ($direction == 'desc' ? SORT_DESC : SORT_ASC), $results);
-	//					usort($results, function($a,$b) use ( $ordering, $direction) {
-	////						return BFCHelper::orderBySingleDiscount($a, $b, $direction);
-	//						return BFCHelper::orderBy($a, $b, 'PercentVariation', $direction);
-	//					});
-						break;
-					default:
-						$randomRes = array();
-						foreach($results as $key => $row) {
-							$randomRes[$key]  = $key;
-						}
-						array_multisort($catValues, SORT_ASC, $randomRes, SORT_ASC, $results);
-						break;
-				}
-	//			} else {
-	//			usort($results, function($a,$b) use ( $ordering, $direction) {
-	//				return $a->IsCatalog - $b->IsCatalog;
-	//			});
-			}
-		}					
-		if ($condominiumsResults && !empty($results)) {
-			// grouping and ordering
-						$results = $this->groupResultsByCondominium($results);
+		if(isset($results->ItemsCount)){
+			$this->count = $results->ItemsCount;
+			$resultsItems = json_decode($results->ItemsString);
 		}
 
-		if ($merchantResults && !empty($results)) {
-			// grouping and ordering
-			$results = $this->groupResultsByMerchant($results, $ordering, $direction);
-		}
-		
-
-
-				
-		$this->count =  count($results);
-	
-		if (! $ignorePagination && isset($start) && (isset($limit) && $limit > 0 ) && !empty($results)) {
-			$results = array_slice($results, $start, $limit);
-			$params = $this->getState('params');
-			$checkin = $params['checkin'];
-			$duration = $params['duration'];
-			$persons = $params['paxes'];
-			$paxages = $params['paxages'];
-		}
-		if($jsonResult && !empty($results))	{
+//		if (! $ignorePagination && isset($start) && (isset($limit) && $limit > 0 ) && !empty($results)) {
+//
+//			$results = array_slice($results, $start, $limit);
+//			$params = $_SESSION['search.params'];
+//			$checkin = $params['checkin'];
+//			$duration = $params['duration'];
+//			$persons = $params['paxes'];
+//			$paxages = $params['paxages'];
+//		}
+		if($jsonResult && !empty($resultsItems))	{
 			$arr = array();
 
-			foreach($results as $result) {
+			foreach($resultsItems as $result) {
 				$val= new StdClass;
+				
 				if ($merchantResults) {
-
-					$val->MerchantId = $result->MerchantId;
-					$val->XGooglePos = $result->XGooglePos;
-					$val->YGooglePos = $result->YGooglePos;
-					$val->MerchantName = BFCHelper::getSlug($result->Name);
+					$val->MerchantId = $result->MerchantId; 
+					$val->XGooglePos = $result->MrcLat;
+					$val->YGooglePos = $result->MrcLng;
+					$val->MerchantName = BFCHelper::getSlug($result->MrcName);
 				}
 				elseif ($condominiumsResults){
 					$val->Resource = new StdClass;
-					$val->Resource->ResourceId = $result->CondominiumId;
-					$val->Resource->XGooglePos = $result->XGooglePos;
-					$val->Resource->YGooglePos = $result->YGooglePos;
+					$val->Resource->CondominiumId = $result->CondominiumId;
+					$val->Resource->ResourceId = $result->ResourceId;
+					$val->Resource->XGooglePos = $result->ResLat;
+					$val->Resource->YGooglePos = $result->ResLng;
+					$val->Resource->ResourceName = BFCHelper::getSlug($result->ResName);
+					$val->Resource->Price = $result->Price;
 				}
 				else { 
 					$val->Resource = new StdClass;
@@ -574,601 +414,27 @@ class BookingForConnectorModelSearch extends JModelList
 					$val->Resource->XGooglePos = $result->ResLat;
 					$val->Resource->YGooglePos = $result->ResLng;
 					$val->Resource->ResourceName = BFCHelper::getSlug($result->ResName);
-
+					$val->Resource->Price = $result->Price;
 				}
 				$arr[] = $val;
 			}
-			
-			
+
 			return json_encode($arr);
 				
 		}
-		return $results;
+		return $resultsItems;
 
-		//return $jsonResult ? json_encode($results) : $results;
-	}
-	
-	private function filterResults($results) {
-		$params = $this->getState('params');
-		$filters = null;
-		$filters = BFCHelper::getArray('filters', null);
-		
-//		'filters' => JRequest::getVar('filters', $pars['filters']),
-
-		if ($filters == null && !empty($params['filters'])){
-			$filters = $params['filters'];
-		}
-		if ($filters == null) { //provo a recuperarli dalla sessione...
-			$filters = BFCHelper::getFilterSearchParamsSession();
-		}
-
-
-		if ($filters == null) return $results;
-		BFCHelper::setFilterSearchParamsSession($filters);
-		
-		// zone filtering
-		if (!empty($filters['locationzones']) && is_array($results)) {
-			$locationzones = $filters['locationzones'];
-			$locationzones = explode(",", $locationzones);
-			if (is_array($locationzones) || $locationzones != "0" ){
-				$results = array_filter($results, function($result) use ($locationzones) {
-					return ((is_array($locationzones) && (in_array( $result->MrcZoneId, $locationzones) || in_array( $result->ResZoneId, $locationzones) )) || ($result->MrcZoneId == $locationzones ||$result->ResZoneId == $locationzones  ));
-				});
-			}
-		}
-
-
-		// merchantgroups filtering
-		if (!empty($filters['merchantgroups']) && is_array($results)) {
-			$merchantgroups = $filters['merchantgroups'];
-			$merchantgroups = explode(",", $merchantgroups);
-			if (is_array($merchantgroups)){
-			//if ($stars > 0) {
-				$results = array_filter($results, function($result) use ($merchantgroups) {
-					$hasTags = false;
-					$val =  preg_replace('/\s+/', '', $result->MrcTagsIdList);
-					$merchantGroupIdList = explode(",",$val);
-					if (is_array($merchantGroupIdList)) {
-						$arrayresult = array_intersect($merchantgroups, $merchantGroupIdList); 
-						$hasTags = (count($arrayresult)>0);
-
-					} else {
-						$hasTags = ((is_array($merchantgroups) && in_array( $merchantGroupIdList, $merchantgroups )) || $merchantGroupIdList == $merchantgroups  );
-					} 
-					
-					$val = preg_replace('/\s+/', '', $result->TagsIdList);
-					$merchantGroupIdList = explode(",",$val);
-					if (is_array($merchantGroupIdList)) {
-						$arrayresult = array_intersect($merchantgroups, $merchantGroupIdList); 
-						$hasTags = $hasTags || (count($arrayresult)>0);
-
-					} else {
-						$hasTags = $hasTags || ((is_array($merchantgroups) && in_array( $merchantGroupIdList, $merchantgroups )) || $merchantGroupIdList == $merchantgroups  );
-					}
-					return $hasTags;
-				});
-			}
-		}
-		
-//		// services filtering
-//		if (!empty($filters['services']) && is_array($results)) {
-//			$services = $filters['services'];
-//			$services = explode(",", $services);
-//			if (is_array($services)){
-//				$results = array_filter($results, function($result) use ($services) {
-//					$merchantServiceIdList = explode(",",$result->MrcServiceIdList);
-//					$resourceServiceIdList = explode(",",$result->ResServiceIdList);
-//					$serviceIdList = array_merge($merchantServiceIdList,$resourceServiceIdList);
-//					if (is_array($serviceIdList)) {
-//						$arrayresult = array_intersect($services, $serviceIdList);
-//						return (count($arrayresult)==count($services));
-//	
-//					}else{
-//						return ((is_array($services) && in_array( $serviceIdList, $services )) || $serviceIdList == $services  );
-//					}
-//				});
-//			}
-//		}
-		// services filtering resource
-		if (!empty($filters['services']) && is_array($results)) {
-			$services = $filters['services'];
-			$services = explode(",", $services);
-			if (is_array($services)){
-				$results = array_filter($results, function($result) use ($services) {
-					$serviceIdList = explode(",",$result->ResServiceIdList);
-					if (is_array($serviceIdList)) {
-						$arrayresult = array_intersect($services, $serviceIdList);
-						return (count($arrayresult)==count($services));
-	
-					}else{
-						return ((is_array($services) && in_array( $serviceIdList, $services )) || $serviceIdList == $services  );
-					}
-				});
-			}
-		}
-		// services filtering merchants
-		if (!empty($filters['servicesmerchants']) && is_array($results)) {
-			$services = $filters['servicesmerchants'];
-			$services = explode(",", $services);
-			if (is_array($services)){
-				$results = array_filter($results, function($result) use ($services) {
-					$serviceIdList =  explode(",",$result->MrcServiceIdList);;
-					if (is_array($serviceIdList)) {
-						$arrayresult = array_intersect($services, $serviceIdList);
-						return (count($arrayresult)==count($services));
-	
-					}else{
-						return ((is_array($services) && in_array( $serviceIdList, $services )) || $serviceIdList == $services  );
-					}
-				});
-			}
-		}
-		
-		// mastertypologies filtering
-		if (!empty($filters['mastertypologies']) && is_array($results)) {
-			$mastertypologies = $filters['mastertypologies'];
-			$mastertypologies = explode(",", $mastertypologies);
-			if (is_array($mastertypologies)){
-			//if ($stars > 0) {
-				$results = array_filter($results, function($result) use ($mastertypologies) {
-					return ((is_array($mastertypologies) && in_array( $result->MasterTypologyId, $mastertypologies )) || $result->MasterTypologyId == $mastertypologies  );
-				});
-			}
-		}
-
-// rooms filtering checkbox
-//		if (!empty($filters['rooms']) && is_array($results)) {
-//			$rooms = $filters['rooms'];
-//			$rooms = explode(",", $rooms);
-//			if (is_array($rooms)){
-//			//if ($stars > 0) {
-//				$results = array_filter($results, function($result) use ($rooms) {
-//					return ((is_array($rooms) && in_array( $result->Rooms, $rooms )) || $result->Rooms == $rooms  );
-//				});
-//			}
-//		}
-
-// rooms filtering radiobutton
-		if (!empty($filters['rooms']) && is_array($results)) {
-			$rooms = $filters['rooms'];
-			if ($rooms > 0) {
-				$results = array_filter($results, function($result) use ($rooms) {
-					return $result->Rooms >= $rooms;
-				});
-			}
-		}
-
-
-		// RateplanName filtering
-		if (!empty($filters['rateplanname']) && is_array($results)) {
-			$rateplanname = $filters['rateplanname'];
-			$rateplanname = explode(",", $rateplanname);
-			if (is_array($rateplanname)){
-			//if ($stars > 0) {
-				$results = array_filter($results, function($result) use ($rateplanname) {
-					return (in_array( $result->RateplanName, $rateplanname ));
-				});
-			}else{
-				$results = array_filter($results, function($result) use ($rateplanname) {
-					return ($result->RateplanName == $rateplanname  );
-				});
-
-			}
-		}
-
-		// stars filtering
-		if (!empty($filters['stars']) && is_array($results)) {
-			$stars = $filters['stars'];
-			$stars = explode(",", $stars);
-			if (is_array($stars) || $stars != "0" ){
-				$results = array_filter($results, function($result) use ($stars) {
-					return ((is_array($stars) && (in_array( $result->MrcRating, $stars) || $result->MrcRating == $stars || in_array( $result->ResRating, $stars)) || $result->ResRating == $stars));
-				});
-			}
-		}
-		// bookingTypes filtering
-		if (!empty($filters['bookingtypes']) && is_array($results)) {
-			$bookingTypes = $filters['bookingtypes'];
-			$bookingTypes = explode(",", $bookingTypes);
-			if (is_array($bookingTypes) || $bookingTypes != "0" ){
-				$results = array_filter($results, function($result) use ($bookingTypes) {
-//					return ((is_array($bookingTypes) && (in_array( $result->BookingType, $bookingTypes)) || $result->BookingType == $bookingTypes));
-					return ((is_array($bookingTypes) && (in_array( $result->IsBookable, $bookingTypes)) || $result->IsBookable == $bookingTypes));
-				});
-			}
-		}
-
-		// offers filtering
-		if (!empty($filters['offers']) && is_array($results)) {
-			$offers = $filters['offers'];
-			$offers = explode(",", $offers);
-			if (is_array($offers) || $offers != "0" ){
-				$results = array_filter($results, function($result) use ($offers) {
-//					return ((is_array($offers) && (in_array( $result->TotalPrice>$result->Price, $offers)) || $result->TotalPrice>$result->Price == $offers));
-					//return ((is_array($offers) && (in_array( !empty($result->DiscountId), $offers)) || !empty($result->DiscountId) == $offers));
-					return ((is_array($offers) && (in_array( $result->IsOffer, $offers)) || $result->IsOffer == $offers) && $result->TotalPrice>$result->Price);
-
-				});
-			}
-		}
-
-		// price min filtering
-		if (!empty($filters['pricemin']) && is_array($results)) {
-			$pricemin = $filters['pricemin'];
-			if ($pricemin > 0) {
-				$results = array_filter($results, function($result) use ($pricemin) {
-					return $result->Price >= $pricemin;
-				});
-			}
-		}
-		// price min filtering
-		if (!empty($filters['pricemax']) && is_array($results)) {
-			$pricemax = $filters['pricemax'];
-			if ($pricemax > 0) {
-				$results = array_filter($results, function($result) use ($pricemax) {
-					return $result->Price <= $pricemax;
-				});
-			}
-		}
-
-		return $results;
-	}
-	
-	private function groupResultsByMerchant($results, $ordering, $direction) {
-
-		$catValues = array();
-		foreach($results as $key => $row) {
-			$catValues[$key]  = $row->IsCatalog;
-		}
-
-		if (isset($ordering) && is_array($results)) {
-			// 'stay' ordering should take place before grouping
-			if (strtolower($ordering) == 'stay') {
-					$pricesValues = array();
-					foreach($results as $key => $row) {
-						$pricesValues[$key]  = $row->TotalPrice;
-					}
-					array_multisort($catValues, SORT_ASC, $pricesValues, ($direction == 'desc' ? SORT_DESC : SORT_ASC), $results);
-//				usort($results, function($a,$b) use ( $ordering, $direction) {
-//					return BFCHelper::orderBy($a, $b, 'TotalPrice', $direction);
-//				});
-			}
-			if (strtolower($ordering) == 'offer') {
-					$pricesValues = array();
-					foreach($results as $key => $row) {
-						$pricesValues[$key]  = $row->PercentVariation;
-					}
-					array_multisort($catValues, SORT_ASC, $pricesValues, ($direction == 'desc' ? SORT_DESC : SORT_ASC), $results);
-//				usort($results, function($a,$b) use ( $ordering, $direction) {
-//					return BFCHelper::orderBy($a, $b, 'PercentVariation', $direction);
-////					return BFCHelper::orderBySingleDiscount($a, $b, $direction);
-//				});
-			}
-		}
-		
-		$arr = array();
-		foreach($results as $result) {
-			if (!array_key_exists($result->MerchantId, $arr)) {
-				$merchant = new stdClass();
-				$merchant->MerchantId = $result->MerchantId;
-				$merchant->MrcCategoryName = $result->DefaultLangMrcCategoryName;
-				$merchant->Name = $result->MrcName;
-				$merchant->XGooglePos = $result->MrcLat;
-				$merchant->YGooglePos = $result->MrcLng;
-				$merchant->MerchantTypeId = $result->MerchantTypeId;
-				$merchant->Rating = $result->MrcRating;
-				$merchant->RatingsContext = $result->RatingsContext;
-				$merchant->RatingsType = $result->RatingsType;
-				$merchant->PaymentType = $result->PaymentType;
-				$merchant->reviewValue = $result->MrcAVG;
-				$merchant->reviewCount = $result->MrcAVGCount;
-				$merchant->LogoUrl = $result->LogoUrl;
-				$merchant->Weight = $result->MrcWeight;
-				$merchant->MrcTagsIdList = $result->MrcTagsIdList;
-				$merchant->ImageUrl = $result->MrcImageUrl;
-				$merchant->Resources = array();
-				$merchant->Resources[] = $result;
-				$arr[$merchant->MerchantId] = $merchant;
-			}
-			else {
-				$merchant = $arr[$result->MerchantId];
-					$merchant->Resources[] = $result;
-			}
-		}
-
-		if (!empty($ordering)) {
-			switch (strtolower($ordering)) {
-				case 'stay':
-					usort($arr, function($a,$b) use ( $ordering, $direction) {
-						return BFCHelper::orderByStay($a, $b, $direction);
-					});
-					break;
-				case 'rating':
-					usort($arr, function($a,$b) use ( $ordering, $direction) {
-						return BFCHelper::orderBy($a, $b, 'Rating', $direction);
-					});
-					break;
-				case 'reviewvalue':
-					usort($arr, function($a,$b) use ( $ordering, $direction) {
-						return BFCHelper::orderBy($a, $b, 'reviewValue', $direction);
-					});
-					break;
-			   case 'offer':
-					usort($arr, function($a,$b) use ( $ordering, $direction) {
-						return BFCHelper::orderBy($a->Resources[0], $b->Resources[0], 'PercentVariation', $direction);
-//						return BFCHelper::orderByDiscount($a, $b, $direction);
-					});
-					break;
-				default:
-					$mrcCatalog = array();
-					$mrcIndexes = array();
-					
-					foreach($arr as $key => $row) {
-						/*
-						usort($row->Resources, function($a,$b) use ( $ordering, $direction) {
-							return BFCHelper::orderBy($a, $b, 'ResWeight', 'asc');
-						});
-						*/
-						$totalResources = count($row->Resources);
-						$catRes = count(array_filter($row->Resources, function($rs) {
-							return $rs->IsCatalog;
-						}));
-						$mrcCatalog[$key] = ($catRes * 100) / $totalResources;
-						$mrcIndexes[$key] = $key;
-					}
-					
-					array_multisort($mrcCatalog, SORT_ASC, $mrcIndexes, SORT_ASC, $arr);
-//				usort($arr, function($a,$b) use ( $ordering, $direction) {
-//					return BFCHelper::orderBy($a, $b, 'PaymentType', 'desc');
-//				});
-			}
-		}else{
-			$mrcCatalog = array();
-			$mrcWeights = array();
-			
-			foreach($arr as $key => $row) {
-				$mrcWeights[$key]  = $row->Weight;
-				$catValues = array();
-				$resWeights = array();
-				foreach($row->Resources as $k => $rs) {
-					$catValues[$k]  = $rs->IsCatalog;
-					$resWeights[$k]  = $rs->ResWeight;
-				}
-				array_multisort($catValues, SORT_ASC, $resWeights, SORT_ASC, $row->Resources);
-				/*
-				usort($row->Resources, function($a,$b) use ( $ordering, $direction) {
-					return BFCHelper::orderBy($a, $b, 'ResWeight', 'asc');
-				});
-				*/
-				$totalResources = count($row->Resources);
-				$catRes = count(array_filter($row->Resources, function($rs) {
-					return $rs->IsCatalog;
-				}));
-				$mrcCatalog[$key] = ($catRes * 100) / $totalResources;
-			}
-			
-//			array_multisort($mrcCatalog, SORT_ASC, $arr);
-//			usort($arr, function($a,$b) use ( $ordering, $direction) {
-//				return BFCHelper::orderBy($a, $b, 'Weight', 'asc');
-//			});
-//			usort($arr->Resources[], function($a,$b) use ( $ordering, $direction) {
-//				return BFCHelper::orderBy($a, $b, 'ResWeight', 'asc');
-//			});
-		}
-		
-		return $arr;
-	}
-
-		private function groupResultsByCondominium($results) {
-		
-		$arr = array();
-		foreach($results as $result) {
-			if(!empty($result->CondominiumId)){
-				if (!array_key_exists($result->CondominiumId, $arr)) {
-					$condominium = new stdClass();
-					$condominium->CondominiumId = $result->CondominiumId;
-					$condominium->MrcCategoryName = $result->DefaultLangMrcCategoryName;
-					$condominium->XGooglePos = $result->ResLat;
-					$condominium->YGooglePos = $result->ResLng;
-					$condominium->Name  = $result->ResName;
-					$condominium->MerchantId = $result->MerchantId;
-					$condominium->MerchantName = $result->MrcName;
-					$condominium->Resources = array();
-					$condominium->Resources[] = $result;
-					$arr[$result->CondominiumId] = $condominium;
-				}
-				else {
-					$condominium = $arr[$result->CondominiumId];
-					$condominium->Resources[] = $result;
-				}
-			}
-		}
-
-		return $arr;
-	}
-
-	public function getSearchResultsByMerchant($merchantId) {
-		$params = $this->getState('params');
-		
-		$options = array(
-				'path' => $this->urlSearchByMerchant,
-				'data' => array(
-					'merchantId' => $merchantId,
-					'$select' => 'ResourceId,Name,Rating',
-					'$format' => 'json'
-				)
-		);
-
-		/*if (isset($start) && $start > 0) {
-			$options['data']['$skip'] = $start;
-		}
-
-		if (isset($limit) && $limit > 0) {
-			$options['data']['$top'] = $limit;
-		}*/
-
-		$this->applyDefaultFilter($options);
-
-		$url = $this->helper->getQuery($options);
-
-		$results = null;
-
-		$r = $this->helper->executeQuery($url);
-		if (isset($r)) {
-			$res = json_decode($r);
-			$results = $res->d->results ?: $res->d;
-		}
-
-		return $results;
-	}
-	
-	public function getStay($resourceId) {
-		$params = $this->getState('params');
-
-		$ci = $params['checkin'];
-		$du = $params['duration'];
-		//$px = array_fill(0,(int)$params['paxes'],BFCHelper::$defaultAdultsAge);
-		//$ex = $params['extras'];
-		$pt = $params['pricetype'];
-		$paxages = $params['paxages'];
-		
-		if ($ci == null || $du == null || $paxages == null) { 
-			return null;
-		}
-				
-		$options = array(
-				'path' => $this->urlStay,
-				'data' => array(
-					'resourceId' => $resourceId,
-					'checkin' => '\'' . $ci->format('Ymd') . '\'',
-					'duration' => $du,
-					//'paxages' => '\'' . implode('|',$px) . '\'',
-					'paxages' => '\'' . implode('|',$paxages) . '\'',
-						//'extras' => '\'' . $ex . '\'',
-					'priceType' => '\'' . $pt . '\'',
-					'$format' => 'json'
-				)
-			);
-		
-		$url = $this->helper->getQuery($options);
-		
-		$stay = null;
-		
-		$r = $this->helper->executeQuery($url);
-		if (isset($r)) {
-			$res = json_decode($r);
-			$stay = $res->d->GetStay;
-		}
-
-		return $stay;
-	}
-	
-	public function GetAllRatePlansStay($resourceId) {
-		$params = $this->getState('params');
-
-		$ci = $params['checkin'];
-		$du = $params['duration'];
-		//$px = array_fill(0,(int)$params['paxes'],BFCHelper::$defaultAdultsAge);
-		//$ex = $params['extras'];
-		$paxages = $params['paxages'];
-		
-		if ($ci == null || $du == null || $paxages == null) { 
-			return null;
-		}
-				
-		$options = array(
-				'path' => $this->urlAllRatePlansStay,
-				'data' => array(
-					'resourceId' => $resourceId,
-					'checkin' => '\'' . $ci->format('Ymd') . '\'',
-					'duration' => $du,
-					//'paxages' => '\'' . implode('|',$px) . '\'',
-					'paxages' => '\'' . implode('|',$paxages) . '\'',
-					//'extras' => '\'' . $ex . '\'',
-					'$format' => 'json'
-				)
-			);
-		
-		$url = $this->helper->getQuery($options);
-		
-		$ratePlansstay = null;
-		
-		$r = $this->helper->executeQuery($url);
-		if (isset($r)) {
-			$res = json_decode($r);
-			$ratePlansstay = $res->d;
-		}
-
-		return $ratePlansstay;
-	}
-
-	public function getFiltersKey() {
-		$filters ="";
-		$params = $this->getState('params');
-		if (isset($params) && !empty($params['filters'])){
-			$filters = $params['filters'];
-		}
-		if (empty($filters) || (!is_array($filters) && count($filters) == 0)) return '';
-		$filtersKey = '';
-		foreach($filters as $key=>$filter) {
-			$filtersKey .= $key . ':' . $filter;
-		}
-		return $filtersKey;
 	}
 	
 	public function getTotal()
 	{
-		if ($this->count !== null)
+		if ($this->count !== null){
 			return $this->count;
-			
-		$params = $this->getState('params');
-		$merchantResults = $params['merchantResults'];
-		
-		$searchid = $params['searchid'];
-		
-		$sessionkey = 'search.' . $searchid . '.count';
-//		$session = JFactory::getSession();
-		$cachedresults = BFCHelper::getSession($sessionkey, '', 'com_bookingforconnector');
-		
-		if (isset($cachedresults) && $cachedresults != null) {
-			/*
-			// post filtering results
-			$filtersKey = $this->getFiltersKey();
-			$results = $this->filterResults($results);
-			
-			$sessionkey = 'search.' . $searchid . '.' . $filtersKey . '.results';
-			
-			$filteredCachedresults = BFCHelper::getSession($sessionkey, '', 'com_bookingforconnector');
-			
-			if (isset($filteredCachedresults) && is_array($filteredCachedresults)) {
-				return count($filteredCachedresults);
-			}
-			*/
-			return $cachedresults;
 		}
-		//$merchantResults = $params['merchantResults'];
-
-		$options = array(
-				'path' => $merchantResults == true ? $this->urlSearchAllCountMerchant : $this->urlSearchAllCount,
-				'data' => array(
-					'$format' => 'json'
-				)
-			);
-		
-		$this->applyDefaultFilter($options);
-				
-		$url = $this->helper->getQuery($options);
-		
-		$c = null;
-		
-		$r = $this->helper->executeQuery($url);
-		if (isset($r)) {
-			$res = json_decode($r);
-			$c = $merchantResults == true ? (int)$res->d->SearchAllCountMerchant : (int)$res->d->SearchAllCount;
+		else{
+			$this->retrieveItems();
 		}
 
-		BFCHelper::setSession($sessionkey, $c, 'com_bookingforconnector'); //$_SESSION[$sessionkey] = $c;
-		return $c;
 	}
 	
 	public function getMasterTypologiesFromService($onlyEnabled = true, $language='') {
@@ -1206,17 +472,8 @@ class BookingForConnectorModelSearch extends JModelList
 	}
 
 	public function getMasterTypologies($onlyEnabled = true, $language='') {
-		$session = JFactory::getSession();
-		if(empty($language)){
-				$language = JFactory::getLanguage()->getTag();
-		}
-		$typologies = $session->get('getMasterTypologies'.$language, null , 'com_bookingforconnector');
-//		if (!$session->has('getMerchantCategories','com_bookingforconnector')) {
-		if ($typologies==null) {
-			$typologies = $this->getMasterTypologiesFromService($onlyEnabled, $language);
-			$session->set('getMasterTypologies'.$language, $typologies, 'com_bookingforconnector');
-		}
-		return $typologies;
+	  $typologies = $this->getMasterTypologiesFromService($onlyEnabled);
+     return $typologies;
 	}
 
 		
@@ -1392,101 +649,89 @@ class BookingForConnectorModelSearch extends JModelList
 //		return parent::populateState($filter_order, $filter_order_Dir);
 		parent::populateState($filter_order, $filter_order_Dir);
 	}
-	
-	public function getItems($ignorePagination = false, $jsonResult = false)
-	{
-		// Get a storage key.
-		//$store = $this->getStoreId();
 
-		// Try to load the data from internal storage.
-		/*if (isset($this->cache[$store]))
-		{
-			return $this->cache[$store];
-		}*/
+	public function getItems($ignorePagination = false, $jsonResult = false, $start = 0, $count = 20) {
+		if ($this->currentData !== null){
+			return $this->currentData;
+		}
+		else{
+			$start = $this->getState('list.start'); 
+			$count = $this->getState('list.limit');
+			$this->retrieveItems($ignorePagination, $jsonResult, $start, $count);
+		}
+		return $this->currentData;
+	}
 
-//		$items = $this->getSearchResults(
-//			$this->getState('list.start'), 
-//			$this->getState('list.limit'), 
-//			$this->getState('list.ordering', 'stay'), 
-//			$this->getState('list.direction', 'asc'),
-//			$ignorePagination,
-//			$jsonResult
-//		);
+	public function retrieveItems($ignorePagination = false, $jsonResult = false, $start = 0, $count = 20) {
+		
+
+		if(!empty($_REQUEST['filter_order']) ){
+			
+			$items = $this->getSearchResults(
+				$start,
+				$count,
+				$_REQUEST['filter_order'],
+				$_REQUEST['filter_order_Dir'],
+				$ignorePagination,
+				$jsonResult
+			);
+		}
+		else {
+			
+		
 		$items = $this->getSearchResults(
-			$this->getState('list.start'), 
-			$this->getState('list.limit'), 
-			$this->getState('list.ordering'), 
-			$this->getState('list.direction'),
+			
+			$start,
+			$count,
+			'',
+			'',
 			$ignorePagination,
 			$jsonResult
-		);
-
-		// Add the items to the internal cache.
-		//$this->cache[$store] = $items;
-
-		//return $this->cache[$store];
-		return $items;
-	}
-	function maxValueInArray($array, $keyToSearch)
-	{
-		$currentMax = NULL;
-		foreach($array as $arr)
-		{
-			foreach($arr as $key => $value)
-			{
-				if ($key == $keyToSearch && ($value >= $currentMax))
-				{
-					$currentMax = $value;
-				}
-			}
-		}
-
-		return $currentMax;
-	}
-	
-	public  function GetResourcesCalculateByIds($listsId,$language='') {
-
-		$params = $this->getState('params');
-
-		$ci = $params['checkin'];
-		$du = $params['duration'];
-		//$px = array_fill(0,(int)$params['paxes'],BFCHelper::$defaultAdultsAge);
-		//$ex = $params['extras'];
-		$paxages = $params['paxages'];
-		
-		if ($ci == null || $du == null || $paxages == null) { 
-			return null;
-		}
-				
-		$options = array(
-				'path' => $this->urlGetCalculateResourcesByIds,
-				'data' => array(
-					/*'$skip' => $start,
-					'$top' => $limit,*/
-					'ids' => '\'' .$listsId. '\'',
-					'checkin' => '\'' . $ci->format('Ymd') . '\'',
-					'duration' => $du,
-					//'paxages' => '\'' . implode('|',$px) . '\'',
-					'paxages' => '\'' . implode('|',$paxages) . '\'',
-					'cultureCode' => BFCHelper::getQuotedString($language),
-					'$format' => 'json'
-				)
+			
 			);
+			
+			
+		}
+		
+     // if(!empty($_POST['filter_order']) ){
+		
+	//	return $tempj;
+		//} 
+	//else {
+		$this->currentData = $items;
+	//	}
+	}
+
+	public function SearchResult($term, $language, $limit, $onlyLocations=0) {
+		$options = array(
+			'path' => $this->urlSearchResult,
+			'data' => array(
+					'$format' => 'json',
+					'term' => BFCHelper::getQuotedString($term),
+					'onlyLocations' => $onlyLocations,
+					'cultureCode' =>  BFCHelper::getQuotedString($language),
+					'top' => 0
+			)
+		);
+		
+		if (isset($limit) && $limit > 0) {
+			$options['data']['top'] = $limit;
+		}
+
 		$url = $this->helper->getQuery($options);
-	
-		$resources = null;
-	
+
+		$results = array();
+
 		$r = $this->helper->executeQuery($url);
 		if (isset($r)) {
 			$res = json_decode($r);
-			if (!empty($res->d->results)){
-				$resources = json_encode($res->d->results);
+			if (!empty($res->d->SearchResult)){
+				$results = $res->d->SearchResult;
 			}elseif(!empty($res->d)){
-				$resources = json_encode($res->d);
+				$results = $res->d;
 			}
 		}
-	
-		return $resources;
+		
+		return $results;
 	}
-
 }

@@ -25,7 +25,8 @@ require_once $pathbase . '/helpers/SimpleDOM.php';
 class BookingForConnectorModelCondominium extends JModelList
 {
 	private $urlResource = null;
-	private $urlUnits = null;
+	private $urlResources = null;
+	private $urlResourcesCount = null;
 	private $urlUnitServices = null;
 	private $helper = null;
 	private $urlResourceCounter = null;
@@ -37,8 +38,8 @@ class BookingForConnectorModelCondominium extends JModelList
 		$this->helper = new wsQueryHelper(COM_BOOKINGFORCONNECTOR_WSURL, COM_BOOKINGFORCONNECTOR_APIKEY);
 		$this->urlResource = '/GetCondominiumById';
 //		$this->urlUnitServices = '/Condominiums(%d)/Unit/Services';
-		$this->urlUnits = '/Resources';
-		$this->urlUnitsCount = '/Resources';
+		$this->urlResources = '/GetResources';
+		$this->urlResourcesCount = '/GetResourcesCount';
 		$this->urlResourceCounter = '/CondominiumsCounter';
 		$this->urlSearchAllCalculate = '/SearchAllLiteNew';
 	}
@@ -80,10 +81,11 @@ class BookingForConnectorModelCondominium extends JModelList
 		return $res;
 	}	
 
-	public function getResourceFromService() {
-		$params = $this->getState('params');
-		$resourceId = $params['resourceId'];
-		$resourceIdRef = $params['resourceId'];
+	public function getResourceFromService($resourceId='') {
+		if(empty($resourceId)){
+			$params = $this->getState('params');
+			$resourceId = $params['resourceId'];
+		}
 		$options = array(
 				'path' => $this->urlResource,
 				'data' => array(
@@ -96,176 +98,125 @@ class BookingForConnectorModelCondominium extends JModelList
 		
 		$url = $this->helper->getQuery($options);
 		
-		$resource = null;
+		$condominium= null;
 		
 		$r = $this->helper->executeQuery($url);
 		if (isset($r)) {
 			$res = json_decode($r);
-			//$resource = $res->d->results ?: $res->d;
-			if (!empty($res->d->GetCondominiumById)){
-				$resource = $res->d->GetCondominiumById;
+			if (!empty($res->d->results)){
+				$condominium = $res->d->results->GetCondominiumById;
 			}elseif(!empty($res->d)){
-				$resource = $res->d;
+				$condominium = $res->d->GetCondominiumById;
 			}
+
 		}
-		return $resource;
+		if(!empty($condominium)){
+			$condominium->Merchant=BFCHelper::getMerchantFromServicebyId($condominium->MerchantId);
+		}
+		
+		
+		return $condominium;
 	}	
 
 		public function applyDefaultFilter(&$options) {
 
-		$params = BFCHelper::getSearchParamsSession();
-		if(!empty($params)){
-			$masterTypeId = $params['masterTypeId'];
-			$checkin = $params['checkin'];
-			$checkout = $params['checkout'];
-			$duration = $params['duration'];
-			$persons = $params['paxes'];
-			$merchantCategoryId = $params['merchantCategoryId'];
-			$paxages = $params['paxages'];
-			$merchantId = $params['merchantId'];
-
-			$cultureCode = $params['cultureCode'];
-			$resourceName = $params['resourceName'].'';
-			$refid = $params['refid'].'';
-			$onlystay = $params['onlystay'];
-		}
-		
-		$filter = '';
-		
-
-		if (isset($onlystay) && $onlystay <> "false") {// solo se è calcolato allora faccio una ricerca con i parametri altrimenti non li passo
-
-			if (isset($params['locationzone']) ) {
-				$locationzone = $params['locationzone'];
-			}
-			if (isset($masterTypeId) && $masterTypeId > 0) {
-				$options['data']['masterTypeId'] = $masterTypeId;
-			}
-
-			if (isset($merchantCategoryId) && $merchantCategoryId > 0) {
-				$options['data']['merchantCategoryId'] = $merchantCategoryId;
-			}
-			
-			if ((isset($checkin)) && (isset($duration) && $duration > 0)) {
-				$options['data']['checkin'] = '\'' . $checkin->format('Ymd') . '\'';
-				$options['data']['duration'] = $duration;
-			}
-			
-			if (isset($persons) && $persons > 0) {
-				$options['data']['paxes'] = $persons;
-				if (isset($paxages)) {
-					$options['data']['paxages'] = '\'' . implode('|',$paxages) . '\'';
-				}else{
-					$px = array_fill(0,$persons,BFCHelper::$defaultAdultsAge);
-					$options['data']['paxages'] = '\'' . implode('|',$px) . '\'';
-				}
-			}
-			
-				$options['data']['pricetype'] = '\'' . 'rateplan' . '\'';
-
-			if (isset($locationzone) && $locationzone > 0) {
-				$options['data']['zoneId'] = $locationzone;
-			}
-		}else{
-			if (isset($refid) && $refid <> "" ) {
-				$options['data']['refId'] = '\''.$refid.'\'';
-			}
-			if (isset($resourceName) && $resourceName <> "" ) {
-				$options['data']['resourceName'] = '\''. $resourceName.'\'';
-			}
-		}
-
-
-		if (isset($cultureCode) && $cultureCode !='') {
-			$options['data']['cultureCode'] = '\'' . $cultureCode. '\'';
-		}
-		
-		if (isset($merchantId) && $merchantId > 0) {
-			$options['data']['merchantid'] = $merchantId;
-		}
-
-		if ($filter!='')
-			$options['data']['$filter'] = $filter;
-
-		/*if (count($categoryIds) > 0)
-			$options['data']['categoryIds'] = '\''.implode('|',$categoryIds).'\'';*/
-	}
-
-	public function getResourcesSearchFromService($start, $limit) {
 		$params = $this->getState('params');
-				
-		$resourceId = $params['resourceId'];
 		
-		$options = array(
-				'path' => $this->urlSearchAllCalculate,
-				'data' => array(
-						'$format' => 'json',
-						'topRresult' => 0,
-						'calculate' => 1,
-						'lite' => 1,
-						'condominiumId' => $resourceId
-				)
-		);
-		
-		$this->applyDefaultFilter($options);
-		
-//		if (isset($start) && $start >= 0) {
-//			$options['data']['$skip'] = $start;
-//		}
-//		
-//		if (isset($limit) && $limit > 0) {
-//			$options['data']['$top'] = $limit;
-//		}	
-				
-		$url = $this->helper->getQuery($options);
-		
-		$resources = null;
-				
-		$r = $this->helper->executeQuery($url);
-		
-		if (isset($r)) {
-			$res = json_decode($r);
-//			$resources = $res->d->results ?: $res->d;
-			if (!empty($res->d->results)){
-				$resources = $res->d->results;
-			}elseif(!empty($res->d)){
-				$resources = $res->d;
-			}
+		$categories = $params['categories'];
+		if (!empty($categories)) {
+			$options['data']['productcategories'] =  BFCHelper::getQuotedString(implode(',',$categories));
 		}
-
-		return $resources;
+		
+		$condominiumid = $params['parentProductId'];
+		if (!empty($condominiumid)) {
+			$options['data']['parentProductId'] =  $condominiumid;
+		}
 	}
 
-	public function getResourcesFromService($start, $limit) {
+//	public function getResourcesSearchFromService($start, $limit) {
+//		$params = $this->getState('params');
+//				
+//		$resourceId = $params['resourceId'];
+//		
+//		$options = array(
+//				'path' => $this->urlSearchAllCalculate,
+//				'data' => array(
+//						'$format' => 'json',
+//						'topRresult' => 0,
+//						'calculate' => 1,
+//						'lite' => 1,
+//						'condominiumId' => $resourceId
+//				)
+//		);
+//		
+//		$this->applyDefaultFilter($options);
+//		
+////		if (isset($start) && $start >= 0) {
+////			$options['data']['$skip'] = $start;
+////		}
+////		
+////		if (isset($limit) && $limit > 0) {
+////			$options['data']['$top'] = $limit;
+////		}	
+//				
+//		$url = $this->helper->getQuery($options);
+//		
+//		$resources = null;
+//				
+//		$r = $this->helper->executeQuery($url);
+//		
+//		if (isset($r)) {
+//			$res = json_decode($r);
+////			$resources = $res->d->results ?: $res->d;
+//			if (!empty($res->d->results)){
+//				$resources = $res->d->results;
+//			}elseif(!empty($res->d)){
+//				$resources = $res->d;
+//			}
+//		}
+//
+//		return $resources;
+//	}
 
-				$params = $this->getState('params');
-				
-		$resourceId = $params['resourceId'];
-		
+	public function getResourcesFromService($start, $limit) {// with random order is not possible to order by another field
+
+		$params = $this->getState('params');
+		$seed = $params['searchseed'];
+		$cultureCode = JFactory::getLanguage()->getTag();
+
 		$options = array(
-				'path' => $this->urlUnits,
+				'path' => $this->urlResources,
 				'data' => array(
-					'$format' => 'json',
-					'$filter' => 'ParentProductId eq ' . $resourceId,
+					/*'$skip' => $start,
+					'$top' => $limit,*/
+					'seed' => $seed,
+					'cultureCode' => BFCHelper::getQuotedString($cultureCode),
+					'$format' => 'json'
 				)
-		);
-		
+			);
+
 		if (isset($start) && $start >= 0) {
-			$options['data']['$skip'] = $start;
+			$options['data']['skip'] = $start;
 		}
 		
 		if (isset($limit) && $limit > 0) {
-			$options['data']['$top'] = $limit;
-		}	
-
-		$options['data']['$orderby'] = 'Weight desc';
-				
-		$url = $this->helper->getQuery($options);
-
-		$resources = null;
-				
-		$r = $this->helper->executeQuery($url);
+			$options['data']['top'] = $limit;
+		}
 		
+		$this->applyDefaultFilter($options);
+		
+
+//		// adding other ordering to allow grouping
+//		$options['data']['$orderby'] = 'Weight desc';
+//		if (isset($ordering)) {
+//			$options['data']['$orderby'] .= ", " . $ordering . ' ' . strtolower($direction);
+//		}
+		
+		$url = $this->helper->getQuery($options);
+		
+		$resources = null;
+		
+		$r = $this->helper->executeQuery($url);
 		if (isset($r)) {
 			$res = json_decode($r);
 //			$resources = $res->d->results ?: $res->d;
@@ -314,10 +265,18 @@ class BookingForConnectorModelCondominium extends JModelList
 
 		
 	protected function populateState($ordering = NULL, $direction = NULL) {
+		$session = JFactory::getSession();
+		$searchseed = BFCHelper::getSession('searchseedcond', rand(), 'com_bookingforconnector');
+		if ($searchseed ==null) {
+			BFCHelper::setSession('searchseedcond', $searchseed, 'com_bookingforconnector');
+		}
 		$resourceId = BFCHelper::getInt('resourceId');
 		$defaultRequest =  array(
+			'categories' => BFCHelper::getArray('categories'),
+			'parentProductId' => BFCHelper::getInt('resourceId'),
 			'resourceId' => BFCHelper::getInt('resourceId'),
 			'state' => BFCHelper::getStayParam('state'),
+			'searchseed' => $searchseed
 		);
 		
 		$this->setState('params', $defaultRequest);
@@ -438,22 +397,15 @@ class BookingForConnectorModelCondominium extends JModelList
 
 	public function getTotalResources()
 	{
-		$params = $this->getState('params');
-		$resourceId = $params['resourceId'];
-				
+		//$typeId = $this->getTypeId();
 		$options = array(
-				'path' => $this->urlUnitsCount,
+				'path' => $this->urlResourcesCount,
 				'data' => array(
-					'$format' => 'json',
-					'$filter' => 'ParentProductId eq ' . $resourceId,
-				)
+					'$format' => 'json'
+			)
 			);
-		
-		$url = $this->helper->getQuery($options);
-		
-		$count = null;
-			$options['data']['$inlinecount'] = 'allpages';
-			$options['data']['$top'] = 0;
+//			$options['data']['$inlinecount'] = 'allpages';
+//			$options['data']['$top'] = 0;
 		$this->applyDefaultFilter($options);
 				
 		$url = $this->helper->getQuery($options);
@@ -464,15 +416,14 @@ class BookingForConnectorModelCondominium extends JModelList
 		if (isset($r)) {
 			$res = json_decode($r);
 			$count = 0;
-			if (isset($res->d->__count)){
-				$count = (int)$res->d->__count;
-			}elseif(isset($res->d)){
-				$count = (int)$res->d;
-			}
+			$count = (int)$res->d->GetResourcesCount;
+//			if (!empty($res->d->__count)){
+//				$count = (int)$res->d->__count;
+//			}elseif(!empty($res->d)){
+//				$count = (int)$res->d;
+//			}
 //			$count = (int)$r;
 		}
-
-
 		return $count;
 	}	
 	

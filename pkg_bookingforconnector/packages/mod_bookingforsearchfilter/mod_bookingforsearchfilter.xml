@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<extension type="module" version="3.6" method="upgrade">
+<extension type="module" version="3.7.4" client="site" method="upgrade">
     <!-- Name of the Module -->
 	<name>BookingFor Search Filter- Module</name> 
  
@@ -8,10 +8,10 @@
 	<author>Bookingfor</author>
 	<authorEmail>developer@ipertrade.com</authorEmail>
 	<authorUrl>http://www.ipertrade.com</authorUrl>
-	<copyright>Copyright (c)2006-2016 Ipertrade s.r.l.</copyright>
+	<copyright>Copyright (c)2006-2017 Ipertrade s.r.l.</copyright>
       <license>http://www.gnu.org/copyleft/gpl.html GNU/GPL</license>
 	<!--  The version string is recorded in the components table -->
-	<version>2.2.1</version>
+	<version>3.1.0</version>
 	<!-- The description is optional and defaults to the name -->
 	<description>Simple module for BookingFor Search Filter</description>
  
@@ -21,7 +21,6 @@
 		<filename module="mod_bookingforsearchfilter">mod_bookingforsearchfilter.php</filename>
 		<filename>index.html</filename>
 		<folder>tmpl</folder>
-		<folder>assets</folder>
 	</files>
  
     <!-- Optional parameters -->

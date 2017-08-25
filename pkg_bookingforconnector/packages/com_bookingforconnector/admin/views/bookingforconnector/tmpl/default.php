@@ -12,12 +12,13 @@ require_once $pathbase . 'defines.php';
 require_once $pathbase . 'helpers/BFCHelper.php';
 require_once $pathbase . 'helpers/wsQueryHelper.php';
 
-$wsHelper = new wsQueryHelper(COM_BOOKINGFORCONNECTOR_WSURL, COM_BOOKINGFORCONNECTOR_APIKEY);
+$wsHelper = new wsQueryHelper(null, null);
 
 $checkUrl = $wsHelper->url_exists();
 $result = null;
 $resultOk = false;
 $msg="";
+$monomerchant = false;
 
 if($checkUrl){
 	$options = array(
@@ -46,7 +47,6 @@ if($checkUrl){
 			$result = $res;
 		}
 	}
-
 	if(!empty($result)){
 		if (!empty($result->error) ){
 			if (!empty($result->error->message) ){
@@ -60,6 +60,12 @@ if($checkUrl){
 			}else{
 				$msg=" Utente non attivo";
 			}
+			
+			
+			if (!empty($result->CurrentManagingMerchantId) ){
+				$monomerchant = true;
+			}
+
 			if(!empty($result->ValidationStart)){
 
 				$validationStart = BFCHelper::parseJsonDate($result->ValidationStart);
@@ -104,26 +110,29 @@ $version=2;
 ?>
 <h1><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_ADMINISTRATION_CONFIGURATION')?></h1>
 <h2><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_ADMINISTRATION_PREFERENCE')?></h2>
-	<?php
-
-		JLoader::import('joomla.application.component.helper');
-		$params = JComponentHelper::getParams('com_bookingforconnector');
-		$serviceUri = $params->get('wsurl', '');
-		$apikey = $params->get('apikey', '');
-		$bootstrap = $params->get('bootstrap', '');
-		$showdata = $params->get('showdata', '');
-	?>
 <table class="table table-striped table-bordered table-condensed">
 	<tbody>
 	<tr>
+		<td><?php echo JTEXT::_('CONFIG_VERSION_LABEL')  ?></td>
+		<td>
+			<?php echo BFI_VERSION ?>
+		</td>
+	</tr>
+	<tr>
 		<td><?php echo JTEXT::_('CONFIG_WSURL_LABEL')  ?></td>
 		<td>
-			<?php echo $serviceUri ?>
+			<?php echo COM_BOOKINGFORCONNECTOR_SUBSCRIPTION_KEY ?>
 			<?php
-				if(empty($serviceUri)){
+				if(empty(COM_BOOKINGFORCONNECTOR_SUBSCRIPTION_KEY)){
 				echo '<div class="error" style="margin:10px 0 0">' . JText::_('COM_BOOKINGFORCONNECTOR_ADMINISTRATION_WSURL_MESSAGE') . '</div>';
 				}
 			?>
+		</td>
+	</tr>
+	<tr>
+		<td><?php echo JTEXT::_('CONFIG_FORMLABEL_LABEL')  ?></td>
+		<td>
+			<?php echo COM_BOOKINGFORCONNECTOR_FORM_KEY?>
 		</td>
 	</tr>
 	<tr>
@@ -161,27 +170,30 @@ $version=2;
 		</td>
 	</tr>
 	<tr>
-		<td><?php echo JTEXT::_('CONFIG_APIKEY_LABEL')  ?></td>
+		<td><?php echo JTEXT::_('CONFIG_APIKEY_LABEL')  ?> (<?php	echo (!empty( $resultOk ) && $monomerchant)? "API merchant" :"API sotttoscrizione";?>)</td>
 		<td>
-			<?php echo $apikey ?>
 			<?php
-				if(empty($apikey)){
+				if(empty(COM_BOOKINGFORCONNECTOR_API_KEY)){
 				echo '<div class="error" style="margin:10px 0 0">' . JText::_('COM_BOOKINGFORCONNECTOR_ADMINISTRATION_APIKEY_MESSAGE') . '</div>';
 				}
 			?>
+			<?php echo COM_BOOKINGFORCONNECTOR_API_KEY?>
+			
 		</td>
 	</tr>
 	<tr>
 		<td>Account</td>
-		<td><span class="badge" style="<?php echo (!empty($resultOk)? "background-color: #398439;" : "background-color: #d43f3a;") ?>">&nbsp;</span> <?php echo $msg ?></td>
+		<td>
+			<span class="badge" style="<?php echo (!empty($resultOk)? "background-color: #398439;" : "background-color: #d43f3a;") ?>">&nbsp;</span> <?php echo $msg ?>
+		</td>
 	</tr>
 	<tr>
 		<td>PHP version</td>
 		<td><?php echo PHP_VERSION ?>
 			<?php
-				if (version_compare(PHP_VERSION, '5.5.0', '<')) {
+				if (version_compare(PHP_VERSION, '5.6.0', '<')) {
 
-					echo '<span class="badge" style="background-color: #d43f3a;">Min Version 5.5 </span>';
+					echo '<span class="badge" style="background-color: #d43f3a;">Min Version 5.6 </span>';
 				}
 			?>
 		
@@ -192,12 +204,8 @@ $version=2;
 		<td><?php echo $version ?></td>
 	</tr>
 	<tr>
-		<td>Bootstrap version</td>
-		<td><?php echo $bootstrap ?></td>
-	</tr>
-	<tr>
 		<td><?php echo JTEXT::_('CONFIG_SHOWDATA_LABEL')  ?></td>
-		<td><?php echo JTEXT::_($showdata ? 'JYES' : 'JNO')  ?></td>
+		<td><?php echo JTEXT::_(COM_BOOKINGFORCONNECTOR_SHOWDATA ? 'JYES' : 'JNO')  ?></td>
 	</tr>
 	<tr>
 		<td>SEF</td>
@@ -223,6 +231,19 @@ $version=2;
 		$uriMerchant  = 'index.php?option=com_bookingforconnector&view=merchantdetails';
 		$app    = JApplication::getInstance('site');
 		$router = $app->getRouter();
+		$tmpMerchantId = 123;
+		$tmpMerchantName = "MerchantName";
+		$titleUrlMerchant = "Merchant";
+		$layoutUrlMerchant = "";
+		
+		if(!empty( $resultOk ) && $monomerchant){
+			$tmpMerchantId = $result->CurrentManagingMerchantId;
+			$currMerchant = BFCHelper::getMerchantFromServicebyId($tmpMerchantId);
+			$tmpMerchantName =  BFCHelper::getSlug($currMerchant->Name); 
+			$titleUrlMerchant = "Merchant contacts";
+			$layoutUrlMerchant = "&layout=contactspopup";
+		}
+
 //$uri = $router->build($myURL);
 //$parsed_url = $uri->toString();		
 		$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uriResource ) .' AND language='.$db->Quote('*').'  AND published = 1 LIMIT 1' );
@@ -239,11 +260,13 @@ $version=2;
 		$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uriMerchant .'%' ) .' AND language='.$db->Quote('*').'  AND published = 1 LIMIT 1' );
 		$itemIdMerchant = intval($db->loadResult());
 		if ($itemIdMerchant<>0)
-			$merchantRoute = $router->build($uriMerchant.'&merchantId=' . '123' . ':' . 'MerchantName' . '&Itemid='.$itemIdMerchant) ;
+			$merchantRoute = $router->build($uriMerchant.'&merchantId=' . $tmpMerchantId . ':' . $tmpMerchantName . '&Itemid='.$itemIdMerchant . $layoutUrlMerchant) ;
 		else
-			$merchantRoute = $router->build($uriMerchant.'&merchantId=' . '123' . ':' . 'MerchantName');
+			$merchantRoute = $router->build($uriMerchant.'&merchantId=' . $tmpMerchantId . ':' . $tmpMerchantName . $layoutUrlMerchant);
 		
 		$merchantRoute = str_replace('/administrator/','/',$merchantRoute->toString());
+		
+		
 ?>
 
 <table class="table table-striped table-bordered table-condensed">
@@ -251,7 +274,7 @@ $version=2;
 	<tr>
 		<th>Language</th>
 		<th>Resource</th>
-		<th>Merchant</th>
+		<th><?php echo $titleUrlMerchant ?></th>
 	</tr>
 	</thead>
 	<tbody>
@@ -280,10 +303,10 @@ $version=2;
 				$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uriMerchant .'%' ) .' AND language='. $db->Quote($language) .' AND published = 1 LIMIT 1' );
 				$itemIdMerchant = intval($db->loadResult());
 				if ($itemIdMerchant<>0)
-					$merchantRoute = $router->build($uriMerchant.'&merchantId=' . '123' . ':' . 'MerchantName' . '&Itemid='.$itemIdMerchant) ;
+					$merchantRoute = $router->build($uriMerchant.'&merchantId=' . $tmpMerchantId . ':' . $tmpMerchantName . '&Itemid='.$itemIdMerchant . $layoutUrlMerchant) ;
 				else
-					$merchantRoute = $router->build($uriMerchant.'&merchantId=' . '123' . ':' . 'MerchantName');
-				
+					$merchantRoute = $router->build($uriMerchant.'&merchantId=' . $tmpMerchantId . ':' . $tmpMerchantName . $layoutUrlMerchant);
+
 				$merchantRoute = str_replace('/administrator/','/'.$lang->sef .'/',$merchantRoute->toString());
 ?>
 	<tr>

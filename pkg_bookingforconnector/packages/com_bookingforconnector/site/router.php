@@ -47,21 +47,26 @@ function BookingForConnectorBuildRoute(&$query)
 	}
 	
 	if ($view=='PAYMENT') {
-		if(isset($query['actionmode']))
+		if(isset($query['orderId']))
 		{
-			$segments[] = $query['actionmode'];
-			unset( $query['actionmode'] );
+			$segments[] = $query['orderId'];
+			unset( $query['orderId'] );
 		};
-		if(isset($query['payedOrderId']))
-		{
-			$segments[] = $query['payedOrderId'];
-			unset( $query['payedOrderId'] );
-		};
-		if(isset($query['result']))
-		{
-			$segments[] = $query['result'];
-			unset( $query['result'] );
-		};
+//		if(isset($query['actionmode']))
+//		{
+//			$segments[] = $query['actionmode'];
+//			unset( $query['actionmode'] );
+//		};
+//		if(isset($query['payedOrderId']))
+//		{
+//			$segments[] = $query['payedOrderId'];
+//			unset( $query['payedOrderId'] );
+//		};
+//		if(isset($query['result']))
+//		{
+//			$segments[] = $query['result'];
+//			unset( $query['result'] );
+//		};
 	}
 	if ($view=='ORDERS') {
 		if(isset($query['checkmode']))
@@ -210,15 +215,31 @@ function BookingForConnectorParseRoute($segments)
 		case 'cart':	
 		case JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_CARTDETAILS'):
 			$vars['view'] = 'cart';
+			if ($count>1) {
+				$layout = $segments[1];
+				switch (strtolower($layout))
+				{
+					case 'thanks':
+					case JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_MERCHANTDETAILS_LAYOUT_THANKS'):
+						$vars['layout'] = 'thanks';
+						break;
+					case 'errors':
+					case JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_MERCHANTDETAILS_LAYOUT_ERRORS'):
+						$vars['layout'] = 'errors';
+						break;
+					default:
+						break;
+				}
+			}
 			break;
 		case 'tag':
 		case JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_TAG'):
 			$vars['view'] = 'tag';
 			break;
-		case 'user':	
-		case JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_USER'):
-			$vars['view'] = 'user';
-			break;
+//		case 'user':	
+//		case JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_USER'):
+//			$vars['view'] = 'user';
+//			break;
 		case 'searchonsell':
 		case JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_SEARCHONSELL'):
 			$vars['view'] = 'searchonsell';
@@ -238,27 +259,27 @@ function BookingForConnectorParseRoute($segments)
 		case 'payment':			
 		case JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_PAYMENT'):
 			$vars['view'] = 'payment';
+//			if ($count>1) {
+//				$actionmode = $segments[1];
+//				$vars['actionmode'] = $actionmode;
+//			}
 			if ($count>1) {
-				$actionmode = $segments[1];
-				$vars['actionmode'] = $actionmode;
-			}
-			if ($count>2) {
-				$orderId = $segments[2];
+				$orderId = $segments[1];
 				$vars['orderId'] = $orderId;
 			}
-				if ($count>3) {
-				$result = $segments[3];
-				$vars['result'] = $result;
-			}
+//				if ($count>3) {
+//				$result = $segments[3];
+//				$vars['result'] = $result;
+//			}
 			break;
-		case 'crew':
-		case JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_CREW'):
-			$vars['view'] = 'crew';
-			if ($count>1) {
-				$crewId = $segments[1];
-				$vars['crewId'] = $crewId;
-			}
-			break;
+//		case 'crew':
+//		case JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_CREW'):
+//			$vars['view'] = 'crew';
+//			if ($count>1) {
+//				$crewId = $segments[1];
+//				$vars['crewId'] = $crewId;
+//			}
+//			break;
 		case 'orders':	
 		case JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_ORDERS'):
 			$vars['view'] = 'orders';
@@ -345,18 +366,6 @@ function BookingForConnectorParseRoute($segments)
 					case JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_RESOURCE_LAYOUT_MAP'):
 						$vars['layout'] = 'map';
 						break;						
-					case 'form':
-					case JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_RESOURCE_LAYOUT_FORM'):
-						$vars['layout'] = 'form';
-						break;						
-					case 'inforequestpopup':
-					case JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_RESOURCE_LAYOUT_INFOREQUESTPOPUP'):
-						$vars['layout'] = 'inforequestpopup';
-						break;						
-					case 'rapidview':
-					case JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_RESOURCE_LAYOUT_RAPIDVIEW'):
-						$vars['layout'] = 'rapidview';
-						break;	
 					case 'ratings':
 					case JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_RESOURCE_LAYOUT_RATINGS'):
 						$vars['layout'] = 'ratings';
@@ -385,25 +394,9 @@ function BookingForConnectorParseRoute($segments)
 					case JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_CONDOMINIUM_LAYOUT_MAP'):
 						$vars['layout'] = 'map';
 						break;						
-					case 'form':
-					case JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_CONDOMINIUM_LAYOUT_FORM'):
-						$vars['layout'] = 'form';
-						break;						
-					case 'inforequestpopup':
-					case JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_CONDOMINIUM_LAYOUT_INFOREQUESTPOPUP'):
-						$vars['layout'] = 'inforequestpopup';
-						break;						
-					case 'resourcesajax':
-					case JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_CONDOMINIUM_LAYOUT_RESOURCESAJAX'):
-						$vars['layout'] = 'resourcesajax';
-						break;
 					case 'resources':
 					case JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_CONDOMINIUM_LAYOUT_RESOURCES'):
 						$vars['layout'] = 'resources';
-						break;
-					case 'ratings':
-					case JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_CONDOMINIUM_LAYOUT_RATINGS'):
-						$vars['layout'] = 'ratings';
 						break;
 					default:
 						break;
@@ -413,10 +406,6 @@ function BookingForConnectorParseRoute($segments)
 		case 'condominiums':
 		case JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_CONDOMINIUMS'):
 			$vars['view'] = 'condominiums';
-//			$typeid = explode( ':', $segments[1]);
-//			$vars['typeId'] = (int) $typeid[0];
-//			$rating = explode( ':', $segments[2]);
-//			$vars['rating'] = (int) $rating[0];
 			break;
 		case 'merchants':
 		case JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_MERCHANTS'):
@@ -448,12 +437,6 @@ function BookingForConnectorParseRoute($segments)
 					case 'onsellunits':
 					case JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_MERCHANTDETAILS_LAYOUT_ONSELLUNITS'):
 						$vars['layout'] = 'onsellunits';
-						break;
-					case 'onsellunit':
-					case JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_MERCHANTDETAILS_LAYOUT_ONSELLUNIT'):
-						$vars['layout'] = 'onsellunit';
-						$onSellUnitId = explode( ':', $segments[3]);
-						$vars['onsellunitid'] = (int) $onSellUnitId[0];
 						break;
 					case 'offers':
 					case JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_MERCHANTDETAILS_LAYOUT_OFFERS'):
@@ -489,14 +472,6 @@ function BookingForConnectorParseRoute($segments)
 					case JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_MERCHANTDETAILS_LAYOUT_MAP'):
 						$vars['layout'] = 'map';
 						break;						
-					case 'rateplanslist':
-					case JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_MERCHANTDETAILS_LAYOUT_RATEPLANSLIST'):
-						$vars['layout'] = 'rateplanslist';
-						break;
-					case 'resourcesajax':
-					case JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_MERCHANTDETAILS_LAYOUT_RESOURCESAJAX'):
-						$vars['layout'] = 'resourcesajax';
-						break;
 					case 'thanks':
 					case JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_MERCHANTDETAILS_LAYOUT_THANKS'):
 						$vars['layout'] = 'thanks';
@@ -505,18 +480,6 @@ function BookingForConnectorParseRoute($segments)
 					case JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_MERCHANTDETAILS_LAYOUT_ERRORS'):
 						$vars['layout'] = 'errors';
 						break;
-//					case 'packages':
-//					case JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_MERCHANTDETAILS_LAYOUT_PACKAGES'):
-//						$vars['layout'] = 'packages';
-//						break;
-//					case 'package':
-//					case JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_MERCHANTDETAILS_LAYOUT_PACKAGE'):
-//						$vars['layout'] = 'package';
-//						if ($count>3) {
-//							$packageId = explode( ':', $segments[3]);
-//							$vars['packageId'] = (int) $packageId[0];						
-//						}
-//						break;
 						
 					default:
 						break;

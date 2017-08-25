@@ -122,31 +122,33 @@ class plgSearchBookingforconnector extends JPlugin
 		$rows = array();
 
 		$merchants = BFCHelper::getMerchantsSearch($text,0,$limit,$order,$direction);
-		$document 	= JFactory::getDocument();
-		$language 	= $document->getLanguage();
-		
-		/* we have to find the itemid for the target page */ 
-		$db   = JFactory::getDBO();
-		$lang = JFactory::getLanguage()->getTag();
-		$uri  = 'index.php?option=com_bookingforconnector&view=merchantdetails';
-		
-		$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uri .'%' ) .' AND language='. $db->Quote($lang) .' LIMIT 1' );
-		
-		$itemId = ($db->getErrorNum())? 0 : intval($db->loadResult());
-		
-		//The 'output' of the displayed link
-		foreach($merchants as $merchant) {
-			//$rows[$key]->href = 'index.php?option=com_bookingforconnector&view=merchantdetails&merchantId=' . $merchant->MerchantId . ':' . BFCHelper::getSlug($merchant->Name);
-			$rows[] = (object) array(
-					'href'        => Jroute::_('index.php?Itemid='.$itemId.'&option=com_bookingforconnector&view=merchantdetails&merchantId=' . $merchant->MerchantId . ':' . BFCHelper::getSlug($merchant->Name)),
-					'title'       => $merchant->Name,
-					'created'     => null,
-					'section'     => $section,
-					'text'        => BFCHelper::getLanguage($merchant->Description,$language),
-					'browsernav'  => '0'
-					);
+		if(!empty( $merchants  )){
+			$document 	= JFactory::getDocument();
+			$language 	= $document->getLanguage();
+			
+			/* we have to find the itemid for the target page */ 
+			$db   = JFactory::getDBO();
+			$lang = JFactory::getLanguage()->getTag();
+			$uri  = 'index.php?option=com_bookingforconnector&view=merchantdetails';
+			
+			$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uri .'%' ) .' AND language='. $db->Quote($lang) .' LIMIT 1' );
+			
+			$itemId = ($db->getErrorNum())? 0 : intval($db->loadResult());
+			
+			//The 'output' of the displayed link
+			foreach($merchants as $merchant) {
+				//$rows[$key]->href = 'index.php?option=com_bookingforconnector&view=merchantdetails&merchantId=' . $merchant->MerchantId . ':' . BFCHelper::getSlug($merchant->Name);
+				$rows[] = (object) array(
+						'href'        => Jroute::_('index.php?Itemid='.$itemId.'&option=com_bookingforconnector&view=merchantdetails&merchantId=' . $merchant->MerchantId . ':' . BFCHelper::getSlug($merchant->Name)),
+						'title'       => $merchant->Name,
+						'created'     => null,
+						'section'     => $section,
+						'text'        => BFCHelper::getLanguage($merchant->Description,$language),
+						'browsernav'  => '0'
+						);
+			}
+			
 		}
-
 		//Return the search results in an array
 		return $rows;
 	}

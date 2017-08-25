@@ -8,14 +8,20 @@
 // No direct access to this file
 defined('_JEXEC') or die('Restricted access');
 
+$currencyclass = bfi_get_currentCurrency();
+
 $resource = $this->item;
 $merchant = $resource->Merchant;
+$resourceId = $resource->ResourceId;
+$condominiumId = 0;
+$language = $this->language;
 
-//$maxCapacityPaxes = $resource->MaxCapacityPaxes;
-//$minCapacityPaxes = $resource->MinCapacityPaxes;
-//			$Extras =  $this->Extras;
-//			$PriceTypes =  null;//$this->PriceTypes;
-//			$MerchantBookingTypes =  $this->MerchantBookingTypes;
+$isportal = COM_BOOKINGFORCONNECTOR_ISPORTAL;
+$showdata = COM_BOOKINGFORCONNECTOR_SHOWDATA;
 
 ?>
-<div id="booknow" class="ajaxReload"><?php echo  $this->loadTemplate('calculator_rateplan'); ?></div>
+				<?php 
+				$resourceId = $resource->ResourceId;
+				$condominiumId = 0;
+
+				include(JPATH_COMPONENT.'/views/shared/search_details.php'); //merchant temp ?>

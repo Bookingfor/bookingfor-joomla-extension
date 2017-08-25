@@ -9,109 +9,66 @@
 // No direct access to this file
 defined('_JEXEC') or die('Restricted access');
 
+$language = $this->language;
+$orderid = $this->orderId;
 
-/*
-=====================
-	IDpaymentSystem	
-=====================
-		1	BankPass
-		2	Pagoonline
-		3	PaymentGateway
-		4	ICheckOut
-		5	KeyClient
-		6	Setefi
-		7	WSPayForm
-		8	Activa
-*/
+$errorPayment = false;
+$invalidate=0;
+$errorCode ="0";
+$lastPayment =  null;
+
 //$route= JRoute::_('index.php?view=orders&checkmode=' . $checkmode);
+$db   = JFactory::getDBO();
+$uriCart  = 'index.php?option=com_bookingforconnector&view=cart';
+$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uriCart .'%' ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
+$itemIdCart= ($db->getErrorNum())? 0 : intval($db->loadResult());
+if ($itemIdCart<>0)
+	$uriCart.='&Itemid='.$itemIdCart;
+$url_cart_page = JRoute::_($uriCart);
 
-$order = $this->item->order;
-$merchantPayments = $this->item->merchantPayments;
+$redirect = JRoute::_($uriCart.'&layout=thanks', true, -1);
+$redirecterror = JRoute::_($uriCart.'&layout=errors', true, -1);
 
-if (isset( $this->item->merchantPayment)){
-	$merchantPayment = $this->item->merchantPayment;
-	$paymentSystemId = $merchantPayment->PaymentSystemId;
-//	$paymentSystemRef = null;
-	$paymentSystemRef = $merchantPayment->PaymentSystemName;
+if(!empty( $orderid )){
+	$lastPayment = BFCHelper::GetLastOrderPayment($orderid);
+}
 
-	$actionmode =  $this->actionmode;
-	$hasPayed = $this->hasPayed;
+if (empty($lastPayment) || $lastPayment->PaymentType!=3 || ($lastPayment->Status!=1 && $lastPayment->Status!=3 && $lastPayment->Status!=7 && $lastPayment->Status!=0 && $lastPayment->Status!=4 && $lastPayment->Status!=5 && $lastPayment->Status!=22 )) {
+    $errorPayment= true;
+	$errorCode ="1";
 
-	//echo "<pre>";
-	//echo $actionmode;
-	//echo "</pre>";
-	$routeOrderPayed = JRoute::_('index.php?view=orders&actionform=login&checkMode=5&orderid=' . $order->OrderId . '&email=' . BFCHelper::getItem($order->CustomerData, 'email'));
-	if (COM_BOOKINGFORCONNECTOR_USEEXTERNALUPDATEORDERSYSTEM==="GPDati"){
-		$dateCheckin = BFCHelper::parseJsonDate($order->StartDate);
+}
+if($lastPayment->Status==1 ||$lastPayment->Status==3 || $lastPayment->Status==7 ){
+	$invalidate=1;
+}
+if ($lastPayment->Status==5 ) {
+    $errorPayment= true;
+	$errorCode ="2";
+}
 
-		$routeOrderPayed = JRoute::_('index.php?view=orders&actionform=login&checkMode=146&externalOrderId=' . $order->ExternalId . '&customerLastname=' . BFCHelper::getItem($order->CustomerData, 'cognome') . '&checkIn='.$dateCheckin);
+		
+		$paymentUrl =  str_replace("{language}", substr($language,0,2), COM_BOOKINGFORCONNECTOR_PAYMENTURL).$orderid."/".$lastPayment->OrderPaymentId;
+		$typeMode="hidden";
+
+
+	if ($errorPayment) {
+			$redirecterror .= '?errorCode='.$errorCode;
+			header( 'Location: ' . $redirecterror  );
+			exit();
 	}
-
-	?>
-		<?php if ($actionmode=='donation'):?>
-			<?php
-			$routeOrderPayed = JRoute::_('index.php?view=orders&actionmode=donation');
-
-			//echo "<pre>merchantPayment:<br />";
-			//echo print_r($merchantPayment);
-			//echo "</pre>";
-
-				if(!empty($paymentSystemRef)){
-					echo  $this->loadTemplate('payment_'.$paymentSystemRef);  
-				}
-			?>
-		<?php else:?>
-
-			<?php if ($hasPayed!==null):?>
-				<?php if ($hasPayed):?>
-					<p class="success">
-						<?php echo JText::_('COM_BOOKINGFORCONNECTOR_PAYMENT_VIEW_PAY_OK') ?>
-						<!-- <br/>
-						<a href="<?php echo $routeOrderPayed?>" ><?php echo JText::_('COM_BOOKINGFORCONNECTOR_PAYMENT_VIEW_PRINT') ?></a> -->
-					</p>
-				<?php else:?>
-					<p class="error">
-						<?php echo JText::_('COM_BOOKINGFORCONNECTOR_PAYMENT_VIEW_PAY_KO') ?>
-					</p>
-				<?php endif;?>
-			<?php else:?>
-				<?php if ($actionmode=='cancel'):?>
-					<p class="error">
-						<?php echo JText::_('COM_BOOKINGFORCONNECTOR_PAYMENT_VIEW_PAY_KO_DELETE') ?>
-					</p>
-					<br />
-				<?php endif;?>
-				<?php if ($actionmode=='error' || $actionmode=='errordonation'):?>
-					<p class="error">
-						<?php echo JText::_('COM_BOOKINGFORCONNECTOR_PAYMENT_VIEW_PAY_KO_ERROR') ?>
-					</p>
-					<br />
-				<?php endif;?>
-				<?php if ($actionmode!='errordonation' && $order!=null && $order->DepositAmount>0 && $paymentSystemRef!=null) :?>
-					<!-- Form normale <br/>
-					IDordine = <?php echo $order->OrderId?><br />
-					tipologia di pagamento: <?php echo $paymentSystemRef ?><br /> -->
-					<?php if ($actionmode!='error'):?>
-						<?php echo  $this->loadTemplate('payment_'.$paymentSystemRef);  ?>
-					<?php endif;?>
-				<?php else:?>
-					<?php if ($actionmode!='errordonation'):?>
-						<p class="error">
-							<?php echo JText::_('COM_BOOKINGFORCONNECTOR_PAYMENT_VIEW_ERROR') ?>:
-								<?php if ($order==null):?>  
-								<?php echo JText::_('COM_BOOKINGFORCONNECTOR_PAYMENT_VIEW_ERROR_NOORDER') ?> <br />
-								<?php endif;?>
-								<?php if ($order!=null && $order->DepositAmount<1):?>
-								<?php echo JText::_('COM_BOOKINGFORCONNECTOR_PAYMENT_VIEW_ERROR_NODEPOSIT') ?><br />
-								<?php endif;?>
-								<?php if ($paymentSystemRef==null ):?>
-								<?php echo JText::_('COM_BOOKINGFORCONNECTOR_PAYMENT_VIEW_ERROR_NOPAYMENTSYSTEM') ?><br />
-								<?php endif;?>
-						</p>
-					<?php endif;?>
-				<?php endif;?>
-			<?php endif;?>
-		<?php endif;?>
-	<?php }else{?>
-		<?php echo JText::_('COM_BOOKINGFORCONNECTOR_PAYMENT_VIEW_ERROR_NOPAYMENTSYSTEM') ?><br />
-	<?php }?>
+		
+?>
+Se non verrà rediretto alla pagina del pagamento entro pochi secondi, clicchi il pulsante seguente:<br />
+<form action="<?php echo $paymentUrl?>" method="post" id="bfi_paymentform">
+	<input id="urlok" name="urlok" type="<?php echo $typeMode ?>" title="urlok" value="<?php echo $redirect?>" />
+	<input id="urlko" name="urlko" type="<?php echo $typeMode ?>" title="urlko"  value="<?php echo $redirecterror ?>" />
+	<input id="invalidate" name="invalidate" type="<?php echo $typeMode ?>" title="urlok" value="<?php echo $invalidate?>" />
+	<input type="submit" value="Invia">
+</form>
+<script type="text/javascript">
+<!--
+		jQuery(function($) {
+			jQuery("#bfi_paymentform").submit();
+		});
+//-->
+</script>

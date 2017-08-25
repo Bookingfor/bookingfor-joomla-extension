@@ -1,23 +1,17 @@
 var bookingfor = new function() {
-    this.version = "2.0.6";
+    this.version = "3.1.0";
 	this.bsVersion = ( typeof jQuery.fn.typeahead !== 'undefined' ? 2 : 3 );
+    this.offersLoaded = [];
 
     this.getDiscountAjaxInformations = function (discountId, hasRateplans) {
-        if (cultureCode.length > 1) {
-          cultureCode = cultureCode.substring(0, 2).toLowerCase();
-        }
-        if (defaultcultureCode.length > 1) {
-          defaultcultureCode = defaultcultureCode.substring(0, 2).toLowerCase();
-        }
-
         var query = "discountId=" + discountId + "&hasRateplans=" + hasRateplans + "&language=en-gb&task=getDiscountDetails";
-        jQuery.getJSON(urlCheck + "?" + query, function(data) {
+        jQuery.getJSON(bfi_variable.bfi_urlCheck + ((bfi_variable.bfi_urlCheck.indexOf('?') > -1)? "&" :"?") + query, function(data) {
 
-          var name = getXmlLanguage(data.Name, cultureCode, defaultcultureCode);;
+          var name = getXmlLanguage(data.Name, bfi_variable.bfi_cultureCode, bfi_variable.bfi_defaultcultureCode);;
           name = nl2br(jQuery("<p>" + name + "</p>").text());
           jQuery("#divoffersTitle" + discountId).html(name);
 
-          var descr = getXmlLanguage(data.Description, cultureCode, defaultcultureCode);;
+          var descr = getXmlLanguage(data.Description, bfi_variable.bfi_cultureCode, bfi_variable.bfi_defaultcultureCode);;
           descr = nl2br(jQuery("<p>" + descr + "</p>").text());
           jQuery("#divoffersDescr" + discountId).html(descr);
           jQuery("#divoffersDescr" + discountId).removeClass("com_bookingforconnector_loading");
@@ -26,21 +20,14 @@ var bookingfor = new function() {
       };
 
     this.getRateplanAjaxInformations = function (rateplanId) {
-        if (cultureCode.length > 1) {
-          cultureCode = cultureCode.substring(0, 2).toLowerCase();
-        }
-        if (defaultcultureCode.length > 1) {
-          defaultcultureCode = defaultcultureCode.substring(0, 2).toLowerCase();
-        }
-
         var query = "rateplanId=" + rateplanId + "&language=en-gb&task=getRateplanDetails";
-        jQuery.getJSON(urlCheck + "?" + query, function(data) {
+        jQuery.getJSON(bfi_variable.bfi_urlCheck + ((bfi_variable.bfi_urlCheck.indexOf('?') > -1)? "&" :"?") + query, function(data) {
 
-          var name = getXmlLanguage(data.Name, cultureCode, defaultcultureCode);;
+          var name = getXmlLanguage(data.Name, bfi_variable.bfi_cultureCode, bfi_variable.bfi_defaultcultureCode);;
           name = nl2br(jQuery("<p>" + name + "</p>").text());
           jQuery("#divrateplanTitle" + rateplanId).html(name);
 
-          var descr = getXmlLanguage(data.Description, cultureCode, defaultcultureCode);;
+          var descr = getXmlLanguage(data.Description, bfi_variable.bfi_cultureCode, bfi_variable.bfi_defaultcultureCode);;
           descr = nl2br(jQuery("<p>" + descr + "</p>").text());
           jQuery("#divrateplanDescr" + rateplanId).html(descr);
           jQuery("#divrateplanDescr" + rateplanId).removeClass("com_bookingforconnector_loading");
@@ -53,13 +40,13 @@ var bookingfor = new function() {
 		if (typeof(ga) !== 'undefined') {
 			ga('send', 'event', 'Bookingfor', act, name);
 			ga(function(){
-				jQuery.post(urlCheck, query, function(data) {
+				jQuery.post(bfi_variable.bfi_urlCheck, query, function(data) {
 						jQuery(elem).parent().html(data);
 						jQuery(elem).remove();
 				});
 			});
 		}else{
-			jQuery.post(urlCheck, query, function(data) {
+			jQuery.post(bfi_variable.bfi_urlCheck, query, function(data) {
 					jQuery(elem).parent().html(data);
 					jQuery(elem).remove();
 			});
@@ -68,6 +55,14 @@ var bookingfor = new function() {
 
     this.getXmlLanguage = function (value, cultureCode, defaultcultureCode) {
 		var ret = value;
+		if (cultureCode.length>1)
+		{
+			cultureCode = cultureCode.substring(0, 2).toLowerCase();
+		}
+		if (defaultcultureCode.length>1)
+		{
+			defaultcultureCode = defaultcultureCode.substring(0, 2).toLowerCase();
+		}
 		if(value && value.indexOf("<languages>")>-1){
 			var xmlValue = jQuery.parseXML(value);
 			var jsonValue = jQuery.xml2json(xmlValue);
@@ -115,6 +110,30 @@ var bookingfor = new function() {
 
 	this.nomore1br = function (str) {   
 		return (str + '').replace(new RegExp('(\n){2,}', 'gim') , '\n');
+	};
+
+	this.stripbbcode = function (str, is_xhtml) {   
+		str = (str + '').replace(/\[(\w+)[^\]]*](.*?)\[\/\1]/g, '$2');
+		str = str.replace(/(\[ul\]|\[\/ul\]|\[ol\]|\[\/ol\])+/g, '');
+		return str;
+	};
+
+	this.priceFormat = function (number, decimals, dec_point, thousands_sep) {   
+	  number = (number + '')
+		.replace(/[^0-9+\-Ee.]/g, '');
+	  var number = !isFinite(+number) ? 0 : +number,
+		//conversion valuta;
+		defaultcurrency = bfi_variable.defaultCurrency;//  bfi_get_defaultCurrency();
+		currentcurrency = bfi_variable.currentCurrency;//  bfi_get_currentCurrency();
+
+		if(defaultcurrency!=currentcurrency){
+			//try to convert
+			currencyExchanges =  bfi_variable.CurrencyExchanges;// BFCHelper::getCurrencyExchanges();
+			if (currencyExchanges.hasOwnProperty(currentcurrency)) {
+				number = number*currencyExchanges[currentcurrency];
+			}
+		}
+		return bookingfor.number_format(number, decimals, dec_point, thousands_sep);
 	};
 
 	this.number_format = function (number, decimals, dec_point, thousands_sep) {
@@ -213,7 +232,7 @@ var bookingfor = new function() {
 	msg2 = msg2 ? msg2 : "";
 	var msggeneral = jQuery.trim(msg1).length && jQuery.trim(msg2).length ? msg1 + '<br />' + msg2 : (jQuery.trim(msg1).length ? msg1 : msg2);
 	jQuery.blockUI({
-		message: (jQuery.trim(msggeneral).length ? '<h1 style="font-size: 15px;">'+msggeneral+'</h1><br />' : "") + '<i class="fa fa-spinner fa-spin fa-3x fa-fw margin-bottom"></i><span class="sr-only">Loading...</span>', 
+		message: (jQuery.trim(msggeneral).length ? '<h1 class="bfi-wait">'+msggeneral+'</h1><br />' : "") + '<i class="fa fa-spinner fa-spin fa-3x fa-fw margin-bottom"></i><span class="sr-only">Loading...</span>', 
 		css: {border: '2px solid #1D668B', padding: '20px', backgroundColor: '#fff', '-webkit-border-radius': '10px', '-moz-border-radius': '10px', color: '#1D668B'},
 		overlayCSS: {backgroundColor: '#1D668B', opacity: .7}  
 		});
@@ -221,10 +240,26 @@ var bookingfor = new function() {
 
 	this.waitBlock = function (msg1 ,msg2, obj){
 	obj.block({
-		message: '<h1 style="font-size: 15px;">'+msg1+'<br />'+msg2+'</h1><br /><i class="fa fa-spinner fa-spin fa-3x fa-fw margin-bottom"></i><span class="sr-only">Loading...</span>', 
+		message: '<h1 class="bfi-wait">'+msg1+'<br />'+msg2+'</h1><br /><i class="fa fa-spinner fa-spin fa-3x fa-fw margin-bottom"></i><span class="sr-only">Loading...</span>', 
 		css: {border: '2px solid #1D668B', padding: '20px', backgroundColor: '#fff', '-webkit-border-radius': '10px', '-moz-border-radius': '10px', color: '#1D668B', width: '80%'},
 //		overlayCSS: {backgroundColor: '#1D668B', opacity: .7}  
 		overlayCSS: {backgroundColor: '#1D668B', opacity: 0}  
+		});
+	};
+
+	this.waitSimpleBlock = function (obj){
+		obj.block({
+			message: '<i class="fa fa-spinner fa-spin fa-3x fa-fw margin-bottom"></i><span class="sr-only">Loading...</span>',
+			css: {border: '2px solid #1D668B', padding: '10px 20px', backgroundColor: '#fff', '-webkit-border-radius': '10px', '-moz-border-radius': '10px', color: '#1D668B', width: '80%'},
+			overlayCSS: {backgroundColor: '#1D668B', opacity: .7}
+		});
+	};
+
+	this.waitSimpleWhiteBlock = function (obj){
+		obj.block({
+			message: '<i class="fa fa-spinner fa-spin fa-3x fa-fw margin-bottom"></i><span class="sr-only">Loading...</span>',
+			css: {border: 'none', width: '100%'},
+			overlayCSS: {backgroundColor: '#ffffff', opacity: 0.7}  
 		});
 	};
 
@@ -264,7 +299,11 @@ var bookingfor = new function() {
 	this.addToCart = function(objSource) {
 		bookingfor.waitBlockUI();
 //		jQuery.blockUI({ message: ''});
-		var cart = jQuery('.bookingfor-shopping-cart');
+		var cart = jQuery('.bfi-shopping-cart');
+		if (!jQuery(cart).length) {
+			cart = jQuery('.bfi-content').first();
+		}
+		
 		var recalculareOrder = 0;
 		var orderDetailSummarytodrag = jQuery("#orderDetailSummary");
 		if (jQuery(objSource).length) {
@@ -298,21 +337,48 @@ var bookingfor = new function() {
 						jQuery.ajax({
 							cache: false,
 							type: 'POST',
-							url: bfi_variable.bfi_urlCheck + '?task=addToCart',
+							url: bfi_variable.bfi_urlCheck + ((bfi_variable.bfi_urlCheck.indexOf('?') > -1)? "&" :"?") + 'task=addToCart',
 							data: 'hdnOrderData=' + jQuery("#hdnOrderDataCart").val() + "&recalculateOrder=" + recalculateOrder +  '&hdnBookingType=' + jQuery("#hdnBookingType").val(),
 							success: function (data) {
 	//							console.log(data);
-								jQuery.unblockUI();
+								if (bfi_variable.bfi_sendtocart==1)
+								{
+									window.location.assign(bfi_variable.bfi_carturl);
+								}else{
+									jQuery.unblockUI();  
+									
+									var currTitle = jQuery("#bfimodalcart").find(".bfi-title").first().html();
+									var currHtml = jQuery("#bfimodalcart").find(".bfi-body").first().html();
+									var currFooter = jQuery("#bfimodalcart").find(".bfi-footer").first().html();
 
-								var thisHtml = "<div>Add to cart</div>";
-								jQuery(".bf-summary-body-resourcename").each(function () {
-									var cuttTitle = $(this).find("strong").first();
-									if (cuttTitle.length) {
-										thisHtml += "<div>" + cuttTitle.html() + "</div>";
-									}
-								});
-								jQuery("#bfimodalcart").find(".modal-body").first().html(thisHtml);
-								jQuery("#bfimodalcart").modal({ backdrop: 'static' });
+									var thisHtml = currHtml;
+									jQuery(".bf-summary-body-resourcename").each(function () {
+										var cuttTitle = $(this).find("strong").first();
+										if (cuttTitle.length) {
+											thisHtml += "<div>" + cuttTitle.html() + "</div>";
+										}
+									});
+									thisHtml += currFooter;
+									cart.webuiPopover({
+										title : currTitle,
+										content : thisHtml,
+										container: document.body,
+										cache: false,
+										closeable:true,
+										arrow: false,
+										backdrop:true,
+										placement:'auto-bottom',
+										type:'html',
+										style:'bfi-webuipopover'
+									});
+									cart.webuiPopover("show");
+
+
+	//								jQuery("#bfimodalcart").find(".modal-body").first().html(thisHtml);
+	//								jQuery("#bfimodalcart").modal({ backdrop: 'static' });
+								
+								}
+
 							}
 						});
 						//send data 
@@ -327,20 +393,37 @@ var bookingfor = new function() {
 				jQuery.ajax({
 					cache: false,
 					type: 'POST',
-					url: bfi_variable.bfi_urlCheck + '?task=addToCart',
+					url: bfi_variable.bfi_urlCheck + ((bfi_variable.bfi_urlCheck.indexOf('?') > -1)? "&" :"?") + 'task=addToCart',
 					data: 'hdnOrderData=' + jQuery("#hdnOrderDataCart").val() + "&recalculateOrder=" + recalculateOrder+  '&hdnBookingType=' + jQuery("#hdnBookingType").val(),
 					success: function (data) {
 		//							console.log(data);
-						jQuery.unblockUI();
-						var thisHtml = "<div>Add to cart</div>";
-	//					jQuery(".bf-summary-body-resourcename").each(function () {
-	//						var cuttTitle = $(this).find("strong").first();
-	//						if (cuttTitle.length) {
-	//							thisHtml += "<div>" + cuttTitle.html() + "</div>";
-	//						}
-	//					});
-						jQuery("#bfimodalcart").find(".modal-body").first().html(thisHtml);
-						jQuery("#bfimodalcart").modal({ backdrop: 'static' });
+						if (bfi_variable.bfi_sendtocart==1)
+						{
+							window.location.assign(bfi_variable.bfi_carturl);
+						}else{
+						
+							jQuery.unblockUI();
+
+							var currTitle = jQuery("#bfimodalcart").find(".bfi-title").first().html();
+							var currHtml = jQuery("#bfimodalcart").find(".bfi-body").first().html();
+							var currFooter = jQuery("#bfimodalcart").find(".bfi-footer").first().html();
+
+							var thisHtml = currHtml;
+							thisHtml += currFooter;
+							cart.webuiPopover({
+								title : currTitle,
+								content : thisHtml,
+								container: document.body,
+								cache: false,
+								closeable:true,
+								arrow: false,
+								backdrop:true,
+								placement:"auto",
+								html :"true",
+								style:'bfi-webuipopover'
+							});
+							cart.webuiPopover("show");
+						}
 					}
 				});
 			}
@@ -361,7 +444,7 @@ var bookingfor = new function() {
 				//blockui();
 			},
 			data: {
-				cartOrderId: $(this).attr("data-cartorderid")
+				cartOrderId: jQuery(this).attr("data-cartorderid")
 			},
 			success: function (data) {
 				jQuery("#LoginRegisterModel").html(data);
@@ -370,8 +453,231 @@ var bookingfor = new function() {
 			}
 		});
 	}
+	this.GetDiscountsInfo = function(discountIds,language, obj, fn) {
+			var query = "discountIds=" + discountIds;
+			var queryDiscount = "discountId=" + discountIds + "&language=" + language + "&task=getDiscountDetails";
+			jQuery.post(bfi_variable.bfi_urlCheck, queryDiscount, function(data) {
+
+				$html = '';
+				jQuery.each(data || [], function (key, val) {
+					var name = val.Name;
+					var descr = val.Description;
+					name = bookingfor.nl2br(jQuery("<p>" + name + "</p>").text());
+					$html += '<p class="title">' + name + '</p>';
+					descr = bookingfor.nl2br(jQuery("<p>" + bookingfor.stripbbcode(descr) + "</p>").text());
+					$html += '<p class="description ">' + descr + '</p>';
+				});
+				bookingfor.offersLoaded[discountIds] = $html;
+				fn(obj, $html);
+			},'json');
+		}
+	this.checkBookable = function(currSelect) {
+		var isbookable = jQuery(currSelect).attr("data-isbookable");
+		jQuery(".ddlrooms.ddlrooms-indipendent[data-isbookable!='" + isbookable+"']").each(function (index) {
+			jQuery(this).val(0);
+			bookingfor.checkMaxSelect(this);
+		});
+	}
+
+	this.checkMaxSelect = function(currSelect) {
+		var maxSelectable = Number(jQuery(currSelect).attr("data-availability")||0);
+		var isbookable = jQuery(currSelect).attr("data-isbookable");
+		var resourceId = jQuery(currSelect).attr("data-resid");
+		if(jQuery(".ddlrooms-" + resourceId+"[data-isbookable='" + isbookable+"']").length>1){
+			var occupancyResource = bookingfor.getOccupancy(resourceId,isbookable);
+			var remainingResource = maxSelectable - occupancyResource;
+
+			jQuery(".ddlrooms-" + resourceId+"[data-isbookable='" + isbookable+"']").each(function () {
+				var currentValue = parseInt(jQuery(this).val());
+				var maxValue = parseInt(jQuery(this).find("option:last-child").attr("value"));
+				if((currentValue + remainingResource) < maxValue) {
+					maxValue = currentValue + remainingResource;
+				}
+				var lastIndx = jQuery(this).find("option[value='" + maxValue + "']").index();
+				/*var currentIndex = jQuery(this).find("option:selected").index();
+				var maxIndex = lastIndx;
+				var selIndx = jQuery(this).find("option[value='" + remainingResource + "']").index();
+				var currSelect = jQuery(this).prop('selectedIndex');
+				if (currSelect > selIndx)
+				{
+					selIndx += currSelect ;
+				}*/
+				jQuery(this).find('option:lt(' + lastIndx + ')').prop('disabled', false);
+				jQuery(this).find('option:gt(' + lastIndx + ')').prop('disabled', true);
+				jQuery(this).find('option:eq(' + lastIndx + ')').prop('disabled', false);
+			});
+		}
+
+	}
+	this.getOccupancy = function(resourceId,isbookable) {
+        var occupancy = 0;
+		jQuery(".ddlrooms-" + resourceId+"[data-isbookable='" + isbookable+"']").each(function () {
+			occupancy += Number(jQuery(this).val()||0)
+		});
+		return occupancy;
+	}
 
 
+	this.BookNow = function() {
+			//       debugger;
+		var sendtocart = 0;
+
+		var Order = { Resources: [], SearchModel: {}, TotalAmount: 0, TotalDiscountedAmount: 0 };
+		Order.SearchModel = jQuery('#bfi-calculatorForm').serializeObject();
+		Order.SearchModel.MerchantId = bfi_currMerchantId;
+		Order.SearchModel.AdultCount = new Number(Order.SearchModel.adults || 0);
+		Order.SearchModel.ChildrenCount = new Number(Order.SearchModel.children || 0);
+		Order.SearchModel.SeniorCount = new Number(Order.SearchModel.seniors || 0);
+		Order.SearchModel.ChildAges = [Order.SearchModel.childages1, Order.SearchModel.childages2, Order.SearchModel.childages3, Order.SearchModel.childages4, Order.SearchModel.childages5];
+		currPaxNumber = Order.SearchModel.AdultCount + Order.SearchModel.ChildrenCount + Order.SearchModel.SeniorCount;
+		currPaxAges = new Array();
+		for (i = 0; i < Order.SearchModel.AdultCount ; i++) {
+			currPaxAges.push(bfi_currAdultsAge);
+		}
+		for (i = 0; i < Order.SearchModel.SeniorCount  ; i++) {
+			currPaxAges.push(bfi_currSenioresAge);
+		}
+		for (i = 0; i < Order.SearchModel.ChildrenCount ; i++) {
+			currPaxAges.push(Order.SearchModel.ChildAges[i]);
+		}
+
+		var FirstResourceId = 0;
+		var currPolicy = [];
+		jQuery(".ddlrooms-indipendent ").each(function (index, ddlroom) {
+			var currResId = jQuery(this).attr('data-resid');
+			var currRateplanId = new Number(jQuery(this).attr('data-ratePlanId') || 0);
+			var currQtSelected = jQuery(this).val();
+			var currAvailabilityType = new Number(jQuery(this).attr('data-availabilitytype') || 1);
+
+			if (currQtSelected > 0) {
+				sendtocart = Number(jQuery(this).attr("data-isbookable") || 0);
+				for (var i = 1; i <= currQtSelected; i++) {
+					currPolicy.push(new Number(jQuery(this).attr('data-policyId') || 0));
+					var currResourceRequest = {
+						ResourceId: new Number(currResId || 0),
+						FromDate: (sendtocart == 0) ? jQuery(this).attr('data-checkin-ext') : jQuery(this).attr('data-checkin'),
+						ToDate: (sendtocart == 0) ? jQuery(this).attr('data-checkout-ext') : jQuery(this).attr('data-checkout'),
+						PolicyId: new Number(jQuery(this).attr('data-policyId') || 0),
+						PaxNumber: currPaxNumber,
+						PaxAges: currPaxAges,
+						IncludedMeals: jQuery(this).attr('data-includedmeals'),
+						TouristTaxValue: jQuery(this).attr('data-touristtaxvalue'),
+						VATValue: jQuery(this).attr('data-vatvalue'),
+						MerchantId: bfi_currMerchantId,
+						RatePlanId: currRateplanId,
+						AvailabilityType: currAvailabilityType,
+						SelectedQt: 1,
+						TotalDiscounted: jQuery(this).attr('data-baseprice'),
+						TotalAmount: jQuery(this).attr('data-basetotalprice'),
+						AllVariations: jQuery(this).attr('data-allvariations'),
+						PercentVariation: jQuery(this).attr('data-percentvariation'),
+						MinPaxes: jQuery(this).attr('data-minpaxes'),
+						MaxPaxes: jQuery(this).attr('data-maxpaxes'),
+						ComputedPaxes: jQuery(this).attr('data-computedpaxes'),
+						PricesExtraIncluded: JSON.stringify(pricesExtraIncluded[currRateplanId]),
+						ExtraServices: []
+					};
+
+					if (currAvailabilityType == 2) {
+						var currTr = jQuery("#bfi-timeperiod-" + currResId);
+						currResourceRequest.TimeMinStart = currTr.attr("data-timeminstart");
+						currResourceRequest.TimeMinEnd = currTr.attr("data-timeminend");
+						currResourceRequest.CheckInTime = currTr.attr("data-checkintime");
+						currResourceRequest.TimeDuration = currTr.attr("data-duration");
+					}
+					if (currAvailabilityType == 3) {
+						var currTr = jQuery("#bfi-timeslot-" + currResId);
+						currResourceRequest.FromDate = (sendtocart == 0) ? currTr.attr('data-checkin') : currTr.attr('data-checkin-ext');
+						currResourceRequest.TimeSlotId = currTr.attr("data-timeslotid");
+						currResourceRequest.TimeSlotStart = currTr.attr("data-timeslotstart");
+						currResourceRequest.TimeSlotEnd = currTr.attr("data-timeslotend");
+					}
+
+					//--------recupero extras....
+
+					jQuery("#services-room-" + i + "-" + currResId + "-" + currRateplanId).find(".ddlrooms").each(function (index, element) {
+						var currValue = jQuery(this).val();
+
+						var currPriceId = jQuery(this).attr("data-resid");
+						var currPriceAvailabilityType = jQuery(this).attr("data-availabilityType");
+						if (currValue != "0") {
+							var extraValue = currPriceId + ":" + currValue;
+							if (currPriceAvailabilityType == "2") {
+								var currSelectData = jQuery(this).closest("tr").find(".bfi-timeperiod").first();
+								extraValue += ":" + currSelectData.attr("data-checkin") + currSelectData.attr("data-timeminstart") + ":" + currSelectData.attr("data-duration") + "::::"
+							}
+							if (currPriceAvailabilityType == "3") {
+								var currSelectData = jQuery(this).closest("tr").find(".bfi-timeslot").first();
+								extraValue += ":::" + currSelectData.attr("data-timeslotid") + ":" + currSelectData.attr("data-timeslotstart") + ":" + currSelectData.attr("data-timeslotend") + ":" + currSelectData.attr("data-checkin") + "::::"
+							}
+
+							var currExtraService = {
+								Value: extraValue,
+								PriceId: currPriceId,
+								CalculatedQt: currValue,
+								ResourceId: currResId,
+								TotalDiscounted: parseFloat(jQuery(this).attr('data-baseprice')) * currValue,
+								TotalAmount: parseFloat(jQuery(this).attr('data-basetotalprice')) * currValue,
+							}
+							if (currPriceAvailabilityType == 2) {
+								var currTr = jQuery(this).closest("tr").find(".bfi-timeperiod").first();
+								currExtraService.TimeMinStart = currTr.attr("data-timeminstart");
+								currExtraService.TimeMinEnd = currTr.attr("data-timeminend");
+								currExtraService.CheckInTime = currTr.attr("data-checkintime");
+								currExtraService.TimeDuration = currTr.attr("data-duration");
+							}
+							if (currPriceAvailabilityType == 3) {
+								var currTr = jQuery(this).closest("tr").find(".bfi-timeslot").first();
+								currExtraService.TimeSlotId = currTr.attr("data-timeslotid");
+								currExtraService.TimeSlotStart = currTr.attr("data-timeslotstart");
+								currExtraService.TimeSlotEnd = currTr.attr("data-timeslotend");
+								var currDateint = currTr.attr("data-checkin");
+								currExtraService.TimeSlotDate = currDateint.substr(6, 2) + "/" + currDateint.substr(4, 2) + "/" + currDateint.substr(0, 4);
+							}
+							var minSelectable = parseInt(jQuery(this).find('option:first').val());
+							if (minSelectable > 0) {
+								currResourceRequest.TotalDiscounted -= (parseFloat(jQuery(this).attr('data-baseprice'))) * minSelectable;
+								currResourceRequest.TotalAmount -= (parseFloat(jQuery(this).attr('data-basetotalprice'))) * minSelectable;
+							}
+
+							currResourceRequest.ExtraServices.push(currExtraService);
+
+							//							currResourceRequest.ExtraServices.push({
+							//								Value:extraValue,
+							//								PriceId: currPriceId,
+							//								CalculatedQt: currValue,
+							//								ResourceId: currResId, 
+							//								TotalDiscounted:  jQuery(this).attr('data-baseprice'),
+							//								TotalAmount:  jQuery(this).attr('data-basetotalprice'),
+							//							});
+						}
+					});
+
+					Order.Resources.push(currResourceRequest);
+
+				}
+
+			}
+		});
+
+		if (Order.Resources.length > 0) {
+			FirstResourceId = Order.Resources[0].ResourceId;
+			jQuery('#frm-order').html('');
+			if (sendtocart == 1) {
+				jQuery('#frm-order').prepend('<input id=\"hdnOrderDataCart\" name=\"hdnOrderData\" type=\"hidden\" value=' + "'" + JSON.stringify(Order.Resources) + "'" + '\>');
+				jQuery('#frm-order').prepend('<input id=\"hdnBookingType\" name=\"hdnBookingType\" type=\"hidden\" value=' + "'" + jQuery('input[name="bookingType"]').val() + "'" + '\>');
+				bookingfor.addToCart(jQuery("#divcalculator"));
+			} else {
+				jQuery('#frm-order').prepend('<input id=\"hdnOrderData\" name=\"hdnOrderData\" type=\"hidden\" value=' + "'" + JSON.stringify(Order.Resources) + "'" + '\>');
+				jQuery('#frm-order').prepend('<input id=\"hdnPolicyIds\" name=\"hdnPolicyIds\" type=\"hidden\" value=' + "'" + currPolicy.join(",") + "'" + '\>');
+				bookingfor.waitBlockUI();
+				jQuery('#frm-order').submit();
+			}
+		} else {
+			alert("Error, You must select a quantity!")
+		}
+
+	}
 
 
 
@@ -404,40 +710,10 @@ jQuery(document).ready(function() {
 //        }
 //      );
 
-	 jQuery("#my-account-tabs").tabs();
+//	jQuery("#my-account-tabs").tabs();
 
-	   jQuery(".tabcontent:first").show();
-            jQuery(".resourcetabmenu a").bind('click', function() {
-              jQuery('.tabcontent').hide();
-              var activeTab = jQuery(this).attr("rel");
-              jQuery(".resourcetabmenu a").removeClass("selected");
-              jQuery("#" + activeTab).fadeIn();
-              jQuery('html, body').animate({
-                scrollTop: jQuery(this).offset().top
-              }, 1000);
-              jQuery(this).addClass("selected");
-              if (activeTab == 'mappa') {
-              	if(!jQuery("#" + activeTab).hasClass('loaded')) {
-              	  jQuery("#" + activeTab).addClass('loaded');
-                  
-                }
-              }
-              if (activeTab == 'foto') {
-                var slider = jQuery("#resourcegallery").data('royalSlider');
-                slider.updateSliderSize(true);
-              }
-              if (activeTab == 'planimetria') {
-                var slider = jQuery("#resourcePlanimetrygallery").data('royalSlider');
-                slider.updateSliderSize(true);
-              }
-              if (activeTab == 'video') {
-                var slider = jQuery("#resourceVideogallery").data('royalSlider');
-                slider.updateSliderSize(true);
-              }
-      });
-      
-     var start = jQuery('.checkincalendar').val();
-     if (typeof start !== "undefined") {
+	var start = jQuery('.checkincalendar').val();
+	if (typeof start !== "undefined") {
 		 date = jQuery.datepicker.parseDate('dd/mm/yy', start);
 		 var dstart = new Date(date);
 		 
@@ -448,27 +724,136 @@ jQuery(document).ready(function() {
 		 var dendmin = new Date(dstart);
 		 dendmin.setDate(dstart.getDate() + 1);
 
-		   jQuery('.checkincalendar').datepicker({
+		jQuery('.checkincalendar').datepicker({
 			dateFormat : 'dd/mm/yy',
 			defaultDate: dstart,
+			beforeShow: function(dateText, inst) { 
+				jQuery(this).attr("disabled", true);
+				jQuery(inst.dpDiv).addClass('bfi-calendar');
+				jQuery(inst.dpDiv).attr('data-before',"");
+				jQuery(inst.dpDiv).removeClass("bfi-checkin");
+				jQuery(inst.dpDiv).removeClass("bfi-checkout");
+			},
 			onSelect: function(selectedDate) {
-			  instance = jQuery('.checkincalendar').data("datepicker");
-			  date = jQuery.datepicker.parseDate(
-				  instance.settings.dateFormat ||
-				  $.datepicker._defaults.dateFormat,
-				  selectedDate, instance.settings);
-			 var d = new Date(date);
-			 d.setDate(d.getDate() + 1);
-			 jQuery(".checkoutcalendar").datepicker("option", "minDate", d);
+				instance = jQuery('.checkincalendar').data("datepicker");
+				date = jQuery.datepicker.parseDate(
+					instance.settings.dateFormat ||
+					$.datepicker._defaults.dateFormat,
+					selectedDate, instance.settings);
+				var d = new Date(date);
+				d.setDate(d.getDate() + 1);
+				jQuery(".checkoutcalendar").datepicker("option", "minDate", d);
 			}
-		  });
+		});
 		 
-		 jQuery('.checkoutcalendar').datepicker({
+		jQuery('.checkoutcalendar').datepicker({
+			beforeShow: function(dateText, inst) { 
+				jQuery(this).attr("disabled", true);
+				jQuery(inst.dpDiv).addClass('bfi-calendar');
+				jQuery(inst.dpDiv).attr('data-before',"");
+				jQuery(inst.dpDiv).removeClass("bfi-checkin");
+				jQuery(inst.dpDiv).removeClass("bfi-checkout");
+			},
 			dateFormat : 'dd/mm/yy',
 			defaultDate: dend,
 			minDate: dendmin
-		 });      
-	 }
+		});
+	}
+
+	jQuery('a.boxedpopup').on('click', function (e) {
+		var width = jQuery(window).width()*0.9;
+		var height = jQuery(window).height()*0.9;
+			if(width>800){width=870;}
+			if(height>600){height=600;}
+
+		e.preventDefault();
+		var page = jQuery(this).attr("href")
+//		var pagetitle = jQuery(this).attr("title")
+
+		jQuery.post(page, function(data) {
+			jQuery.unblockUI();
+			var $dialog = jQuery('<div id="boxedpopupopen"></div>')
+				.html(data)
+			.dialog({
+				autoOpen: false,
+				modal: true,
+				height:height,
+				width: width,
+				fluid: true, //new option
+//				title: pagetitle
+				dialogClass: 'bfi-dialog bfi-dialog-contact'
+			});
+			$dialog.dialog('open');
+			if (typeof window.BFIInitReCaptcha2 === "function") { 
+				// safe to use the function
+				BFIInitReCaptcha2();
+			}
+		});
+	});
+
+		jQuery(window).resize(function() {
+			var bpOpen = jQuery("#boxedpopupopen");
+				var wWidth = jQuery(window).width();
+				var dWidth = wWidth * 0.9;
+				var wHeight = jQuery(window).height();
+				var dHeight = wHeight * 0.9;
+				if(dWidth>800){dWidth=870;}
+				if(dHeight>600){dHeight=600;}
+					bpOpen.dialog("option", "width", dWidth);
+					bpOpen.dialog("option", "height", dHeight);
+					bpOpen.dialog("option", "position", "center");
+
+			jQuery("table.bfi-table-resources-sticked").each(function(){
+				var existSticked = jQuery(this).find("thead.bfi-sticked").first();
+				var $currDivBook = jQuery(this).find(".bfi-book-now").first();
+				if(existSticked.length){existSticked.remove();};
+				if($currDivBook.length){$currDivBook.removeClass("bfi-sticked");};
+			});
+		});
+
+		jQuery(window).scroll(function(){
+			jQuery("table.bfi-table-resources-sticked").each(function(){
+				var existSticked = jQuery(this).find("thead.bfi-sticked").first();
+				var $currDivBook = jQuery(this).find(".bfi-book-now").first();
+					var corr= 0;
+					if(jQuery(this).hasClass("bfi-table-selectableprice-container")){
+						corr= 75;
+					}
+				if((jQuery(".bfi-result-list").offset().top+corr) <jQuery(window).scrollTop()){
+					
+					if(!$currDivBook.hasClass("bfi-sticked")){
+						$currDivBook.addClass("bfi-sticked");
+					}
+					if(!existSticked.length){
+						var $currthead = jQuery(this).find("thead").first();
+						var newthead =  jQuery($currthead.clone());
+						newthead.appendTo(jQuery(this));
+						newthead.width(jQuery(this).width());
+						newthead.css('top',0);
+						newthead.addClass("bfi-sticked");
+					}
+
+
+					if((jQuery(".bfi-result-list").offset().top+jQuery(".bfi-result-list").height()) <(jQuery(window).scrollTop()+$currDivBook.height() )){
+//						console.log("corr" +corr )
+						$currDivBook.css('top',( (jQuery(".bfi-result-list").offset().top+jQuery(".bfi-result-list").height()) - (jQuery(window).scrollTop()+$currDivBook.height()))  + 'px');
+					}else{
+						$currDivBook.css('top','50px');
+					}
+					if((jQuery(".bfi-result-list").offset().top+jQuery(".bfi-result-list").height()) <jQuery(window).scrollTop()){
+						existSticked.hide();
+						$currDivBook.hide();
+					}else{
+						existSticked.show();
+						$currDivBook.show();
+					}
+				}else{
+					existSticked.remove();
+					$currDivBook.removeClass("bfi-sticked");
+				}
+			});
+		});
+
 });      
      
 if (typeof String.prototype.endsWith !== 'function') {
@@ -495,3 +880,285 @@ if (typeof jQuery.fn.serializeObject !== 'function') {
 	   return o;
 	};
 }   
+
+
+function bfi_quoteCalculatorServiceChanged(el){
+	
+	var selectedExtra = parseInt(jQuery(el).val());
+	var currProdRelatedId = jQuery(el).attr("data-resid");
+	var currMaxAvailability = servicesAvailability[currProdRelatedId];
+	jQuery(".ddlrooms-"+currProdRelatedId).each(function(){
+		var currselectableprice = jQuery(this).val();
+		currMaxAvailability -= parseInt(currselectableprice);
+	});
+
+	//rebuild ddl
+	jQuery(".ddlrooms"+currProdRelatedId).not(this).each(function(){
+		var currMaxValue = jQuery(this).children("option:last").val();
+		var currValue = parseInt(jQuery(this).val());
+
+		jQuery(this).children("option").prop('disabled',false);
+		var maxValue = pcurrValue+currMaxAvailability;
+
+		if(currMaxValue>maxValue){
+			var prodRelatedId = jQuery(this).attr("data-resid");
+			var selIndx  = jQuery(this).children("option").index( jQuery(this).children("option[value='" +maxValue +"']"));
+			if(selIndx>-1){
+				jQuery(this).children("option:gt("+selIndx+")").prop('disabled',true);
+
+			}
+		}
+	});
+
+	bfi_getcompleterateplansstaybyrateplanid(jQuery(el));
+//	console.log("Recalc");
+}
+
+function bfi_getcompleterateplansstaybyrateplanid($el) {
+	//console.log("calcolo prezzo per id: " + priceId);
+	
+//	debugger;
+	var selectedExtra = parseInt($el.val());
+	var priceId = $el.attr("data-resid");
+	var resId = $el.attr("data-bindingproductid");
+	var rateplanId = $el.attr("data-rateplanid");
+	currTable = $el.closest("table");
+    bookingfor.waitSimpleWhiteBlock(currTable);
+
+	var extrasselect = [];
+	jQuery(currTable).find(".ddlrooms").each( function( index, element ){
+		var currValue = jQuery(this).val();
+		var currResId = jQuery(this).attr("data-resid");
+		var currAvailabilityType = jQuery(this).attr("data-availabilityType");
+		if(currValue!="0"){
+			var extraValue = currResId + ":1"; // + currValue;
+			if(currAvailabilityType =="2"){
+				var currSelectData = jQuery(this).closest("tr").find(".bfi-timeperiod").first();				
+				
+				extraValue += ":" + currSelectData.attr("data-checkin") + currSelectData.attr("data-timeminstart") + ":" + currSelectData.attr("data-duration") + "::::"
+			}
+			if(currAvailabilityType =="3"){
+				var currSelectData = jQuery(this).closest("tr").find(".bfi-timeslot").first();	
+				extraValue += ":::" + currSelectData.attr("data-timeslotid")  + ":" + currSelectData.attr("data-timeslotstart") + ":" + currSelectData.attr("data-timeslotend") + ":" + currSelectData.attr("data-checkin") + "::::"
+			}
+
+			extrasselect.push(extraValue);
+		}
+	});
+
+	obj = jQuery("tr[id^=data-id-"+resId+"-"+rateplanId +"]");
+	var ddlroom = jQuery(obj).find(".ddlrooms");
+
+	var searchModel = jQuery('#bfi-calculatorForm').serializeObject();
+	var dataarray = jQuery('#bfi-calculatorForm').serializeArray();
+	dataarray.push({name: 'resourceId', value: resId});
+	dataarray.push({name: 'id', value: resId});
+
+	var accomodation = {
+		ResourceId: resId,
+		RatePlanId: rateplanId,
+		AvailabilityType:ddlroom.attr("data-availabilityType"),
+		TimeMinStart:0,
+		TimeMinEnd:0,
+		FromDate:"",
+		ExtraServices: extrasselect
+	};
+	
+	if(ddlroom.attr("data-availabilityType")==2){
+
+		var currTr = jQuery("#bfi-timeperiod-"+resId);
+		dataarray.push({name: 'timeMinStart', value: currTr.attr("data-timeminstart")});
+		dataarray.push({name: 'timeMinEnd', value: currTr.attr("data-timeminend")});
+		dataarray.push({name: 'CheckInTime', value: currTr.attr("data-checkintime")});
+		dataarray.push({name: 'duration', value: currTr.attr("data-duration")});
+	}
+	if(ddlroom.attr("data-availabilityType")==3){
+		var currTr = jQuery("#bfi-timeslot-"+resId);
+		accomodation.TimeSlotId = currTr.attr("data-timeslotid");
+		accomodation.TimeSlotStart = currTr.attr("data-timeslotstart");
+		accomodation.TimeSlotEnd = currTr.attr("data-timeslotend");
+	}
+
+	dataarray.push({name: 'pricetype', value:  accomodation.RatePlanId});
+	dataarray.push({name: 'rateplanid', value: accomodation.RatePlanId});
+//	dataarray.push({name: 'timeMinStart', value: accomodation.TimeMinStart});
+//	dataarray.push({name: 'timeMinEnd', value: accomodation.TimeMinEnd});
+	dataarray.push({name: 'selectableprices', value: accomodation.ExtraServices.join("|")});
+	dataarray.push({name: 'availabilitytype', value: accomodation.AvailabilityType});
+	dataarray.push({name: 'searchModel', value: searchModel});
+
+	var jqxhr = jQuery.ajax({
+		url: bfi_variable.bfi_urlCheck + ((bfi_variable.bfi_urlCheck.indexOf('?') > -1)? "&" :"?") + 'task=getCompleteRateplansStay',
+		type: "POST",
+		dataType: "json",
+		data : dataarray
+//            data: {
+//                id: resId,
+//                rateplanid: accomodation.RatePlanId,
+//                timeMinStart: accomodation.TimeMinStart,
+//                timeMinEnd: accomodation.TimeMinEnd,
+//                selectableprices: accomodation.ExtraServices.join("|"),
+//                productAvailabilityType : accomodation.AvailabilityType,
+//                searchModel: searchModel
+//            }
+	});
+
+	jqxhr.done(function(result, textStatus, jqXHR)
+	{
+		if (result) {
+
+			 UpdateQuote();
+
+			if(result.length > 0)
+			{
+//                    debugger;
+				var currResult = jQuery.grep(result, function (rs) {
+					return (rs.RatePlanId == parseInt(accomodation.RatePlanId));
+				});
+
+				currStay = currResult[0].SuggestedStay;
+				var currTr = $el.closest("tr");
+				var CalculatedPrices = JSON.parse(currResult[0].CalculatedPricesString);
+//                    console.log(CalculatedPrices)
+				var showPrice = false;
+
+				var currentDivPrice = jQuery(currTr).find(".bfi-totalextrasselect");
+				currentDivPrice.hide();
+
+				var currTotalPriceDivPrice=0;
+				var currDiscountedPriceDivPrice=0;
+				var simpleDiscountIdsDivPrice = "";
+
+
+				CalculatedPrices.forEach(function (cprice) {
+					//if (cprice.PriceId == priceId) {
+					if (cprice.RelatedProductId == priceId) {
+
+//                            console.log("Visualizzo prezzo id: " + priceId);
+
+						showPrice = true;
+//						cprice.TotalPrice = cprice.TotalAmount;
+//						cprice.DiscountedPrice = cprice.TotalDiscounted;
+						currTotalPriceDivPrice += cprice.TotalAmount;
+						currDiscountedPriceDivPrice += cprice.TotalDiscounted;
+						var simpleDiscountIds = [];
+						cprice.Variations.forEach(function (variation) {
+							simpleDiscountIds.push(variation.VariationPlanId);
+						});
+//						cprice.SimpleDiscountIds = simpleDiscountIds.join(",");
+						simpleDiscountIdsDivPrice +=simpleDiscountIds.join(",");
+//						var curr_bfi_price = currTr.find(".bfi-price");
+//						var curr_bfi_discounted_price = currTr.find(".bfi-discounted-price");
+//						var curr_percent_discount = currTr.find(".bfi-percent-discount");
+//
+//						var ddlroom = currTr.find(".ddlrooms");
+//						ddlroom.attr("data-baseprice",bookingfor.number_format(cprice.DiscountedPrice, 2, '.', '') );
+//						ddlroom.attr("data-basetotalprice",bookingfor.number_format(cprice.TotalPrice, 2, '.', '') );
+//						ddlroom.attr("data-price",bookingfor.priceFormat(cprice.DiscountedPrice, 2, '.', '') );
+//						ddlroom.attr("data-totalprice",bookingfor.priceFormat(cprice.TotalPrice, 2, '.', '') );
+//
+//						curr_bfi_price.html(bookingfor.priceFormat(cprice.DiscountedPrice, 2, ',', '.') );
+//						curr_bfi_discounted_price.html(bookingfor.priceFormat(cprice.TotalPrice, 2, ',', '.') );
+//
+//						if(cprice.DiscountedPrice >= cprice.TotalPrice) {
+//							//curr_bfi_price.html(bookingfor.priceFormat(cprice.DiscountedPrice, 2, ',', '.') );
+//							curr_bfi_price.removeClass("bfi-red");
+//							curr_bfi_discounted_price.hide();
+//							curr_percent_discount.hide();
+//						} else {
+//							curr_bfi_price.addClass("bfi-red");
+//							curr_bfi_discounted_price.show();
+//							curr_percent_discount.show();
+//							curr_percent_discount.attr("rel", cprice.SimpleDiscountIds);
+//							var variationPercent = cprice.TotalPrice > 0 ? parseInt(((cprice.DiscountedPrice - cprice.TotalPrice) * 100) / cprice.TotalPrice) : 0;
+//							curr_percent_discount.find(".bfi-percent").html(variationPercent);
+//						}
+					}
+				});
+
+				if(showPrice){
+					var curr_bfi_price = currTr.find(".bfi-price");
+					var curr_bfi_discounted_price = currTr.find(".bfi-discounted-price");
+					var curr_percent_discount = currTr.find(".bfi-percent-discount");
+
+					var ddlroom = currTr.find(".ddlrooms");
+					ddlroom.attr("data-baseprice",bookingfor.number_format(currDiscountedPriceDivPrice, 2, '.', '') );
+					ddlroom.attr("data-basetotalprice",bookingfor.number_format(currTotalPriceDivPrice, 2, '.', '') );
+					ddlroom.attr("data-price",bookingfor.priceFormat(currDiscountedPriceDivPrice, 2, '.', '') );
+					ddlroom.attr("data-totalprice",bookingfor.priceFormat(currTotalPriceDivPrice, 2, '.', '') );
+
+					curr_bfi_price.html(bookingfor.priceFormat(currDiscountedPriceDivPrice, 2, ',', '.') );
+					curr_bfi_discounted_price.html(bookingfor.priceFormat(currTotalPriceDivPrice, 2, ',', '.') );
+
+					if(currDiscountedPriceDivPrice>= currTotalPriceDivPrice) {
+						//curr_bfi_price.html(bookingfor.priceFormat(cprice.DiscountedPrice, 2, ',', '.') );
+						curr_bfi_price.removeClass("bfi-red");
+						curr_bfi_discounted_price.hide();
+						curr_percent_discount.hide();
+					} else {
+						curr_bfi_price.addClass("bfi-red");
+						curr_bfi_discounted_price.show();
+						curr_percent_discount.show();
+						curr_percent_discount.attr("rel", simpleDiscountIdsDivPrice);
+						var variationPercent = currTotalPriceDivPrice> 0 ? parseInt(((currDiscountedPriceDivPrice- currTotalPriceDivPrice) * 100) / currTotalPriceDivPrice) : 0;
+						curr_percent_discount.find(".bfi-percent").html(variationPercent);
+					}
+					currentDivPrice.show();
+				}
+				
+				bfi_updateQuoteService();
+
+			}
+		}
+		$el.unblock();
+
+	});
+
+
+	jqxhr.always(function() {
+		jQuery(currTable).unblock();
+	});
+}
+
+function bfi_updateQuoteService() {
+				var totalServices = 0;
+				var currTotalServices = 0;
+				var currTotalNotDiscoutedServices = 0;
+				jQuery(".ddlextras:visible").each( function( index, element ){
+					var nExtras = parseInt(jQuery(this).val());
+					if(nExtras>0)
+					{
+						var minSelectable =  parseInt(jQuery(this).find('option:first').val());
+
+						totalServices+=nExtras;
+						var currTr = jQuery(this).closest("tr");
+
+						currTotalServices += ( parseFloat( currTr.find(".bfi-price").html().replace(".","").replace(",",".")) * nExtras);
+						currTotalNotDiscoutedServices += ( parseFloat( currTr.find(".bfi-discounted-price").html().replace(".","").replace(",",".")) *nExtras);
+						if(minSelectable>0){
+							currTotalServices -= ( parseFloat( currTr.find(".bfi-price").html().replace(".","").replace(",",".")) * minSelectable);
+							currTotalNotDiscoutedServices -= ( parseFloat( currTr.find(".bfi-discounted-price").html().replace(".","").replace(",",".")) *minSelectable);
+						}
+					}
+				});
+
+				jQuery(".bfi-extras-total span").html(totalServices);
+				if(totalServices > 0){
+					jQuery(".bfi-extras-total").show();
+				}else{
+					jQuery(".bfi-extras-total").hide();
+				}
+
+				jQuery(".bfi-price-total").html(bookingfor.number_format(bfi_totalQuote + currTotalServices, 2, ',', '.') );
+				jQuery(".bfi-discounted-price-total").html(bookingfor.number_format(bfi_totalQuoteDiscount + currTotalNotDiscoutedServices, 2, ',', '.') );
+				jQuery(".bfi-discounted-price-total").hide();
+				if((bfi_totalQuoteDiscount + currTotalNotDiscoutedServices)<= (bfi_totalQuote + currTotalServices)){
+					jQuery(".bfi-discounted-price-total").hide();
+					jQuery(".bfi-price-total").removeClass("bfi-red");
+				}else{
+					jQuery(".bfi-discounted-price-total").show();
+					jQuery(".bfi-price-total").addClass("bfi-red");
+				}
+
+
+}

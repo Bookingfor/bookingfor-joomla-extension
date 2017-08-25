@@ -3,28 +3,29 @@
 	<name>BookingFor Connector Package</name>
 	<creationDate>2016-06-05</creationDate>
 	<packagename>bookingforconnector</packagename>
-	<version>2.2.1</version>
+	<version>3.1.0</version>
 	<authorEmail>developer@ipertrade.com</authorEmail>
 	<authorUrl>http://www.ipertrade.com</authorUrl>
 	<url>http://www.ipertrade.com/</url>
 	<author>Bookingfor</author>
 	<packager>Bookingfor</packager>
 	<packagerurl>http://www.ipertrade.com/</packagerurl>
-    <copyright>Copyright (c)2006-2016 Ipertrade s.r.l.</copyright>
-    <license>http://www.gnu.org/copyleft/gpl.html GNU/GPL</license>
+	<copyright>Copyright (c)2006-2017 Ipertrade s.r.l.</copyright>
+	<license>http://www.gnu.org/copyleft/gpl.html GNU/GPL</license>
 	<description>Installation package for BookingFor Connector</description>
+	<scriptfile>pkg_script.php</scriptfile>
 	<files folder="packages">
 		<file type="component" id="bookingforconnector" >com_bookingforconnector</file>
-		<file type="module" id="bookingfor" client="site">mod_bookingfor</file>
+		<file type="module" id="mod_bookingforsearch" client="site">mod_bookingforsearch</file>
 		<file type="module" id="bookingforconnector" client="site">mod_bookingforconnector</file>
-		<file type="module" id="bookingforconnectorrmaps" client="site">mod_bookingformaps</file>
 		<file type="module" id="bookingforsearchfilter" client="site">mod_bookingforsearchfilter</file>
 		<file type="module" id="bookingformerchants" client="site">mod_bookingformerchants</file>
+		<file type="module" id="bookingforcurrencyswitcher" client="site">mod_bookingforcurrencyswitcher</file>
 		<file type="plugin" id="bookingforconnector" client="site">plg_search_bookingforconnector</file>
 		<file type="plugin" id="bookingforconnectorresource" client="site">plg_search_bookingforconnectorresource</file>
 	</files>
 	
-	 <updateservers>
-        <server type="extension" priority="1" name="BookingFor Connector Package">https://raw.githubusercontent.com/Bookingfor/joomla-extension-v-2/master/pkg_bookingforconnector_updates.xml</server>
-    </updateservers>
+	<!-- <updateservers>
+		<server type="extension" priority="1" name="BookingFor Connector Package">https://raw.githubusercontent.com/Bookingfor/joomla-extension-v-2/master/pkg_bookingforconnector_updates.xml</server>
+	</updateservers> -->
 </extension>

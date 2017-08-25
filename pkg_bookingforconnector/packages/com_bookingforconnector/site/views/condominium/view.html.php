@@ -8,66 +8,64 @@
 // No direct access to this file
 defined('_JEXEC') or die('Restricted access');
 
-// import Joomla view library
-jimport('joomla.application.component.view');
-
-$pathbase = JPATH_BASE . DIRECTORY_SEPARATOR . 'components' . DIRECTORY_SEPARATOR . 'com_bookingforconnector' . DIRECTORY_SEPARATOR;
-
-require_once $pathbase . '/views/condominium/resourceview.php';
-
 /**
- * HTML View class for the HelloWorld Component
+ * HTML View class for the Bookingforconnector Component
  */
-class BookingForConnectorViewCondominium extends BookingForConnectorViewCondominiumBase
+class BookingForConnectorViewCondominium extends BFCView
 {
-	protected $pagination = null;
+//	protected $pagination = null;
 	// Overwriting JView display method
-	function display($tpl = null, $preparecontent = false)
+	function display($tpl = null)
 	{
 
-		BookingForConnectorViewCondominiumBase::basedisplay($tpl);
+		// Initialise variables
 		$state		= $this->get('State');
 		$item		= $this->get('Item');
 		$document 	= JFactory::getDocument();
 		$language 	= $document->getLanguage();
-		$isFromSearch = false;
+		$params 	= $state->params;
 		$app = JFactory::getApplication();
 		$sitename = $app->get('sitename');
 		$config = JComponentHelper::getParams('com_bookingforconnector');
-		$params		= $this->params;
+ 		$orderid = 0;
+		$cartType = 1; //$merchant->CartType;
+		
+		$items=null;
+		$pagination=null;
+		$checkAnalytics = false;
+		$isFromSearch = false;
 
-		BFCHelper::setState($item, 'condominium', 'condominium');
+		$document->addScript('components/com_bookingforconnector/assets/js/bf_cart_type_1.js');
+		$document->addScript('components/com_bookingforconnector/assets/js/bf_appTimePeriod.js');
+		$document->addScript('components/com_bookingforconnector/assets/js/bf_appTimeSlot.js');
+
 		$allobjects = array();
-		if (BFCHelper::getString('layout') == 'resourcesajax') {
-			$items = $this->get('ItemsResourcesAjax');
-		}else{
 		//if (BFCHelper::getString('layout') == 'resources') {
-			if (BFCHelper::getString('search') == '1') {					
-				$isFromSearch = true;
-				$items = $this->get('ItemsSearch');
-				$pagination	= $this->get('Pagination');
-			} else {
-				$items = $this->get('Items');
-				$pagination	= $this->get('Pagination');
-			}
-			
-			if(!empty($items)) {
-				foreach ($items as $key => $value) {
-					$obj = new stdClass;
-					if(BFCHelper::getString('search') == '1') {
-						$obj->id = "" . $value->ResourceId . " - Resource";
-						$obj->name = $value->ResName;
-						$obj->category = $value->DefaultLangMrcCategoryName;
-						$obj->brand = $value->MrcName;
-					} else {
-						$obj->id = "" . $value->ResourceId . " - Resource";
-						$obj->name = $value->Name;
-						$obj->category = $value->MerchantCategoryName;
-						$obj->brand = $value->MerchantName;
-					}
-					$obj->position = $key;
-					$allobjects[] = $obj;
+		if (BFCHelper::getString('fromsearch') == '1') {					
+			$isFromSearch = true;
+//			$items = $this->get('ItemsSearch');
+//			$pagination	= $this->get('Pagination');
+		} else {
+			$items = $this->get('Items');
+			$pagination	= $this->get('Pagination');
+		}
+		
+		if(!empty($items)) {
+			foreach ($items as $key => $value) {
+				$obj = new stdClass;
+				if(BFCHelper::getString('search') == '1') {
+					$obj->id = "" . $value->ResourceId . " - Resource";
+					$obj->name = $value->ResName;
+//					$obj->category = $value->DefaultLangMrcCategoryName;
+					$obj->brand = $value->MrcName;
+				} else {
+					$obj->id = "" . $value->ResourceId . " - Resource";
+					$obj->name = $value->Name;
+//					$obj->category = $value->MerchantCategoryName;
+					$obj->brand = $value->MerchantName;
 				}
+				$obj->position = $key;
+				$allobjects[] = $obj;
 			}
 		}
 		$analyticsEnabled = $this->checkAnalytics("Condominium page");
@@ -82,27 +80,42 @@ class BookingForConnectorViewCondominium extends BookingForConnectorViewCondomin
 			
 			$document->addScriptDeclaration('callAnalyticsEEc("addImpression", ' . json_encode($allobjects) . ', "list", "Condominium Resources Search List");');
 		}
-		
-//		$document->addStyleSheet('components/com_bookingforconnector/assets/css/resource.css');
-		// add stylesheet
-		$document->addStylesheet('components/com_bookingforconnector/assets/css/bookingfor.css');
-		$document->addStylesheet('components/com_bookingforconnector/assets/css/bookingfor-responsive.css');
+				
+		$this->document = $document;
+		$this->language = $language;
+		$this->params = $params;
+		$this->item = $item;
+		$this->items = $items;
+		$this->pagination = $pagination;
+		$this->sitename = $sitename;
+		$this->config = $config;
+		$this->state = $state;
+		$this->isFromSearch = $isFromSearch;
+		$this->analyticsEnabled = $analyticsEnabled;
 
-		$document->addScript('components/com_bookingforconnector/assets/js/jquery.form.js');
-		$document->addScript('components/com_bookingforconnector/assets/js/jquery.blockUI.js');
-		$document->addScript('components/com_bookingforconnector/assets/js/bf.js');
-		
-		$this->assignRef('document', $document);
-		$this->assignRef('language', $language);
-		$this->assignRef('item', $item);
-		$this->assignRef('items', $items);
-		$this->assignRef('pagination', $pagination);
-		$this->assignRef('isFromSearch', $isFromSearch);
-		$this->assignRef('sitename', $sitename);
-		$this->assignRef('config', $config);
-		$this->assignRef('analyticsEnabled', $analyticsEnabled);
 		$this->setBreadcrumb($item, 'condominiums', $language);
 		
 		parent::display($tpl);
+	}
+	function setBreadcrumb($resource, $layout = '', $language) {
+		if (!empty($resource)){
+				$mainframe = JFactory::getApplication();
+				$pathway   = $mainframe->getPathway();
+				// resetto il pathway				
+//				$pathway->setPathway(null);
+				$count = count($pathway);
+				$newPathway = array();
+				if($count>1){
+					$newPathway = array_pop($pathway);
+				}
+				$pathway->setPathway($newPathway);
+
+				$resourceName = BFCHelper::getLanguage($resource->Name, $this->language, null, array('ln2br'=>'ln2br', 'striptags'=>'striptags')); 
+
+				$pathway->addItem(
+					$resourceName,
+					JRoute::_('index.php?option=com_bookingforconnector&view=condominium&resourceId=' . $resource->CondominiumId . ':' . BFCHelper::getSlug($resourceName))
+				);
+		}
 	}
 }

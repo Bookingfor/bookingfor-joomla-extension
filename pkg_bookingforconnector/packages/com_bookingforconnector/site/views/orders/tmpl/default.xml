@@ -8,17 +8,6 @@
 		>
 		<fieldset name="request">
 			<field
-				name="donation"
-				type="hidden"
-				default="0"
-				label="COM_BOOKINGFORCONNECTOR_ONSELLUNITS_FIELD_DONATION_LABEL"
-				description="COM_BOOKINGFORCONNECTOR_ONSELLUNITS_FIELD_DONATION_DESC">
-				<option
-					value="0">JNO</option>
-				<option
-					 value="1">JYES</option>
-			</field>
-			<field
 				name="checkmode"
 				type="list"
 				label="COM_BOOKINGFORCONNECTOR_ORDERS_FIELD_CHECKMODE_LABEL"

@@ -27,36 +27,18 @@ class BookingForConnectorViewCart extends BFCView
 		// Initialise variables
 		$state		= $this->get('State');
 		$items		= $this->get('Items');
-//		$pagination	= $this->get('Pagination');
 		$document 	= JFactory::getDocument();
-
-		// load scripts
-		$document->addStyleSheet('components/com_bookingforconnector/assets/css/jquery.validate.css');
-
-		// load scripts
-		$document->addScript('components/com_bookingforconnector/assets/js/jquery.form.js');
-		$document->addScript('components/com_bookingforconnector/assets/js/jquery.validate.min.js');
-		$document->addScript('components/com_bookingforconnector/assets/js/additional-methods.min.js');		
-
-		//load scripts wizard
-		$document->addScript('components/com_bookingforconnector/assets/js/bbq.js');
-		$document->addScript('components/com_bookingforconnector/assets/js/jquery.form.wizard.js');
-
-		// Initialise variables
-
-//		$params = $state->params;
-
 
 		$language 	= $document->getLanguage();
 		$app = JFactory::getApplication();
 		$sitename = $app->get('sitename');
 				
-		$this->assignRef('state', $state);		
-//		$this->assignRef('params', $params);
-		$this->assignRef('language', $language);
-		$this->assignRef('items', $items);
-		$this->assignRef('pagination', $pagination);
-		$this->assignRef('sitename', $sitename);
+		$this->state = $state;		
+		$this->language = $language;
+		$this->items = $items;
+		$this->sitename = $sitename;
+		$analyticsEnabled = $this->checkAnalytics("");
+		$this->analyticsEnabled = $analyticsEnabled;
 
 		
 		// Display the view

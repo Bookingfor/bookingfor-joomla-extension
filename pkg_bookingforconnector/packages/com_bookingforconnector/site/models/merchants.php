@@ -37,13 +37,17 @@ class BookingForConnectorModelMerchants extends JModelList
 	private $urlCreateMerchantAndUser = null;
 	private $urlMerchantCategoriesRequest = null;
 	private $urlGetServicesByMerchantsCategoryId = null;
+	private $params = null;
+	private $itemPerPage = null;
+	private $ordering = null;
+	private $direction = null;
 	
 	private $helper = null;
 	
 	public function __construct($config = array())
 	{
 		parent::__construct($config);
-		$this->helper = new wsQueryHelper(COM_BOOKINGFORCONNECTOR_WSURL, COM_BOOKINGFORCONNECTOR_APIKEY);
+		$this->helper = new wsQueryHelper(null, null);
 		$this->urlMerchants = '/GetMerchantsByCategoryIds';
 		$this->urlMerchantsCount = '/GetMerchantsByCategoryIds/$count';
 		$this->merchantsCount = 0;
@@ -59,11 +63,40 @@ class BookingForConnectorModelMerchants extends JModelList
 		$this->urlCreateMerchantAndUser = '/CreateMerchantAndUser';
 		$this->urlMerchantCategoriesRequest = '/GetMerchantsCategoryForRequest';
 		$this->urlGetServicesByMerchantsCategoryId = '/GetServicesByMerchantsCategoryId';
-		
+	}
+	
+	public function setItemPerPage($itemPerPage) {
+		if(!empty($itemPerPage)){
+			$this->itemPerPage = $itemPerPage;
+		}
+	}
+	public function setOrdering($ordering) {
+		if(!empty($ordering)){
+			$this->ordering = $ordering;
+		}
+	}
+	public function setDirection($direction) {
+		if(!empty($direction)){
+			$this->direction = $direction;
+		}
+	}
+	public function getOrdering() {
+		return $this->ordering;
+	}
+	public function getDirection() {
+		return $this->direction;
+	}
+
+	public function getParam() {
+		return $this->params;
+	}
+
+	public function setParam($param) {
+		$this->params = $param ;
 	}
 	
 	public function applyDefaultFilter(&$options) {
-		$params = $this->getState('params');
+		$params = $this->params;
 		$startswith = $params['startswith'];
 		$typeId = $params['typeId'];
 		$rating = $params['rating'];
@@ -100,7 +133,7 @@ class BookingForConnectorModelMerchants extends JModelList
 			}else{
 				$strCategoryIds = $categoryIds;
 			}
-			$options['data']['categoryIds'] = '\''.$strCategoryIds.'\'';
+			$options['data']['categoryIds'] = '\''.str_replace(",","|",$strCategoryIds).'\'';
 		}
 		if (count($cityids) > 0){
 			$options['data']['cityids'] = '\''.implode(',',$cityids).'\'';
@@ -169,7 +202,7 @@ class BookingForConnectorModelMerchants extends JModelList
 	public function getLocationZonesFromService($locationId = NULL) {
 		$data=array(
 					'$select' => 'GeographicZoneId,Name,Order',			
-					'$orderby' => 'Order',			
+					'$orderby' => 'Name',			
 					'$format' => 'json'
 				);
 		if(!empty($locationId)) {
@@ -609,7 +642,7 @@ class BookingForConnectorModelMerchants extends JModelList
 	}
 	public function getMerchantsFromService($start, $limit, $ordering, $direction) {// with random order is not possible to order by another field
 
-		$params = $this->getState('params');
+		$params = $this->params;
 		$seed = $params['searchseed'];
 
 		$options = array(
@@ -699,7 +732,7 @@ class BookingForConnectorModelMerchants extends JModelList
 		if (!$session->has('searchseed','com_bookingforconnector')) {
 			$session->set('searchseed', $searchseed, 'com_bookingforconnector');
 		}
-		$this->setState('params', array(
+		$this->params= array(
 			'typeId' => BFCHelper::getInt('typeId'),
 			'categoryId' => BFCHelper::getArray('categoryId'),
 			'startswith' => BFCHelper::getVar('startswith',''),
@@ -709,7 +742,9 @@ class BookingForConnectorModelMerchants extends JModelList
 			'rating' => BFCHelper::getVar('rating'),
 			'cityids' => BFCHelper::getArray('cityids'),
 			'searchseed' => $searchseed
-		));		
+	);	
+		$this->setState('params',$this->params);
+
 		return parent::populateState($filter_order, $filter_order_Dir);
 	}
 	

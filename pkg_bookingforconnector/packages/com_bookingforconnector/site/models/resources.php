@@ -9,9 +9,6 @@
 // No direct access to this file
 defined('_JEXEC') or die('Restricted access');
 
-// import Joomla modelitem library
-jimport('joomla.application.component.modellist');
-
 $pathbase = JPATH_SITE . DIRECTORY_SEPARATOR . 'components' . DIRECTORY_SEPARATOR . 'com_bookingforconnector' . DIRECTORY_SEPARATOR;
 
 require_once $pathbase . 'defines.php';
@@ -32,6 +29,7 @@ class BookingForConnectorModelResources extends JModelList
 	private $helper = null;
 	private $urlServices = null;
 	private $TypeId = 1; // default value for product booking
+	private $urlResourcesSearch = null;
 	
 	public function __construct($config = array())
 	{
@@ -44,24 +42,21 @@ class BookingForConnectorModelResources extends JModelList
 		$this->urlCheckAvailabilityCalendar = '/CheckAvailabilityCalendarByIdList';
 		$this->urlGetResourcesByIds = '/GetResourcesByIds';
 		$this->urlServices = '/GetServicesForSearch';
+		$this->urlResourcesSearch = '/SearchAllLiteNew'; //'/Resources';
 	}
 		
 	public function applyDefaultFilter(&$options) {
 		$params = $this->getState('params');
 		
-		$masterTypologyId = $params['categoryId'];
-		
-//		$filter = '';
-		// get only enabled merchants because disabled are of no use
-//		$this->helper->addFilter($filter, 'Enabled eq true', 'and');
-
-		if (isset($masterTypologyId) && $masterTypologyId > 0) {
-//			$this->helper->addFilter($filter, 'CategoryId eq ' . $masterTypologyId, 'and');
-			$options['data']['productcategories'] =  BFCHelper::getQuotedString($masterTypologyId);
+		$categories = $params['categories'];
+		if (!empty($categories)) {
+			$options['data']['productcategories'] =  BFCHelper::getQuotedString(implode(',',$categories));
 		}
 		
-//		if ($filter!='')
-//			$options['data']['$filter'] = $filter;
+		$condominiumid = $params['parentProductId'];
+		if (!empty($condominiumid)) {
+			$options['data']['parentProductId'] =  $condominiumid;
+		}
 
 	}
 
@@ -166,11 +161,11 @@ class BookingForConnectorModelResources extends JModelList
 
 	public function getMasterTypologies($onlyEnabled = true) {
 		$session = JFactory::getSession();
-		$typologies = $session->get('getMasterTypologies', null , 'com_bookingforconnector');
+		$typologies = BFCHelper::getSession('getMasterTypologies', null , 'com_bookingforconnector');
 //		if (!$session->has('getMerchantCategories','com_bookingforconnector')) {
 		if ($typologies==null) {
 			$typologies = $this->getMasterTypologiesFromService($onlyEnabled);
-			$session->set('getMasterTypologies', $typologies, 'com_bookingforconnector');
+			BFCHelper::setSession('getMasterTypologies', $typologies, 'com_bookingforconnector');
 		}
 		return $typologies;
 	}
@@ -179,8 +174,6 @@ class BookingForConnectorModelResources extends JModelList
 		$options = array(
 				'path' => $this->urlGetResourcesByIds,
 				'data' => array(
-					/*'$skip' => $start,
-					'$top' => $limit,*/
 					'ids' => '\'' .$listsId. '\'',
 					'cultureCode' => BFCHelper::getQuotedString($language),
 					'$format' => 'json'
@@ -208,6 +201,7 @@ class BookingForConnectorModelResources extends JModelList
 
 		$params = $this->getState('params');
 		$seed = $params['searchseed'];
+		$cultureCode = JFactory::getLanguage()->getTag();
 
 		$options = array(
 				'path' => $this->urlResources,
@@ -215,6 +209,7 @@ class BookingForConnectorModelResources extends JModelList
 					/*'$skip' => $start,
 					'$top' => $limit,*/
 					'seed' => $seed,
+					'cultureCode' => BFCHelper::getQuotedString($cultureCode),
 					'$format' => 'json'
 				)
 			);
@@ -291,13 +286,14 @@ class BookingForConnectorModelResources extends JModelList
 		$filter_order_Dir = BFCHelper::getCmd('filter_order_Dir','asc');
 
 		$session = JFactory::getSession();
-		$searchseed = $session->get('searchseed', rand(), 'com_bookingforconnector');
-		if (!$session->has('searchseed','com_bookingforconnector')) {
-			$session->set('searchseed', $searchseed, 'com_bookingforconnector');
+		$searchseed = BFCHelper::getSession('searchseed', rand(), 'com_bookingforconnector');
+		if ($searchseed ==null) {
+			BFCHelper::setSession('searchseed', $searchseed, 'com_bookingforconnector');
 		}
  
 		$this->setState('params', array(
-			'categoryId' => BFCHelper::getInt('categoryId'),
+			'categories' => BFCHelper::getArray('categories'),
+			'parentProductId' => BFCHelper::getInt('parentProductId'),
 			'searchseed' => $searchseed
 		));
 		
@@ -330,62 +326,94 @@ class BookingForConnectorModelResources extends JModelList
 
 	public function getResourcesForSearch($text, $start, $limit, $ordering, $direction) {
 		//$typeId = $this->getTypeId();
+		$cultureCode = JFactory::getLanguage()->getTag();
 		$options = array(
-				'path' => $this->urlResources,
+				'path' => $this->urlResourcesSearch,
 				'data' => array(
 					/*'$skip' => $start,
 					'$top' => $limit,*/
+					'topRresult' => 0,
+					'lite' => 1,
 					'$format' => 'json'
 				)
 			);
 
 		if (isset($start) && $start >= 0) {
-			$options['data']['$skip'] = $start;
+			$options['data']['skip'] = $start;
 		}
 		
 		if (isset($limit) && $limit > 0) {
-			$options['data']['$top'] = $limit;
+			$options['data']['topRresult'] = $limit;
+		}
+
+		$resourceName = $text.'';
+		$options['data']['calculate'] = 0;
+		$options['data']['checkAvailability'] = 0;
+		$options['data']['itemTypeIds'] = '\'0,1,2,3\'';
+		$options['data']['cultureCode'] = '\'' . $cultureCode. '\'';
+
+		if (isset($resourceName) && $resourceName <> "" ) {
+			$options['data']['resourceName'] = '\''. $resourceName.'\'';
 		}
 		
 		//$this->applyDefaultFilter($options);
 		
-		$filter = '';
+//		$filter = '';
 
 		// get only enabled merchants because disabled are of no use
-		$this->helper->addFilter($filter, 'Enabled eq true', 'and');
+//		$this->helper->addFilter($filter, 'Enabled eq true', 'and');
 
-		if (isset($text)) {
-			$this->helper->addFilter(
-				$filter, 
-				'substringof(\'' . $text . '\',Name) eq true', 
-				'and'
-			);
-		}
+//		if (isset($text)) {
+//			$this->helper->addFilter(
+//				$filter, 
+//				'substringof(\'' . $text . '\',Name) eq true', 
+//				'and'
+//			);
+//		}
 				
-		if ($filter!='')
-			$options['data']['$filter'] = $filter;
+//		if ($filter!='')
+//			$options['data']['$filter'] = $filter;
 
 		// adding other ordering to allow grouping
-		$options['data']['$orderby'] = 'Rating desc';
-		if (isset($ordering)) {
-			$options['data']['$orderby'] .= ", " . $ordering . ' ' . strtolower($direction);
-		}
+//		$options['data']['$orderby'] = 'Rating desc';
+//		if (isset($ordering)) {
+//			$options['data']['$orderby'] .= ", " . $ordering . ' ' . strtolower($direction);
+//		}
 		
 		$url = $this->helper->getQuery($options);
 		
-		$resources = null;
-		
-		$r = $this->helper->executeQuery($url);
-		if (isset($r)) {
-			$res = json_decode($r);
-//			$resources = $res->d->results ?: $res->d;
-			if (!empty($res->d->results)){
-				$resources = $res->d->results;
-			}elseif(!empty($res->d)){
-				$resources = $res->d;
+			$r = $this->helper->executeQuery($url);
+			if (isset($r)) {
+				$res = json_decode($r);
+				if (!empty($res->d->SearchAllLiteNew)){
+					$results = $res->d->SearchAllLiteNew;
+				}elseif(!empty($res->d)){
+					$results = $res->d;
+				}
 			}
+
+						
+		$resources = null;
+
+		if(isset($results->ItemsCount)){
+			$resources = json_decode($results->ItemsString);
 		}
 
+		
+		
+//		$resources = null;
+//		
+//		$r = $this->helper->executeQuery($url);
+//		if (isset($r)) {
+//			$res = json_decode($r);
+////			$resources = $res->d->results ?: $res->d;
+//			if (!empty($res->d->results)){
+//				$resources = $res->d->results;
+//			}elseif(!empty($res->d)){
+//				$resources = $res->d;
+//			}
+//		}
+//
 		return $resources;
 	}
 

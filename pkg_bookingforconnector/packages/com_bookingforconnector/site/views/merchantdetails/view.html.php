@@ -8,11 +8,8 @@
 // No direct access to this file
 defined('_JEXEC') or die('Restricted access');
 
-// import Joomla view library
-jimport('joomla.application.component.view');
-
 /**
- * HTML View class for the HelloWorld Component
+ * HTML View class for the Bookingforconnector Component
  */
 class BookingForConnectorViewMerchantDetails extends BFCView
 {
@@ -24,10 +21,8 @@ class BookingForConnectorViewMerchantDetails extends BFCView
 //	protected $language = null;
 			
 	// Overwriting JView display method
-	function display($tpl = null, $preparecontent = false) 
+	function display($tpl = null) 
 	{
-		JHtml::_('bootstrap.framework');
-
 		// Initialise variables
 		$state		= $this->get('State');
 		$item		= $this->get('Item');
@@ -38,87 +33,75 @@ class BookingForConnectorViewMerchantDetails extends BFCView
 		$sitename = $app->get('sitename');
 		$config = JComponentHelper::getParams('com_bookingforconnector');
 		$orderid = 0;
+		$cartType = 1; //$merchant->CartType;
 		
-		// add stylesheet
-		JHTML::stylesheet('components/com_bookingforconnector/assets/css/font-awesome.css');
-		JHTML::stylesheet('components/com_bookingforconnector/assets/bootstrap/css/bootstrap.css');
-		$document->addStyleSheet('components/com_bookingforconnector/assets/css/bookingfor.css');
-		$document->addStyleSheet('components/com_bookingforconnector/assets/css/bookingfor-responsive.css');
-
-		$document->addStyleSheet('//ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css');
-		$document->addScript('//ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js');
-		$document->addScript('components/com_bookingforconnector/assets/js/jquery.shorten.js');
-		$document->addScript('components/com_bookingforconnector/assets/js/jquery.validate.min.js');
-		$document->addScript('components/com_bookingforconnector/assets/js/additional-methods.min.js');		
-		$document->addScript('components/com_bookingforconnector/assets/js/jquery.expander.min.js');
-		$document->addScript('components/com_bookingforconnector/assets/js/calendar.js');
-		if(substr($language,0,2)!='en'){
-//			$document->addScript('//jquery-ui.googlecode.com/svn/tags/legacy/ui/i18n/ui.datepicker-' . substr($language,0,2) . '.js');
-			$document->addScript('//ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/i18n/datepicker-' . substr($language,0,2) . '.min.js?ver=1.11.4');
-		}
-			$document->addScript('components/com_bookingforconnector/assets/js/jquery.form.js');
-			$document->addScript('components/com_bookingforconnector/assets/js/jquery.blockUI.js');
-
+		$items=null;
+		$pagination=null;
 		$checkAnalytics = false;
+
+		$layout = BFCHelper::getString('layout', "default");
+
 		if(!isset($item)){
 			header ("Location: ". JURI::root()); 
 			$app->close();
 		}
 		if ($item->HasResources) {
-			if (BFCHelper::getString('layout') == 'resourcesajax') {
+			// load scripts
+			$document->addScript('components/com_bookingforconnector/assets/js/bf_cart_type_1.js');
+			$document->addScript('components/com_bookingforconnector/assets/js/bf_appTimePeriod.js');
+			$document->addScript('components/com_bookingforconnector/assets/js/bf_appTimeSlot.js');
+			if ($layout == 'resourcesajax') {
 				$items = $this->get('ItemsResourcesAjax');
 			}
 		}
 
 		if ($item->HasResources) {
-			if (BFCHelper::getString('layout') == 'resources') {
+			if ($layout == 'resources') {
 				$items = $this->get('Items');
 				$checkAnalytics = true;
 				$pagination	= $this->get('Pagination');
 			}
 		}
 		
-		if (BFCHelper::getString('layout') == 'packages') {
-			$items = $this->get('ItemsPackages');
-			$checkAnalytics = true;
-			$pagination	= $this->get('PaginationPackages');
-		}
-
-		if (BFCHelper::getString('layout') == 'package') {
-			$items = $this->get('Package');
-			$checkAnalytics = true;
-			BFCHelper::setState($items, 'packages', 'merchant');
-		}
-
-		if (BFCHelper::getString('layout') == 'offers') {
+//		if ($layout == 'packages') {
+//			$items = $this->get('ItemsPackages');
+//			$checkAnalytics = true;
+//			$pagination	= $this->get('PaginationPackages');
+//		}
+//
+//		if ($layout == 'package') {
+//			$items = $this->get('Package');
+//			$checkAnalytics = true;
+//			BFCHelper::setState($items, 'packages', 'merchant');
+//		}
+//
+		if ($layout == 'offers') {
 			$items = $this->get('ItemsOffer');
 			$checkAnalytics = true;
 			$pagination	= $this->get('PaginationOffers');
 		}
 		
-		if (BFCHelper::getString('layout') == 'offer') {
+		if ($layout == 'offer') {
 			$items = $this->get('Offer');
 			$checkAnalytics = true;
-			BFCHelper::setState($items, 'offers', 'merchant');
+//			BFCHelper::setState($items, 'offers', 'merchant');
 		}
 
-		if (BFCHelper::getString('layout') == 'onsellunits') {
+		if ($layout == 'onsellunits') {
 			$items = $this->get('ItemsOnSellUnit');
 			$checkAnalytics = true;
 			$pagination	= $this->get('PaginationOnSellUnits');
 		}
 
-		if (BFCHelper::getString('layout') == 'onsellunit') {
+		if ($layout == 'onsellunit') {
 			$items = array($this->get('OnSellUnit'));
 			$checkAnalytics = true;
-			BFCHelper::setState($items, 'onsellunits', 'merchant');
+//			BFCHelper::setState($items, 'onsellunits', 'merchant');
 		}
 		
-		if (BFCHelper::getString('layout') == 'ratings') {
+		if ($layout == 'ratings') {
 			$items = $this->get('ItemsRating');
 			$pagination	= $this->get('PaginationRatings');
-			// load scripts
-			$document->addScript('components/com_bookingforconnector/assets/js/jquery.expander.min.js');
 		}
 		if (BFCHelper::getString('layout', 'default') == 'default') {
 			$checkAnalytics = true;
@@ -126,11 +109,7 @@ class BookingForConnectorViewMerchantDetails extends BFCView
 		if (BFCHelper::getString('layout', 'default') == 'thanks') {
 			$checkAnalytics = true;
 		}								
-		if (BFCHelper::getString('layout') == 'rating') {
-			// load css
-			$document->addStyleSheet('components/com_bookingforconnector/assets/css/jquery.rating.css');
-			$document->addStyleSheet('components/com_bookingforconnector/assets/css/jquery.validate.css');
-
+		if ($layout == 'rating') {
 			// load scripts
 			$document->addScript('components/com_bookingforconnector/assets/js/jquery.rating.pack.js');
 		}
@@ -319,7 +298,6 @@ class BookingForConnectorViewMerchantDetails extends BFCView
 			BFCHelper::raiseWarning(500, implode("\n", $errors));
 			return false;
 		}
-		$layout = BFCHelper::getString('layout', "default");
 		
 		if($layout == "thanks" || $layout == "default") {
 			$merchants = array();
@@ -354,22 +332,26 @@ class BookingForConnectorViewMerchantDetails extends BFCView
 		
 		BFCHelper::setState($item, 'merchant', 'merchant');
 		
-		$this->setBreadcrumb($item, BFCHelper::getString('layout'));
+		if($layout != "contactspopup") {
+			$this->setBreadcrumb($item, $layout);
+		}
 		
-		$this->assignRef('params', $params);
-		$this->assignRef('item', $item);
-		$this->assignRef('items', $items);
-		$this->assignRef('pagination', $pagination);
-		$this->assignRef('document', $document);
-		$this->assignRef('language', $language);
-		$this->assignRef('sitename', $sitename);
-		$this->assignRef('config', $config);
-		$this->assignRef('state', $state);
-		$this->assignRef('checkAnalytics', $checkAnalytics);
-		$this->assignRef('analyticsListName', $listName);
+		
+		
+		$this->document = $document;
+		$this->language = $language;
+		$this->params = $params;
+		$this->item = $item;
+		$this->items = $items;
+		$this->pagination = $pagination;
+		$this->sitename = $sitename;
+		$this->config = $config;
+		$this->state = $state;
+		$this->checkAnalytics = $checkAnalytics;
+		$this->analyticsListName = $listName;
 		
 		// Display the view
-		parent::display($tpl, true);
+		parent::display($tpl);
 	}
 	
 	function setBreadcrumb($merchant, $layout = '') {

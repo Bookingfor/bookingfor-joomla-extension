@@ -29,7 +29,7 @@ class BookingForConnectorModelCriteo extends JModelList
 	public function __construct($config = array())
 	{
 		parent::__construct($config);
-		$this->helper = new wsQueryHelper(COM_BOOKINGFORCONNECTOR_WSURL, COM_BOOKINGFORCONNECTOR_APIKEY);
+		$this->helper = new wsQueryHelper(null,null);
 		$this->GetCriteoConfiguration = '/GetCriteoConfiguration';
 	}
 	public function getCriteoConfiguration($pagetype = 0, $merchantsList = array(), $orderId = null)

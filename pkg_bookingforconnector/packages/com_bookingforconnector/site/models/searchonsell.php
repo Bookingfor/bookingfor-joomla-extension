@@ -8,15 +8,10 @@
 // No direct access to this file
 defined('_JEXEC') or die('Restricted access');
 
-// import Joomla modelitem library
-jimport('joomla.application.component.modellist');
-
 $pathbase = JPATH_SITE . DIRECTORY_SEPARATOR . 'components' . DIRECTORY_SEPARATOR . 'com_bookingforconnector' . DIRECTORY_SEPARATOR;
 
 require_once $pathbase . 'defines.php';
 require_once $pathbase . '/helpers/wsQueryHelper.php';
-require_once $pathbase . '/helpers/BFCHelper.php';
-require_once $pathbase . '/helpers/FormHelper.php';
 
 /**
  * BookingForConnectorModelMerchants Model
@@ -40,9 +35,9 @@ class BookingForConnectorModelSearchOnSell extends JModelList
 	{
 		parent::__construct($config);
 		$this->helper = new wsQueryHelper(COM_BOOKINGFORCONNECTOR_WSURL, COM_BOOKINGFORCONNECTOR_APIKEY);
-		$this->urlSearch = '/SearchOnsell'; //SearchOnSellSimple
-		$this->urlSearchRandom = '/SearchOnsellRandom'; //SearchOnsellRandomSimple
-		$this->urlSearchCount = '/GetSearchOnsellCount';
+		$this->urlSearch = '/SearchOnsellSimple';
+		$this->urlSearchRandom = '/SearchOnsellRandomSimple';
+		$this->urlSearchCount = '/GetSearchOnsellCountSimple';
 		$this->urlSearchLocationZone = '/GetLocationZoneOnsell';
 		$this->urlCreateUserAlert = '/CreateUserAlert';
 		$this->urlUnsubscribeUserAlert = '/DisableAlerts';
@@ -137,7 +132,8 @@ class BookingForConnectorModelSearchOnSell extends JModelList
 	}
 
 	public function applyDefaultFilter(&$options) {
-		$params = $this->getState('params');
+//		$params = $this->getState('params');
+		$params = BFCHelper::getSearchOnSellParamsSession();
 		
 		$masterTypeId = "";
 		if(!empty($params['masterTypeId'])){
@@ -230,6 +226,27 @@ class BookingForConnectorModelSearchOnSell extends JModelList
 			$options['data']['points'] = '\'' . $points. '\'';
 		}
 
+		$stateIds = $params['stateIds'];
+		$regionIds = $params['regionIds'];
+		$cityIds = $params['cityIds'];
+		if (isset($params['locationzone']) ) {
+			$locationzone = $params['locationzone'];
+		}
+		if (isset($stateIds) && $stateIds !='') {
+			$options['data']['stateIds'] = '\'' . $stateIds. '\'';
+		}
+
+		if (isset($regionIds) && $regionIds !='') {
+			$options['data']['regionIds'] = '\'' . $regionIds. '\'';
+		}
+
+		if (isset($cityIds) && $cityIds !='') {
+			$options['data']['cityIds'] = '\'' . $cityIds. '\'';
+		}
+		if (isset($locationzone) && $locationzone !='' && $locationzone !='0') {
+			$options['data']['zoneIds'] = '\''. $locationzone . '\'';
+		}
+
 		$zoneIds = isset($params['zoneIds']) ? $params['zoneIds'] : array();
 		if (!empty($zoneIds) && !empty($cityId) ) {
 			$options['data']['zoneIds'] = '\'' . $zoneIds. '\'';
@@ -259,9 +276,9 @@ class BookingForConnectorModelSearchOnSell extends JModelList
 			$options['data']['cultureCode'] = '\'' . $cultureCode. '\'';
 		}
 		
-		if (isset($merchantId) && $merchantId > 0) {
-			$options['data']['merchantid'] = $merchantId;
-		}
+//		if (isset($merchantId) && $merchantId > 0) {
+//			$options['data']['merchantid'] = $merchantId;
+//		}
 
 		if ($filter!='')
 			$options['data']['$filter'] = $filter;
@@ -274,12 +291,13 @@ class BookingForConnectorModelSearchOnSell extends JModelList
 	public function getLocationZonesBySearch()
 	{
 
-		$params = $this->getState('params');
+//		$params = $this->getState('params');
 //		$searchid = $params['searchid'];
 //				
 //		$session = JFactory::getSession();
 		//$session->clear();
 
+		$params = BFCHelper::getSearchOnSellParamsSession();
 		$results = null;
 		$options = array(
 			'path' => $this->urlSearchLocationZone,
@@ -317,27 +335,23 @@ class BookingForConnectorModelSearchOnSell extends JModelList
 		return $results;
 	}
 	
-	public function getSearchResults($start, $limit, $ordering, $direction, $ignorePagination = false, $jsonResult = false) {
+	public function getSearchResults($start, $limit, $ordering = '', $direction = '', $ignorePagination = false, $jsonResult = false) {
 
 		$this->currentOrdering = $ordering;
 		$this->currentDirection = $direction;
 		
-		$params = $this->getState('params');
+//		$params = $this->getState('params');
+		$params = BFCHelper::getSearchOnSellParamsSession();
 		$searchid = isset($params['searchid']) ? $params['searchid'] : '';
 		$seed = isset($params['searchseed']) ? $params['searchseed'] : '';
 		$randomresult = isset($params['randomresult']) ? $params['randomresult'] : '';
-
-
-
-//		$session = JFactory::getSession();
-		//$session->clear();
 
 		$results = null;
 		$options = array(
 			'path' => $this->urlSearch,
 			'data' => array(
 				'$format' => 'json',
-				'$select' => 'ResourceId,Name,MerchantId,MerchantName,Rooms,Area,ImageUrl,LogoUrl,MinPrice,XPos,YPos,LocationZone,IsReservedPrice,IsAddressVisible,AddedOn,IsHighlight,IsMapVisible,IsMapMarkerVisible,CategoryName,ContractType,LocationName,MerchantCategoryName',
+//				'$select' => 'ResourceId,Name,MerchantId,MerchantName,Rooms,Area,ImageUrl,LogoUrl,MinPrice,XPos,YPos,LocationZone,IsReservedPrice,IsAddressVisible,AddedOn,IsHighlight,IsMapVisible,IsMapMarkerVisible,CategoryName,ContractType,LocationName,MerchantCategoryName',
 				'topRresult' => 0,
 				'lite' => 1
 				)
@@ -345,50 +359,34 @@ class BookingForConnectorModelSearchOnSell extends JModelList
 		
 		if (! $ignorePagination && isset($start) && (isset($limit) && $limit > 0 )) {
 			if (isset($start) && $start >= 0) {
-				$options['data']['$skip'] = $start;
+//				$options['data']['$skip'] = $start;
 				$options['data']['skip'] = $start;
 			}
 			
 			if (isset($limit) && $limit > 0) {
-				$options['data']['$top'] = $limit;
-				$options['data']['top'] = $limit;
+//				$options['data']['$top'] = $limit;
+				$options['data']['topRresult'] = $limit;
 			}
 
-			if (isset($ordering)) {
-					switch (strtolower($ordering)) {
-					case 'price':
-						$orderby = 'MinPrice ' . $direction;
-						break;
-					case 'created':
-						$orderby = 'AddedOn ' . $direction;
-						break;
-					default:
-						$orderby = "IsShowcase desc, IsForeground desc, MinPrice, AddedOn  desc";
-
-
-						//$now = new DateTime();
-						//$orderby = "ShowcaseExpiration ge DateTime'".$now->format('Y-m-d')."T". $now->format('H:i:s')."' desc, ForegroundExpiration ge DateTime'".$now->format('Y-m-d')."T". $now->format('H:i:s')."' desc, Created  desc";
-						//$orderby = "ShowcaseExpiration ge DateTime'".$now->format('Y-m-dTH:i:s')."' desc";
-						//$orderby = "ShowcaseExpiration ge DateTime'2012-05-29T09:13:28' desc";
-
-//					case 'distancefromsea':
-//						usort($results, function($a,$b) use ( $ordering, $direction) {
-//							return BFCHelper::orderBy($a->Resource, $b->Resource, 'DistanceFromSea', $direction);
-//						});
+			if (!empty($ordering)) {
+//					switch (strtolower($ordering)) {
+//					case 'price':
+//						$orderby = 'MinPrice ' . $direction;
 //						break;
-//					case 'distancefromcenter':
-//						usort($results, function($a,$b) use ( $ordering, $direction) {
-//							return BFCHelper::orderBy($a->Resource, $b->Resource, 'DistanceFromCenter', $direction);
-//						});
+//					case 'created':
+//						$orderby = 'AddedOn ' . $direction;
 //						break;
-				}
-				$options['data']['$orderby'] = $orderby;
+//					default:
+//						$orderby = "IsShowcase desc, IsForeground desc, MinPrice, AddedOn  desc";
+//				}
+//				$options['data']['$orderby'] = $orderby;
+				$options['data']['orderType'] = '\'' . $ordering."|".$direction . '\'';
 			}
 			
-		}else{
-			$options['data']['$select'] = 'ResourceId,XPos,YPos,IsMapVisible,IsMapMarkerVisible,Name';
-			$options['data']['$filter'] = 'XPos ne null and YPos ne null';			
-
+//		}else{
+//			$options['data']['$select'] = 'ResourceId,XPos,YPos,IsMapVisible,IsMapMarkerVisible,Name';
+//			$options['data']['$filter'] = 'XPos ne null and YPos ne null';			
+//
 		}
 
 if (!empty($randomresult) && $randomresult == '1' && empty($ordering)){
@@ -396,11 +394,9 @@ if (!empty($randomresult) && $randomresult == '1' && empty($ordering)){
 	$options['data']['seed'] = $seed;
 
 	// for search random I need to remove all reference for odata request 
-	unset($options['data']['$select']);
-	unset($options['data']['$filter']);
-	unset($options['data']['$skip']);
-	unset($options['data']['$top']);
-	unset($options['data']['$orderby']);
+	unset($options['data']['skip']);
+	unset($options['data']['topRresult']);
+	unset($options['data']['orderType']);
 }
 		$this->applyDefaultFilter($options);
 
@@ -478,11 +474,9 @@ if (!empty($randomresult) && $randomresult == '1' && empty($ordering)){
 	public function getTotal()
 	{
 
-		$params = $this->getState('params');
+//		$params = $this->getState('params');
+		$params = BFCHelper::getSearchOnSellParamsSession();
 		$searchid = $params['searchid'];
-				
-//		$session = JFactory::getSession();
-		//$session->clear();
 
 		$results = null;
 		$options = array(
@@ -501,60 +495,10 @@ if (!empty($randomresult) && $randomresult == '1' && empty($ordering)){
 		$r = $this->helper->executeQuery($url);
 		if (isset($r)) {
 			$res = json_decode($r);
-			$count = (int)$res->d->GetSearchOnsellCount;
+			$count = (int)$res->d->GetSearchOnsellCountSimple;
 //			$count = (int)$r;
 		}
 		return $count;
-//		if ($this->count !== null)
-//			return $this->count;
-			
-//		$params = $this->getState('params');
-//		$merchantResults = $params['merchantResults'];
-//		
-//		$searchid = $params['searchid'];
-//		
-//		$sessionkey = 'search.' . $searchid . '.count';
-//		$session = JFactory::getSession();
-//		$cachedresults = $session->get($sessionkey, '', 'com_bookingforconnector');
-//		
-//		if (isset($cachedresults) && $cachedresults != null) {
-//			/*
-//			// post filtering results
-//			$filtersKey = $this->getFiltersKey();
-//			$results = $this->filterResults($results);
-//			
-//			$sessionkey = 'search.' . $searchid . '.' . $filtersKey . '.results';
-//			
-//			$filteredCachedresults = $session->get($sessionkey, '', 'com_bookingforconnector');
-//			
-//			if (isset($filteredCachedresults) && is_array($filteredCachedresults)) {
-//				return count($filteredCachedresults);
-//			}
-//			*/
-//			return $cachedresults;
-//		}
-//		//$merchantResults = $params['merchantResults'];
-//
-//		$options = array(
-//				'path' => $merchantResults == true ? $this->urlSearchAllCountMerchant : $this->urlSearchAllCount,
-//				'data' => array(
-//					'$format' => 'json'
-//				)
-//			);
-//		
-//		$this->applyDefaultFilter($options);
-//				
-//		$url = $this->helper->getQuery($options);
-//		
-//		$c = null;
-//		
-//		$r = $this->helper->executeQuery($url);
-//		if (isset($r)) {
-//			$res = json_decode($r);
-//			$c = $merchantResults == true ? (int)$res->d->SearchAllCountMerchant : (int)$res->d->SearchAllCount;
-//		}
-//
-
 	}
 	
 	public function getMasterTypologiesFromService($onlyEnabled = true, $language='') {
@@ -605,10 +549,26 @@ if (!empty($randomresult) && $randomresult == '1' && empty($ordering)){
 	protected function populateState($ordering = NULL, $direction = NULL) {
 
 
+		$curr_order = BFCHelper::getSession('filter_order', '', 'searchonsell');
+		$filter_order = BFCHelper::getVar('filter_order','');
+		if (!empty($filter_order)) {
+			BFCHelper::setSession('filter_order', $filter_order, 'searchonsell');
+			$curr_order = $filter_order;
+		}
+		$this->ordering = $curr_order;
+
+		$curr_dir = BFCHelper::getSession('filter_order_Dir', '', 'searchonsell');
+		$filter_order_Dir = BFCHelper::getVar('filter_order_Dir','');
+		
+		if (!empty($filter_order_Dir) ) {
+			BFCHelper::setSession('filter_order_Dir', $filter_order_Dir, 'searchonsell');
+			$curr_dir = $filter_order_Dir;
+		}
+		$this->direction = $curr_dir;		
 		$searchid = BFCHelper::getVar('searchid');
-		$session = JFactory::getSession();
 		
 		if (BFCHelper::getInt('newsearch') ==1 || empty($searchid)) {
+
 			$searchid =  uniqid('', true);
 			$params = array(
 				'searchid' => $searchid,
@@ -617,7 +577,10 @@ if (!empty($randomresult) && $randomresult == '1' && empty($ordering)){
 				'zoneId' => BFCHelper::getInt('zoneId',0),
 				'cityId' => BFCHelper::getInt('cityId',0),
 				'zoneIds' => BFCHelper::getVar('zoneIds'),
-//				'locationzone' => BFCHelper::getVar('locationzone'),
+				'stateIds' => BFCHelper::getVar('stateIds'),
+				'regionIds' => BFCHelper::getVar('regionIds'),
+				'cityIds' => BFCHelper::getVar('cityIds'),
+				'locationzone' => BFCHelper::getVar('locationzone'),
 				'contractTypeId' => BFCHelper::getInt('contractTypeId',0),
 				'areamin' => BFCHelper::getVar('areamin'),
 				'areamax' => BFCHelper::getVar('areamax'),
@@ -654,9 +617,12 @@ if (!empty($randomresult) && $randomresult == '1' && empty($ordering)){
 				'unitCategoryId' => $pars['unitCategoryId'],
 				'merchantId' => $pars['merchantId'],
 				'zoneId' => BFCHelper::getInt('zoneId',0),
-				'cityId' => (!empty($pars['cityId']))?$pars['cityId']:0,
-				'zoneIds' => (!empty($pars['zoneIds']))?$pars['zoneIds']:0,
-//				'locationzone' =>  BFCHelper::getVar('zoneId'),
+				'cityId' => BFCHelper::getInt('cityId',0),
+				'zoneIds' => BFCHelper::getVar('zoneIds'),
+				'stateIds' => BFCHelper::getVar('stateIds'),
+				'regionIds' => BFCHelper::getVar('regionIds'),
+				'cityIds' => BFCHelper::getVar('cityIds'),
+				'locationzone' => BFCHelper::getVar('locationzone'),
 				'areamin' => $pars['areamin'],
 				'areamax' => $pars['areamax'],
 				'cultureCode' => $pars['cultureCode'],
@@ -680,8 +646,8 @@ if (!empty($randomresult) && $randomresult == '1' && empty($ordering)){
 			$this->setState('params', $params);
 		}
 
-		$filter_order = BFCHelper::getCmd('filter_order');
-		$filter_order_Dir = BFCHelper::getCmd('filter_order_Dir');
+//		$filter_order = BFCHelper::getCmd('filter_order');
+//		$filter_order_Dir = BFCHelper::getCmd('filter_order_Dir');
 		return parent::populateState($filter_order, $filter_order_Dir);
 	}
 	

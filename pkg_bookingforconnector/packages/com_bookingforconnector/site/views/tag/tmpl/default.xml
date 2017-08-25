@@ -15,20 +15,6 @@
 				description="COM_BOOKINGFORCONNECTOR_TAG_FIELD_ID_DESC"
 			>	
 			</field>
-			<!-- <field
-				name="category"
-				type="list"
-				label="COM_BOOKINGFORCONNECTOR_TAG_FIELD_CATEGORY_LABEL"
-				description="COM_BOOKINGFORCONNECTOR_TAG_FIELD_CATEGORY_DESC"
-				default="1"
-			>
-				<option value="1">COM_BOOKINGFORCONNECTOR_TAG_FIELD_CATEGORY_MERCHANTS</option>
-				<option value="2">COM_BOOKINGFORCONNECTOR_TAG_FIELD_CATEGORY_ONSELLUNITS</option>
-				<option value="4">COM_BOOKINGFORCONNECTOR_TAG_FIELD_CATEGORY_RESOURCES</option>
-				<option value="8">COM_BOOKINGFORCONNECTOR_TAG_FIELD_CATEGORY_PACKAGES</option>
-				<option value="16">COM_BOOKINGFORCONNECTOR_TAG_FIELD_CATEGORY_OFFERS</option>
-			</field>	 -->		
-
 			<field
 				name="show_grouped"
 				type="radio"

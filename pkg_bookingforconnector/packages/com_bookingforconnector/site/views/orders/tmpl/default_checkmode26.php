@@ -10,57 +10,15 @@
 defined('_JEXEC') or die('Restricted access');
 
 ?>
-<!--
-/**
- * @package   Bookingforconnector
- * @copyright Copyright (c)2006-2016 Ipertrade
- * @license   GNU General Public License version 3, or later
- */-->
-
-<div class="control-group">
-	<label class="control-label" for="externalOrderId"><?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_ORDERS_VIEW_EXTERNALORDERID') ?></label>
-	<div class="controls">
-		<input id="externalOrderId" name="externalOrderId" type="text" />
-	</div>
-</div>	
-<div class="control-group">
-	<label class="control-label" for="customerFirstname"><?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_ORDERS_VIEW_FIRSTNAME') ?></label>
-	<div class="controls">
-		<input id="customerFirstname" name="customerFirstname" type="text" />
-	</div>
+<div class="bfi_form_txt">
+	<label for="orderId"><?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_ORDERS_VIEW_EXTERNALORDERID') ?></label> 
+	<input id="orderId" name="externalOrderId" type="text" placeholder="<?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_ORDERS_VIEW_ORDERID') ?>" data-rule-required="true" data-rule-digits="true" data-msg-required="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_REQUIRED') ?>" data-msg-digits="<?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_ORDERS_VIEW_EXTERNALORDERID_ERROR') ?>" aria-required="true" />
 </div>
-<div class="control-group">
-	<label class="control-label" for="customerLastname"><?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_ORDERS_VIEW_LASTNAME') ?></label>
-	<div class="controls">
-		<input id="customerLastname" name="customerLastname" type="text" />
-	</div>
+<div class="bfi_form_txt">
+	<label for="customerFirstname"><?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_ORDERS_VIEW_FIRSTNAME') ?></label>
+	<input id="customerFirstname" name="customerFirstname" type="text" value="" placeholder="<?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_ORDERS_VIEW_FIRSTNAME') ?>" data-rule-required="true" data-msg-required="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_REQUIRED') ?>" aria-required="true" />
 </div>
-<script type="text/javascript">
-jQuery(function($)
-		{
-		    $("#formCheckMode").validate(
-		    {
-		        rules:
-		        {
-		        	externalOrderId: "required",
-		        	customerFirstname: "required",
-		        	customerLastname: "required"
-		        },
-		        messages:
-		        {
-		        	externalOrderId: "<?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_ORDERS_VIEW_EXTERNALORDERID_ERROR') ?>",
-		        	customerFirstname: "<?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_ORDERS_VIEW_FIRSTNAME_ERROR') ?>",
-		        	customerLastname: "<?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_ORDERS_VIEW_LASTNAME_ERROR') ?>"
-				},
-		        highlight: function(label) {
-			    	$(label).closest('.control-group').removeClass('error').addClass('error');
-			    },
-			    success: function(label) {
-			    	label
-			    		.text('ok!').addClass('valid')
-			    		.closest('.control-group').removeClass('error').addClass('success');
-			    }
-		    });
-		});
-
-</script>	
+<div class="bfi_form_txt">
+	<label for="customerLastname"><?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_ORDERS_VIEW_LASTNAME') ?></label>
+	<input id="customerLastname" name="customerLastname" type="text" value="" placeholder="<?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_ORDERS_VIEW_LASTNAME') ?>" data-rule-required="true" data-msg-required="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_REQUIRED') ?>" aria-required="true" />
+</div>

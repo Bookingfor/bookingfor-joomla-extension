@@ -259,7 +259,7 @@ class BookingForConnectorModelOrders extends JModelList
 		return $contact;
 	}
 
-	public function setOrder($customerData = NULL, $suggestedStay = NULL, $creditCardData = NULL, $otherNoteData = NULL, $merchantId = 0, $orderType = NULL, $userNotes = NULL, $label = NULL, $cultureCode = NULL, $processOrder = NULL, $priceType = NULL) {
+	public function setOrder($customerData = NULL, $suggestedStay = NULL, $creditCardData = NULL, $otherNoteData = NULL, $merchantId = 0, $orderType = NULL, $userNotes = NULL, $label = NULL, $cultureCode = NULL, $processOrder = NULL, $priceType = NULL, $merchantBookingTypeId = NULL, $policyId = NULL) {
 		if($this->getContactData($customerData[0]) == NULL) {
 			$contact = $this->insertContact($customerData[0]);
 		}
@@ -277,8 +277,6 @@ class BookingForConnectorModelOrders extends JModelList
 
 		if (!isset($creditCardData) || empty($creditCardData)){
 			$creditCardData = "";
-//		}else{
-//			$creditCardData =  BFCHelper::getJsonEncodeString($creditCardData);
 		}
 		if (!isset($otherNoteData) || empty($otherNoteData)){
 			$otherNoteData = "";
@@ -286,8 +284,6 @@ class BookingForConnectorModelOrders extends JModelList
 		if (!isset($userNotes) || empty($userNotes)){
 			$userNotes = "";
 		}		
-
-//$suggestedStay = null;
 
 		$options = array(
 				'path' => $this->urlCreateOrder,
@@ -308,13 +304,18 @@ class BookingForConnectorModelOrders extends JModelList
 					'$format' => 'json'
 				)
 			);
-		$url = $this->helper->getQuery($options);
-		$order = null;
-		
-		if(!empty($$merchantId)){
+		if(!empty($merchantId)){
 			$options['data']['merchantId'] = $merchantId;
 		}
-
+		if(!empty($merchantBookingTypeId)){
+			$options['data']['merchantBookingTypeId'] = $merchantBookingTypeId;
+		}
+		if(!empty($policyId)){
+			$options['data']['policyId'] = $policyId;
+		}
+		
+		$url = $this->helper->getQuery($options);
+		$order = null;
 
 		$r = $this->helper->executeQuery($url,"POST");
 		if (isset($r)) {
@@ -325,7 +326,6 @@ class BookingForConnectorModelOrders extends JModelList
 				$order = $res->d;
 			}
 		}
-
 		return $order;
 	}
 

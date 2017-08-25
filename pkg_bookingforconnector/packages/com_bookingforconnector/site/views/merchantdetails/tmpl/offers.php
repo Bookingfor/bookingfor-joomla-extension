@@ -7,139 +7,170 @@
 
 // No direct access to this file
 defined('_JEXEC') or die('Restricted access');
-$config = $this->config;
-$isportal = $config->get('isportal', 1);
-$showdata = $config->get('showdata', 1);
+$isportal = COM_BOOKINGFORCONNECTOR_ISPORTAL;
+$showdata = COM_BOOKINGFORCONNECTOR_SHOWDATA;
+$posx = COM_BOOKINGFORCONNECTOR_GOOGLE_POSX;
+$posy = COM_BOOKINGFORCONNECTOR_GOOGLE_POSY;
+$startzoom = COM_BOOKINGFORCONNECTOR_GOOGLE_STARTZOOM;
+$googlemapsapykey = COM_BOOKINGFORCONNECTOR_GOOGLE_GOOGLEMAPSKEY;
 
 $merchant = $this->item;
 $sitename = $this->sitename;
+$language = $this->language;
+$offers = $this->items;
+
 $this->document->setDescription( BFCHelper::getLanguage($this->item->Description, $this->language));
 $this->document->setTitle(sprintf(JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEW_MERCHANTDETAILS_OFFERS_TITLE'),$merchant->Name,$sitename));
 
 $total = $this->pagination->total;
 
-$action = htmlspecialchars(JFactory::getURI()->toString());
-$listOrder	= $this->escape($this->state->get('list.ordering'));
-$listDirn	= $this->escape($this->state->get('list.direction'));
-//$searchid =  $this->params['searchid'];
-$searchid ="";
-$activePrice="";
-$activeOffer="";
-$hidesort = "";
-//if(!empty($this->hidesort)) {
-//	$hidesort = ' style="display:none;"';
-//}
+$db   = JFactory::getDBO();
+$itemIdMerchant=0;
+$uriMerchant  = 'index.php?option=com_bookingforconnector&view=merchantdetails';
+$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uriMerchant .'%' ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
+$itemIdMerchant = intval($db->loadResult());
+$uriMerchant.='&merchantId=' . $merchant->MerchantId . ':' . BFCHelper::getSlug($merchant->Name);
+
+if ($itemIdMerchant<>0)
+	$uriMerchant.='&Itemid='.$itemIdMerchant;
+
+$routeMerchant  = JRoute::_($uriMerchant);
+
+$listsId = array();
+
+$rating = $merchant->Rating;
+if ($rating>9 )
+{
+	$rating = $rating/10;
+}
 
 ?>
-
-<div id="com_bookingforconnector-items-container-wrapper">
-	<div class="com_bookingforconnector-items-container">
-		<h1 class="com_bookingforconnector_search-title"><?php echo sprintf(JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEW_MERCHANTDETAILS_OFFERS_TITLE_TOTAL'), $total) ?></h1>
-
-	<div class="com_bookingforconnector-search-menu">
-		<!--
-		<form action="<?php echo $action; ?>" method="post" name="bookingforsearchForm" id="bookingforsearchFilterForm">
-			<fieldset class="filters">
-				<input type="hidden" class="filterOrder" name="filter_order" value="<?php echo $listOrder ?>" />
-				<input type="hidden" class="filterOrderDirection" name="filter_order_Dir" value="<?php echo $listDirn ?>" />
-				<input type="hidden" name="searchid" value="<?php echo $searchid?>" />
-				<input type="hidden" name="limitstart" value="0" />
-			</fieldset>
-		</form>
-		<div class="com_bookingforconnector-results-sort">
-			<span class="com_bookingforconnector-sort-help"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_SEARCH_VIEW_ORDERBY_LABEL')?>:</span>
-			<span class="com_bookingforconnector-sort-item<?php echo $activePrice; ?>" rel="stay|asc" <?php echo $hidesort ?>><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_SEARCH_VIEW_ORDERBY_PRICE'); ?></span>
-			<span class="com_bookingforconnector-sort-item<?php echo $activeOffer; ?>" rel="offer|asc" <?php echo $hidesort ?>><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_SEARCH_VIEW_ORDERBY_OFFERS'); ?></span>
-		</div>
-		-->
-		<div class="com_bookingforconnector-view-changer">
-			<div id="list-view" class="com_bookingforconnector-view-changer-list active"><i class="fa fa-list"></i> <?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_TAB_LIST') ?></div>
-			<div id="grid-view" class="com_bookingforconnector-view-changer-grid"><i class="fa fa-th-large"></i> <?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_TAB_GRID') ?></div>
-		</div>
+<div class="bfi-content">
+<div class="bfi-row">
+	<div class="bfi-title-name bfi-hideonextra"><?php echo  $merchant->Name?>
+		<span class="bfi-item-rating">
+			<?php for($i = 0; $i < $rating; $i++) { ?>
+			<i class="fa fa-star"></i>
+			<?php } ?>
+		</span>
 	</div>
-	
-	<div class="clearfix"></div>
-	
-	<div class="com_bookingforconnector-search-resources com_bookingforconnector-items <?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_ROW ?> com_bookingforconnector-list">
-	
-		<?php if ($this->items != null): ?>
-			<?php foreach($this->items as $key => $offer): ?>
-			<?php
-			// assign the current offer to a property so it will be available inside template 'offer'
-			$this->item->currentOffer = $offer; 
-			$this->item->currentIndex = $key;
-			?>
-			<?php echo  $this->loadTemplate('offer'); ?>
-			<?php endforeach?>
-			<?php if ($this->pagination->get('pages.total') > 1) : ?>
-				<div class="pagination">
-					<?php echo $this->pagination->getPagesLinks(); ?>
-				</div>
-			<?php endif; ?>
-		<?php else:?>
-		<div class="com_bookingforconnector_merchantdetails-nooffers">
-			<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_NORESULT')?>
+		<div class="bfi-search-title">
+			<?php echo sprintf(JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEW_MERCHANTDETAILS_OFFERS_TITLE_TOTAL'), $total);?>
 		</div>
-		<?php endif?>
-	
-	</div>
+</div>	
+<div class="bfi-search-menu">
+	<div class="bfi-view-changer">
+		<div class="bfi-view-changer-selected"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_TAB_LIST') ?></div>
+		<div class="bfi-view-changer-content">
+			<div id="list-view"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_TAB_LIST') ?></div>
+			<div id="grid-view" class="bfi-view-changer-grid"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_TAB_GRID') ?></div>
+		</div>
 	</div>
 </div>
+<div class="bfi-clearfix"></div>
+	<?php if ($offers != null){ ?>
+		<div id="bfi-list" class="bfi-row bfi-list">
+			<?php foreach($offers as $resource){ ?>
+			<?php
+		$resourceImageUrl = Juri::root() . "components/com_bookingforconnector/assets/images/defaults/default-s6.jpeg";
+		$resourceName = BFCHelper::getLanguage($resource->Name, $language, null, array('ln2br'=>'ln2br', 'striptags'=>'striptags')); 
+		$resourceDescription = BFCHelper::getLanguage($resource->Description, $language, null, array('ln2br'=>'ln2br', 'striptags'=>'striptags')); 
+		$resourceRoute  = JRoute::_($uriMerchant.'&layout=offer&offerId=' . $resource->VariationPlanId . ':' . BFCHelper::getSlug($resourceName));
+		if(!empty($resource->DefaultImg)){
+			$resourceImageUrl = BFCHelper::getImageUrlResized('variationplans',$resource->DefaultImg, 'medium');
+		}
+
+			?>
+				<div class="bfi-col-sm-6 bfi-item">
+					<div class="bfi-row bfi-sameheight" >
+						<div class="bfi-col-sm-3 bfi-img-container">
+							<a href="<?php echo $resourceRoute ?>" style='background: url("<?php echo $resourceImageUrl; ?>") center 25% / cover;'><img src="<?php echo $resourceImageUrl; ?>" class="bfi-img-responsive" /></a> 
+						</div>
+						<div class="bfi-col-sm-9 bfi-details-container">
+							<!-- merchant details -->
+							<div class="bfi-row" >
+								<div class="bfi-col-sm-10">
+									<div class="bfi-item-title">
+										<a href="<?php echo $resourceRoute ?>" id="nameAnchor<?php echo $resource->VariationPlanId?>" target="_blank"><?php echo  $resource->Name ?></a> 
+									</div>
+									<div class="bfi-description"><?php echo $resourceDescription ?></div>
+								</div>
+							</div>
+							<div class="bfi-clearfix bfi-hr-separ"></div>
+							<!-- end merchant details -->
+							<!-- resource details -->
+							<div class="bfi-row" >
+								<div class="bfi-col-sm-8">
+								
+								</div>
+								<div class="bfi-col-sm-4 bfi-text-right">
+										<a href="<?php echo $resourceRoute ?>" class="bfi-btn" target="_blank"><?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_MERCHANTDETAILS_VIEWOFFER') ?></a>
+								</div>
+							</div>
+							<!-- end resource details -->
+							<div class="bfi-clearfix"></div>
+							<!-- end price details -->
+						</div>
+					</div>
+				</div>
+			<?php } ?>
+		</div>
+	<?php }else{?>
+	<div class="bfi-noresults">
+			<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_NORESULT')?>
+	</div>
+	<?php } ?>	
+	<div class="bfi-clearboth"></div>
+	<?php  include(JPATH_COMPONENT.'/views/shared/merchant_small_details.php');  ?>
+	</div>
 
 <script type="text/javascript">
 <!--
-jQuery('#list-view').click(function() {
-	jQuery('.com_bookingforconnector-view-changer div').removeClass('active');
-	jQuery(this).addClass('active');
-	jQuery('.com_bookingforconnector-items').removeClass('com_bookingforconnector-grid');
-	jQuery('.com_bookingforconnector-items').addClass('com_bookingforconnector-list');
-	jQuery('.com_bookingforconnector-items > div').removeClass('<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>6').addClass('<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>12');
-	jQuery('.com_bookingforconnector-item-carousel').addClass('<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>4');
-	jQuery('.com_bookingforconnector-item-primary').addClass('<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>8');
-	jQuery('.com_bookingforconnector-item-secondary-section-1').removeClass('<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>8').addClass('<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>10');
-	jQuery('.com_bookingforconnector-item-secondary-section-3').removeClass('<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>4').addClass('<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>2');
-	localStorage.setItem('display', 'list');
-})
+	jQuery('#list-view').click(function() {
+		jQuery('.bfi-view-changer-selected').html(jQuery(this).html());
+		jQuery('#bfi-list').removeClass('bfi-grid-group')
+		jQuery('#bfi-list .bfi-item').addClass('bfi-list-group-item')
+		jQuery('#bfi-list .bfi-img-container').addClass('bfi-col-sm-3')
+		jQuery('#bfi-list .bfi-details-container').addClass('bfi-col-sm-9')
 
-jQuery('#grid-view').click(function() {
-	jQuery('.com_bookingforconnector-view-changer div').removeClass('active');
-	jQuery(this).addClass('active');
-	jQuery('.com_bookingforconnector-items').removeClass('com_bookingforconnector-list');
-	jQuery('.com_bookingforconnector-items').addClass('com_bookingforconnector-grid');
-	jQuery('.com_bookingforconnector-items > div').removeClass('<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>12').addClass('<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>6');
-	jQuery('.com_bookingforconnector-item-carousel').removeClass('<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>4');
-	jQuery('.com_bookingforconnector-item-primary').removeClass('<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>8');
-	jQuery('.com_bookingforconnector-item-secondary-section-1').removeClass('<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>10').addClass('<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>8');
-	jQuery('.com_bookingforconnector-item-secondary-section-3').removeClass('<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>2').addClass('<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>4');
-	localStorage.setItem('display', 'grid');
-})
+		localStorage.setItem('display', 'list');
+	});
 
-if (localStorage.getItem('display')) {
-	if (localStorage.getItem('display') == 'list') {
-		jQuery('#list-view').trigger('click');
-	} else {
-		jQuery('#grid-view').trigger('click');
-	}
-} else {
-	 if(typeof bfc_display === 'undefined') {
-		jQuery('#list-view').trigger('click');
-	 } else {
-		if (bfc_display == '1') {
-			jQuery('#grid-view').trigger('click');
-		} else { 
+	jQuery('#grid-view').click(function() {
+		jQuery('.bfi-view-changer-selected').html(jQuery(this).html());
+		jQuery('#bfi-list').addClass('bfi-grid-group')
+		jQuery('#bfi-list .bfi-item').removeClass('bfi-list-group-item')
+		jQuery('#bfi-list .bfi-img-container').removeClass('bfi-col-sm-3')
+		jQuery('#bfi-list .bfi-details-container').removeClass('bfi-col-sm-9')
+		localStorage.setItem('display', 'grid');
+	});
+		jQuery('#bfi-list .bfi-item').addClass('bfi-grid-group-item')
+
+	if (localStorage.getItem('display')) {
+		if (localStorage.getItem('display') == 'list') {
 			jQuery('#list-view').trigger('click');
+		} else {
+			jQuery('#grid-view').trigger('click');
+		}
+	} else {
+	 if(typeof bfi_variable === 'undefined' || bfi_variable.bfi_defaultdisplay === 'undefined') {
+			jQuery('#list-view').trigger('click');
+		 } else {
+			if (bfi_variable.bfi_defaultdisplay == '1') {
+				jQuery('#grid-view').trigger('click');
+			} else { 
+				jQuery('#list-view').trigger('click');
+			}
 		}
 	}
-}
 
 	var shortenOption = {
 		moreText: "<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_VIEW_READMORE')?>",
 		lessText: "<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_VIEW_READLESS')?>",
 		showChars: '250'
-};
-jQuery(document).ready(function() {
-	jQuery(".com_bookingforconnector-item-primary-description").shorten(shortenOption);
-});
-
+   };
+   jQuery(document).ready(function() {
+	  jQuery(".bfi-description").shorten(shortenOption);
+   });
 //-->
 </script>

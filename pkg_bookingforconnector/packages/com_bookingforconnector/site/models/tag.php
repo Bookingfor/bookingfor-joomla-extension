@@ -53,7 +53,7 @@ class BookingForConnectorModelTag extends JModelList
 	public function __construct($config = array())
 	{
 		parent::__construct($config);
-		$this->helper = new wsQueryHelper(COM_BOOKINGFORCONNECTOR_WSURL, COM_BOOKINGFORCONNECTOR_APIKEY);
+		$this->helper = new wsQueryHelper(null, null);
 		$this->urlTags = '/GetTags';
 		$this->urlTagForSearch = '/GetTagsForSearch';
 		$this->urlTagsCount = '/Tags/$count/';
@@ -569,8 +569,15 @@ class BookingForConnectorModelTag extends JModelList
 		$newsearch = $params['newsearch'];
 		$tagId = $params['tagId'];
 		$searchid = "resources".$tagId ;
-
+		$params['groupresulttype'] = $params['show_grouped'];
 		$merchantResults = $params['show_grouped'];
+		if(isset($_SESSION['search.params']) ){
+			$_SESSION['search.params']['onlystay'] == false;
+		}else{
+			$_SESSION['search.params'] = null;
+			$_SESSION['search.params']['onlystay'] == false;
+		}
+		
 //		$condominiumsResults = $params['condominiumsResults'];
 		
 		$sessionkey = 'tags.' . $searchid . '.results';
@@ -578,327 +585,103 @@ class BookingForConnectorModelTag extends JModelList
 //		$session = JFactory::getSession();
 		$results = null;
 								
-		if($newsearch == "0"){
-			$cachedresults = BFCHelper::getSession($sessionkey); //$_SESSION[$sessionkey];
-			try {
-				if (isset($cachedresults) && !empty($cachedresults) )
-				$results = (array)json_decode(gzuncompress(base64_decode($cachedresults)));
-			} catch (Exception $e) {
-	//			echo 'Exception: ',   $e->getMessage(), "<br />";
-				//echo 'Caught exception: ',  $e->getMessage(), "\n";
-			}
-//		}else{
-//			BFCHelper::setFilterSearchParamsSession(null);
-		}
 		
-		if ($results == null) {
-			$options = array(
-				'path' => $this->urlResources,
-				'data' => array(
-						'$format' => 'json',
-						'topRresult' => 0,
-						'calculate' => 0,
-						'cultureCode' =>  BFCHelper::getQuotedString($language),
-						'lite' => 1,
-						'tagids' => BFCHelper::getQuotedString($tagId)
-				)
-			);
+		$options = array(
+			'path' => $this->urlResources,
+			'data' => array(
+					'$format' => 'json',
+					'topRresult' => 0,
+					'calculate' => 0,
+					'checkAvailability' => 0,
+					'cultureCode' =>  BFCHelper::getQuotedString($language),
+					'lite' => 1,
+					'tagids' => BFCHelper::getQuotedString($tagId)
+			)
+		);
 //			$this->applyDefaultFilter($options);
-
-			$url = $this->helper->getQuery($options);
-
-			$results = null;
-
-			$r = $this->helper->executeQuery($url);
-			if (isset($r)) {
-				$res = json_decode($r);
-//				$results = $res->d->results ?: $res->d;
-				if (!empty($res->d->results)){
-					$results = $res->d->results;
-				}elseif(!empty($res->d)){
-					$results = $res->d;
-				}
-				try {				
-					if (!empty($results)) {
-						shuffle($results);
-					}
-				} catch (Exception $e) {
-					//echo 'Caught exception: ',  $e->getMessage(), "\n";
-				}
+			if (!empty($merchantResults) ) {
+				$options['data']['groupResultType'] = $merchantResults;
+//				if ($groupresulttype==1 || $groupresulttype==2) { //onbly for merchants 
+					$options['data']['getBestGroupResult'] = 1;
+//				}
 			}
 
-			// saves parameters into session
-//			BFCHelper::setSearchParamsSession($params);
-		try {							
-			// save current search in session to disable all further calculations upon reordering and filtering
-			$compr = base64_encode(gzcompress(json_encode($results),true));
-		} catch (Exception $e) {
-			echo 'Caught exception: ',  $e->getMessage(), "\n";
-		}
 
-			BFCHelper::setSession($sessionkey, $compr); //$_SESSION[$sessionkey] = $results;
-			
-			//ciclo per filtrare i possibili filtri
-//			$filtersenabled = array();
-//			
-//			$filtersenabled['count'] = 0;
-						
-//			if(!empty($results)){
-			
-//				$filtersenabled['count'] = count($results);
+		$url = $this->helper->getQuery($options);
 
-//				//per condominiumsResults non \E8 necessario filtrare i condomini per caratteristiche, sio basano sulle risorse
-//				if ($merchantResults) {
-//					$tmpstars = array_unique(array_map(function ($i) { return $i->MrcRating; }, $results));
-//					$filtersenabled['stars'] = implode(',',$tmpstars);
-//					$tmplocationzones = array_unique(array_map(function ($i) { return $i->MrcZoneId; }, $results));	
-//					$filtersenabled['locationzones'] = implode(',',$tmplocationzones);
-//				}else{
-//					$tmpstars = array_unique(array_map(function ($i) { return $i->ResRating; }, $results));
-//					$filtersenabled['stars'] = implode(',',$tmpstars);
-//					$tmplocationzones = array_unique(array_map(function ($i) { return $i->ResZoneId; }, $results));	
-//					$filtersenabled['locationzones'] = implode(',',$tmplocationzones);
-//				}
-//
-//				$tmpmastertypologies = array_unique(array_map(function ($i) { return $i->MasterTypologyId; }, $results));	
-//				$filtersenabled['mastertypologies'] = implode(',',$tmpmastertypologies);
+		$results = null;
 
-				
-//				// elenco merchantGroup presenti nella ricerca
-//				$tmpmerchantgroups = array_unique(explode(",",array_reduce($results, 
-//						function($returnedList, $item){
-//							$val =  preg_replace('/\s+/', '', $item->MrcTagsIdList);
-//							if (!empty($val)) {
-//								$returnedList .= "," .$val;
-//							}
-//							return $returnedList;
-//						}
-//						)));
-//				foreach( $tmpmerchantgroups as $key => $value ) {
-//					if( empty( $tmpmerchantgroups[ $key ] ) )
-//						unset( $tmpmerchantgroups[ $key ] );
-//				}		
-//				$filtersenabled['merchantgroups'] = implode(',',$tmpmerchantgroups);
-				
-				// elenco Servizi presenti nella ricerca
-//				$tmpservices = array_unique(explode(",",array_reduce($results,
-//						function($returnedList, $item){
-//							$val =  preg_replace('/\s+/', '', $item->MrcServiceIdList);
-//							if (!empty($val)) {
-//								$returnedList .= "," .$val;
-//							}								
-//							$val =  preg_replace('/\s+/', '', $item->ResServiceIdList);
-//							if (!empty($val)) {
-//								$returnedList .= "," .$val;
-//							}
-//							
-//							return $returnedList;
-//						}
-//				)));
-//				foreach( $tmpservices as $key => $value ) {
-//					if( empty( $tmpservices[ $key ] ) )
-//						unset( $tmpservices[ $key ] );
-//				}
-//				$filtersenabled['services'] = implode(',',$tmpservices);
-//				
-//				// elenco BookingType presenti nella ricerca
-//				$tmpbookingtype = array_unique(array_map(function ($i) { return $i->BookingType; }, $results));
-//				foreach( $tmpbookingtype as $key => $value ) {
-//					if( empty( $tmpbookingtype[ $key ] ) )
-//						unset( $tmpbookingtype[ $key ] );
-//				}
-//				$filtersenabled['bookingtypes'] = implode(',',$tmpbookingtype);
-//				
-////				$tmpoffers = array_unique(array_map(function ($i) { return $i->TotalPrice>$i->Price; }, $results));	
-//				$tmpoffers = array_unique(array_map(function ($i) { return $i->IsOffer; }, $results));	
-////				$tmpoffers = array_unique(array_map(function ($i) { return !empty($i->DiscountId); }, $results));	
-//				foreach( $tmpoffers as $key => $value ) {
-//					if( empty( $tmpoffers[ $key ] ) )
-//						unset( $tmpoffers[ $key ] );
-//				}
-//				$filtersenabled['offers'] = implode(',',$tmpoffers);
-//
-//
-//
-//				$prices = array_map(function ($i) { return $i->Price; }, $results) ;
-//
-//				$filtersenabled['pricemin'] = round(min($prices)-1, 0, PHP_ROUND_HALF_DOWN);
-//				$filtersenabled['pricemax'] =  round(max($prices)+1, 0, PHP_ROUND_HALF_UP);
-
-//			}
-						
-//			BFCHelper::setEnabledFilterSearchParamsSession($filtersenabled);
-		}
-
-//		$results = $this->filterResults($results);
-
-		// ordering is taking place here only for simple results, merchants are ordered by the grouping function
-		if (isset($ordering) && !$merchantResults && !empty($results)) {
-			switch (strtolower($ordering)) {
-				case 'stay':
-					usort($results, function($a,$b) use ( $ordering, $direction) {
-						return BFCHelper::orderBy($a, $b, 'TotalPrice', $direction);
-					});
-					break;
-				case 'rooms':
-					usort($results, function($a,$b) use ( $ordering, $direction) {
-						return BFCHelper::orderBy($a, $b, 'Rooms', $direction);
-					});
-					break;
-				case 'offer':
-					usort($results, function($a,$b) use ( $ordering, $direction) {
-//						return BFCHelper::orderBySingleDiscount($a, $b, $direction);
-						return BFCHelper::orderBy($a, $b, 'PercentVariation', $direction);
-					});
-					break;
+		$r = $this->helper->executeQuery($url);
+		if (isset($r)) {
+			$res = json_decode($r);
+			if (!empty($res->d->SearchAllLiteNew)){
+				$results = $res->d->SearchAllLiteNew;
+			}elseif(!empty($res->d)){
+				$results = $res->d;
 			}
 		}
-								
-//		if ($condominiumsResults && !empty($results)) {
-//			// grouping and ordering
-//						$results = $this->groupResultsByCondominium($results);
-//		}
 
-		if ($merchantResults && !empty($results)) {
-			// grouping and ordering
-			$results = $this->groupResultsByMerchant($results, $ordering, $direction);
-		}
+		if(!empty($results)){
+			$params['show_grouped'] = ($results->GroupResultType==1);
+			$params['groupresulttype'] = ($results->GroupResultType==1);
+			if ($results->GroupResultType==1) {
+			    $params['merchantTagIds'] = $tagId;
+			}else{
+			    $params['productTagIds'] = $tagId;
+				}
 		
-
-
-				
-		$this->count =  count($results);
-	
-		if (! $ignorePagination && isset($start) && (isset($limit) && $limit > 0 ) && !empty($results)) {
-			$results = array_slice($results, $start, $limit);
-			$params = $this->getState('params');
-//			$checkin = $params['checkin'];
-//			$duration = $params['duration'];
-//			$persons = $params['paxes'];
-//			$paxages = $params['paxages'];
+		
+//			$params['condominiumsResults'] = ($results->GroupResultType==2);
+			$merchantResults = $params['show_grouped'];
+//			$condominiumsResults = $params['condominiumsResults'];
 		}
-		if($jsonResult && !empty($results))	{
+		$resultsItems = null;
+
+		if(isset($results->ItemsCount)){
+			$this->count = $results->ItemsCount;
+			$resultsItems = json_decode($results->ItemsString);
+		}
+		BFCHelper::setSearchParamsSession($params);
+
+		if($jsonResult && !empty($resultsItems))	{
 			$arr = array();
 
-			foreach($results as $result) {
+			foreach($resultsItems as $result) {
 				$val= new StdClass;
+				
 				if ($merchantResults) {
-
-					$val->MerchantId = $result->MerchantId;
-					$val->XGooglePos = $result->XGooglePos;
-					$val->YGooglePos = $result->YGooglePos;
+					$val->MerchantId = $result->MerchantId; 
+					$val->XGooglePos = $result->MrcLat;
+					$val->YGooglePos = $result->MrcLng;
+					$val->MerchantName = BFCHelper::getSlug($result->MrcName);
 				}
-				elseif ($condominiumsResults){
-					$val->Resource = new StdClass;
-					$val->Resource->ResourceId = $result->CondominiumId;
-					$val->Resource->XGooglePos = $result->XGooglePos;
-					$val->Resource->YGooglePos = $result->YGooglePos;
-				}
+//				elseif ($condominiumsResults){
+//					$val->Resource = new StdClass;
+//					$val->Resource->CondominiumId = $result->CondominiumId;
+//					$val->Resource->ResourceId = $result->ResourceId;
+//					$val->Resource->XGooglePos = $result->ResLat;
+//					$val->Resource->YGooglePos = $result->ResLng;
+//					$val->Resource->ResourceName = BFCHelper::getSlug($result->ResName);
+//					$val->Resource->Price = $result->Price;
+//				}
 				else { 
 					$val->Resource = new StdClass;
 					$val->Resource->ResourceId = $result->ResourceId;
 					$val->Resource->XGooglePos = $result->ResLat;
 					$val->Resource->YGooglePos = $result->ResLng;
-
+					$val->Resource->ResourceName = BFCHelper::getSlug($result->ResName);
+					$val->Resource->Price = $result->Price;
 				}
 				$arr[] = $val;
 			}
-			
-			
+
 			return json_encode($arr);
 				
 		}
-		return $results;
-
-		//return $jsonResult ? json_encode($results) : $results;
-	}
-	private function groupResultsByMerchant($results, $ordering, $direction) {
-		if (isset($ordering) && is_array($results)) {
-			// 'stay' ordering should take place before grouping
-			if (strtolower($ordering) == 'stay') {
-				usort($results, function($a,$b) use ( $ordering, $direction) {
-					return BFCHelper::orderBy($a, $b, 'TotalPrice', $direction);
-				});
-			}
-			if (strtolower($ordering) == 'offer') {
-				usort($results, function($a,$b) use ( $ordering, $direction) {
-					return BFCHelper::orderBy($a, $b, 'PercentVariation', $direction);
-//					return BFCHelper::orderBySingleDiscount($a, $b, $direction);
-				});
-			}
-		}
-		
-		$arr = array();
-		foreach($results as $result) {
-			if (!array_key_exists($result->MerchantId, $arr)) {
-				$merchant = new stdClass();
-				$merchant->MerchantId = $result->MerchantId;
-				$merchant->Name = $result->MrcName;
-				$merchant->XGooglePos = $result->MrcLat;
-				$merchant->YGooglePos = $result->MrcLng;
-				$merchant->MerchantTypeId = $result->MerchantTypeId;
-				$merchant->Rating = $result->MrcRating;
-				$merchant->RatingsContext = $result->RatingsContext;
-				$merchant->PaymentType = $result->PaymentType;
-				$merchant->reviewValue = $result->MrcAVG;
-				$merchant->reviewCount = $result->MrcAVGCount;
-				$merchant->LogoUrl = $result->LogoUrl;
-				$merchant->Weight = $result->MrcWeight;
-				$merchant->MrcTagsIdList = $result->MrcTagsIdList;
-				$merchant->ImageUrl = $result->MrcImageUrl;
-				$merchant->Resources = array();
-				$merchant->Resources[] = $result;
-				$arr[$merchant->MerchantId] = $merchant;
-			}
-			else {
-				$merchant = $arr[$result->MerchantId];
-					$merchant->Resources[] = $result;
-			}
-		}
-
-		if (isset($ordering)) {
-			switch (strtolower($ordering)) {
-				case 'stay':
-					usort($arr, function($a,$b) use ( $ordering, $direction) {
-						return BFCHelper::orderByStay($a, $b, $direction);
-					});
-					break;
-				case 'rating':
-					usort($arr, function($a,$b) use ( $ordering, $direction) {
-						return BFCHelper::orderBy($a, $b, 'Rating', $direction);
-					});
-					break;
-				case 'reviewvalue':
-					usort($arr, function($a,$b) use ( $ordering, $direction) {
-						return BFCHelper::orderBy($a, $b, 'reviewValue', $direction);
-					});
-					break;
-			   case 'offer':
-					usort($arr, function($a,$b) use ( $ordering, $direction) {
-						return BFCHelper::orderBy($a->Resources[0], $b->Resources[0], 'PercentVariation', $direction);
-//						return BFCHelper::orderByDiscount($a, $b, $direction);
-					});
-					break;
-				default:
-				usort($arr, function($a,$b) use ( $ordering, $direction) {
-					return BFCHelper::orderBy($a, $b, 'PaymentType', 'desc');
-				});
-			}
-		}else{
-			usort($arr, function($a,$b) use ( $ordering, $direction) {
-				return BFCHelper::orderBy($a, $b, 'Weight', 'asc');
-			});
-			usort($arr->Resources[], function($a,$b) use ( $ordering, $direction) {
-				return BFCHelper::orderBy($a, $b, 'ResWeight', 'asc');
-			});
-		}
-		
-		return $arr;
+		return $resultsItems;
 	}
 
-
-
-		function getPagination($type = '')
+	function getPagination($type = '')
 	{
 				// Load the content if it doesn't already exist
 		if (empty($this->_pagination)) {

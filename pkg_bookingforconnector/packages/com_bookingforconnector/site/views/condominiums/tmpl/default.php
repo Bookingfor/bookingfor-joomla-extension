@@ -57,11 +57,6 @@ if($itemId == 0){
 
 if(!empty($results) && count($results) > 0) {
 ?>
-<script type="text/javascript">
-<!--
-var cultureCode = '<?php echo $language ?>';
-//-->
-</script>
 <div id="com_bookingforconnector-items-container-wrapper">
 <h1><?php echo $activeMenu->title?></h1>
 	  <div class="com_bookingforconnector-items-container" >
@@ -156,7 +151,7 @@ $condominium->Resources = array();
 							<div class="com_bookingforconnector-search-merchant-address com_bookingforconnector-item-primary-phone-inforequest"> 
 								<span class="com_bookingforconnector_phone">
 								<a  href="javascript:void(0);" 
-									onclick="getData(urlCheck,'merchantid=<?php echo $condominium->CondominiumId?>&task=GetPhoneByMerchantId&language=' + cultureCode,this,'<?php echo  addslashes( $condominium->MerchantName) ?>','PhoneView' )"  id="phone<?php echo $condominium->CondominiumId?>"><?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_SHOWPHONE') ?></a>
+									onclick="getData(bfi_variable.bfi_urlCheck,'merchantid=<?php echo $condominium->CondominiumId?>&task=GetPhoneByMerchantId&language=' + bfi_variable.bfi_cultureCode,this,'<?php echo  addslashes( $condominium->MerchantName) ?>','PhoneView' )"  id="phone<?php echo $condominium->CondominiumId?>"><?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_SHOWPHONE') ?></a>
 								</span> - 					
 								<a class="boxedpopup com_bookingforconnector_email" href="<?php echo $routeInfoRequest?>" rel="{handler:'iframe'}" ><?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RESOURCE_EMAIL') ?></a>
 							</div>
@@ -382,13 +377,11 @@ if (localStorage.getItem('display')) {
 	}
 }
 
-var urlCheck = "<?php echo JRoute::_('index.php?option=com_bookingforconnector') ?>";
 var listToCheck = "<?php echo implode(",", $listsId) ?>";
 
 var imgPath = "<?php echo $merchantImagePath ?>";
 var imgPathError = "<?php echo $merchantImagePathError ?>";
 
-var defaultcultureCode = '<?php echo BFCHelper::$defaultFallbackCode ?>';
 var strAddress = "[indirizzo] - [cap] - [comune] ([provincia])";
 
 var shortenOption = {
@@ -398,14 +391,6 @@ var shortenOption = {
 };
 
 function getAjaxInformations(){
-	if (cultureCode.length>1)
-	{
-		cultureCode = cultureCode.substring(0, 2).toLowerCase();
-	}
-	if (defaultcultureCode.length>1)
-	{
-		defaultcultureCode = defaultcultureCode.substring(0, 2).toLowerCase();
-	}
 	var query = "condominiumsId=" + listToCheck + "&language=<?php echo $language ?>&task=GetCondominiumsByIds";
 
 	var imgPathresized =  imgPath.substring(0,imgPath.lastIndexOf("/")).match(/([^\/]*)\/*$/)[1] + "/";
@@ -416,7 +401,7 @@ function getAjaxInformations(){
 //	urlgetCondominiums = updateQueryStringParameter(urlgetCondominiums,"task","GetCondominiumsByIds");
 
 //	jQuery.getJSON(urlgetCondominiums, function(data) {
-	jQuery.post(urlCheck, query, function(data) {
+	jQuery.post(bfi_variable.bfi_urlCheck, query, function(data) {
 		var eecitems = [];
 				if(typeof callfilterloading === 'function'){
 					callfilterloading();
@@ -432,7 +417,7 @@ function getAjaxInformations(){
 			});
 				$html = '';
 				jQuery("#descr"+val.CondominiumId).removeClass("com_bookingforconnector_loading");
-				var name = getXmlLanguage(val.Name,cultureCode,defaultcultureCode);
+				var name = bookingfor.getXmlLanguage(val.Name,bfi_variable.bfi_cultureCode, bfi_variable.bfi_defaultcultureCode);
 
 				var imgPath = "<?php echo $merchantImagePath ?>";
 				var imgPathError = "<?php echo $merchantImagePathError ?>";
@@ -576,15 +561,6 @@ jQuery(document).ready(function() {
 	});
 });
 function getResourceslist(listResourceIdsToCheck,loadMerchantlist){
-	if (cultureCode.length>1)
-	{
-		cultureCode = cultureCode.substring(0, 2).toLowerCase();
-	}
-	if (defaultcultureCode.length>1)
-	{
-		defaultcultureCode = defaultcultureCode.substring(0, 2).toLowerCase();
-	}
-
 	var query = "resourcesId=" + listResourceIdsToCheck + "&language=<?php echo $language ?>";
 		query +="&task=GetResourcesByIds";
 
@@ -593,7 +569,7 @@ function getResourceslist(listResourceIdsToCheck,loadMerchantlist){
 					getlist();
 				}
 //		jQuery.getJSON(urlCheck + "?" + query, function(data) {
-		jQuery.post(urlCheck, query, function(data) {
+		jQuery.post(bfi_variable.bfi_urlCheck, query, function(data) {
 				jQuery.each(data || [], function(key, val) {
 					//price
 					jQuery("#resourcestaytotal"+val.Resource.ResourceId).html("&nbsp; ");

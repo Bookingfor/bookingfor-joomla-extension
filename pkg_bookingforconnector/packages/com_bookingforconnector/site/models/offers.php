@@ -32,8 +32,8 @@ class BookingForConnectorModelOffers extends JModelList
 	{
 		parent::__construct($config);
 		$this->helper = new wsQueryHelper(COM_BOOKINGFORCONNECTOR_WSURL, COM_BOOKINGFORCONNECTOR_APIKEY);
-		$this->urlOffers = '/Packages';
-		$this->urlOffersCount = '/Packages/$count';
+		$this->urlOffers = '/GetVariationPlans';
+		$this->urlOffersCount = '/GetVariationPlansCount';
 	}
 	
 	public function applyDefaultFilter(&$options) {
@@ -62,21 +62,20 @@ class BookingForConnectorModelOffers extends JModelList
 	}
 	
 	
-//	public function getOffersFromService($start, $limit, $ordering, $direction) {
-	public function getOffersFromService($start, $limit) {// with randor order is not possible to otrder by another field
-		//$typeId = $this->getTypeId();
-
+	public function getOffersFromService($start, $limit, $language = null) {
 		$params = $this->getState('params');
 		$seed = $params['searchseed'];
+		if ($language==null) {
+			$language = JFactory::getLanguage()->getTag();
+		}
 
 		$options = array(
 				'path' => $this->urlOffers,
 				'data' => array(
-					/*'$skip' => $start,
-					'$top' => $limit,*/
+					'cultureCode' => BFCHelper::getQuotedString($language),
 					'seed' => $seed,
-					'expand' => '\'Merchant\'',
-					'$expand' => 'Merchant',
+//					'expand' => '\'Merchant\'',
+//					'$expand' => 'Merchant',
 					'$format' => 'json'
 				)
 			);
@@ -130,14 +129,13 @@ class BookingForConnectorModelOffers extends JModelList
 				
 		$url = $this->helper->getQuery($options);
 		
-		$count = null;
+		$count = 0;
 		
 		$r = $this->helper->executeQuery($url);
 		if (isset($r)) {
-			$count = (int)$r;
-
-//			$res = json_decode($r);
-//			$count = $res->d->GetOffersCount;
+//			$count = (int)$r;
+			$res = json_decode($r);
+			$count = (int)$res->d->GetVariationPlansCount;
 		}
 
 		return $count;

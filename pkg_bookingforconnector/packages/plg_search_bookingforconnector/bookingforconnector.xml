@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<extension version="3.6" type="plugin" group="search" method="upgrade">
+<extension version="3.7.4" type="plugin" group="search" client="site" method="upgrade">
 	<name>BookingFor Search - Plugin</name>
 	<!-- The following elements are optional and free of formatting constraints -->
 	<creationDate>2016-06-05</creationDate>
 	<author>Bookingfor</author>
 	<authorEmail>developer@ipertrade.com</authorEmail>
 	<authorUrl>http://www.ipertrade.com</authorUrl>
-	<copyright>Copyright (c)2006-2016 Ipertrade s.r.l.</copyright>
+	<copyright>Copyright (c)2006-2017 Ipertrade s.r.l.</copyright>
     <license>http://www.gnu.org/copyleft/gpl.html GNU/GPL</license>
 	<!--  The version string is recorded in the components table -->
-	<version>2.2.1</version>
+	<version>3.1.0</version>
 	<!-- The description is optional and defaults to the name -->
 	<description>Simple search plugin for BookingFor and Joomla!</description>
 
@@ -20,6 +20,7 @@
 
 	<languages>
 	   <language tag="en-GB">language/en-GB/en-GB.plg_search_bookingforconnector.ini</language>
+	   <language tag="en-GB">language/it-IT/it-IT.plg_search_bookingforconnector.ini</language>
 	</languages>
     
 	<config>

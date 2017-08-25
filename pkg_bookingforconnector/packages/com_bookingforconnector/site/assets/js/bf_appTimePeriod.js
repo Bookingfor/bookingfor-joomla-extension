@@ -1,22 +1,7 @@
-﻿
+var timeloadedItems = {};
 
 function initDatepickerTimePeriod() {
 	var evntSelect = "change";
-    if(bookingfor.bsVersion ==3){
-		jQuery('.selectpickerTimePeriodStart').selectpicker({
-			container: 'body',
-			template: {
-				caret: '<i class="fa fa-clock-o"></i>'
-			}
-		});
-		jQuery('.selectpickerTimePeriodEnd').selectpicker({
-			container: 'body',
-			template: {
-				caret: '<i class="fa fa-clock-o"></i>'
-			}
-		});
-		evntSelect = "shown.bs.select";
-	}
     jQuery('.selectpickerTimePeriodStart').on('change', function(){
         var optSelected = jQuery(this).find("option:selected");
         var selected = jQuery(this).attr("data-resid");
@@ -24,26 +9,15 @@ function initDatepickerTimePeriod() {
         var minstay = Number(jQuery(optSelected).attr("data-minstay"));
         var maxIndex = selIndx + Number(jQuery(optSelected).attr("data-maxstay"));
         selIndx += minstay - 1;
-        var currTr = jQuery(this).closest("tr");
+        var currTr = jQuery(this).closest("div.bfi-timeperiod-change");
         var selectpickerTimePeriodEnd = currTr.find('.selectpickerTimePeriodEnd').first();
 
         currTr.find('.selectpickerTimePeriodEnd option:lt(' + selIndx + ')').prop('disabled', true)
         currTr.find('.selectpickerTimePeriodEnd option:gt(' + selIndx + ')').prop('disabled', false);
         currTr.find('.selectpickerTimePeriodEnd option:gt(' + (maxIndex - 1) + ')').prop('disabled', true);
-        //currTr.find('.selectpickerTimePeriodEnd').selectpicker('refresh');
-        //var currFromDate =jQuery("#ChkAvailibilityFromDateTimePeriod_"+selected);
-        //var timeLength = Number(currFromDate.attr("data-timeLength"));
-        //selIndx = selIndx + minstay -1;
-        //if(timeLength>1){
-        //    selIndx = selIndx * timeLength;
-        //}
-//        console.log("start: " + selected);
         var selEnd = selectpickerTimePeriodEnd.find('option').eq(selIndx).first();
         if(selEnd.length){
             selEnd.prop('selected', true);
-            if(bookingfor.bsVersion ==3){
-				selectpickerTimePeriodEnd.selectpicker('refresh');
-			}
             selectpickerTimePeriodEnd.trigger('change');
             selectpickerTimePeriodEnd.focus();
         }
@@ -57,26 +31,21 @@ function initDatepickerTimePeriod() {
         previous_selectedIndex = jQuery(this).prop('selectedIndex');
     }).change(function() {
         var selected = jQuery(this).find("option:selected").val();
-        var currTr = jQuery(this).closest("tr");
-
-        var optSelected = currTr.find('.selectpickerTimePeriodStart option:selected');
+        var currContainer = jQuery("#bfimodaltimeperiod");
+        var optSelected = currContainer.find('.selectpickerTimePeriodStart option:selected');
         var maxstay = Number(jQuery(optSelected).attr("data-maxstay"));
-        var PeriodStart_selectedIndex = currTr.find('.selectpickerTimePeriodStart').first().prop('selectedIndex');
+        var PeriodStart_selectedIndex = currContainer.find('.selectpickerTimePeriodStart').first().prop('selectedIndex');
         var PeriodEnd_selectedIndex = jQuery(this).prop('selectedIndex');
         if((PeriodEnd_selectedIndex - PeriodStart_selectedIndex) > maxstay){
-            currTr.find('.selectpickerTimePeriodEnd option:eq(' + previous_selectedIndex + ')').first().prop('selected', true)
-            if(bookingfor.bsVersion ==3){
-				currTr.find('.selectpickerTimePeriodEnd').selectpicker('refresh')
-			}
+            currContainer.find('.selectpickerTimePeriodEnd option:eq(' + previous_selectedIndex + ')').first().prop('selected', true)
             return;
         }
-//        console.log("end: " + selected);
         if (jQuery(this).prop('selectedIndex') < PeriodStart_selectedIndex) {
-            currTr.find('.selectpickerTimePeriodStart').trigger('change');
+            currContainer.find('.selectpickerTimePeriodStart').trigger('change');
             return;
         }
         previous_selectedIndex = jQuery(this).prop('selectedIndex');
-        updateTotalSelectablePeriod(jQuery(this))
+//        updateTotalSelectablePeriod(jQuery(this), timeloadedItems.hasOwnProperty(jQuery(this).attr("data-resid") + "-" + jQuery(this).attr("data-bindingproductid")) && timeloadedItems[jQuery(this).attr("data-resid") + "-" + jQuery(this).attr("data-bindingproductid")]);
     });
 
     jQuery(".ChkAvailibilityFromDateTimePeriod").datepicker({
@@ -86,15 +55,26 @@ function initDatepickerTimePeriod() {
         minDate: strAlternativeDateToSearch,
         maxDate: strEndDate,
         onSelect: function(date) {
-            dateTimePeriodChanged($, jQuery(this), date, jQuery(this).attr("data-id"));
-            printChangedDateTimePeriod(date, jQuery(this), jQuery(this).attr("data-id"));
+            dateTimePeriodChanged(jQuery(this));
         },
         showOn: "button",
         beforeShowDay: function(date) {
-            return enableSpecificDatesTimePeriod(date, 1, daysToEnableTimePeriod[jQuery(this).attr("data-id")]);
+            return enableSpecificDatesTimePeriod(date, 1, daysToEnableTimePeriod[jQuery(this).attr("data-resid")]);
         },
         buttonText: strbuttonTextTimePeriod,
-        firstDay: 1
+        firstDay: 1,
+		beforeShow: function(dateText, inst) { 
+			jQuery(this).attr("disabled", true);
+			jQuery(inst.dpDiv).addClass('bfi-calendar');
+			jQuery(inst.dpDiv).attr('data-before',"");
+			jQuery(inst.dpDiv).removeClass("bfi-checkin");
+			jQuery(inst.dpDiv).removeClass("bfi-checkout");
+			setTimeout(function() {
+				jQuery("#ui-datepicker-div div.bfi-title").remove();
+				jQuery("#ui-datepicker-div").prepend( "<div class=\"bfi-title\">Check-in</div>" );
+			}, 1);
+		}
+
     });
 }
 
@@ -119,39 +99,24 @@ function enableSpecificDatesTimePeriod(date, offset, enableDays) {
     return [false, 'redDay'];
 }
 
-function printChangedDateTimePeriod(date, elem, currId) {
-    var checkindate = jQuery(elem).val();
-    var d1 = checkindate.split("/");
-    var from = new Date(d1[2], d1[1] - 1, d1[0]);
-    day1 = ('0' + from.getDate()).slice(-2),
-    month1 = from.toLocaleString("en", { month: "short" }),
-    year1 = from.getFullYear(),
-    weekday1 = from.toLocaleString("en", { weekday: "short" });
-    jQuery(elem).next().find('.day span').html(day1);
-    jQuery(elem).next().find('.monthyear p').html(weekday1 + "<br />" + month1 + " " + year1);
+function dateTimePeriodChanged(obj){
+    var currTr = jQuery("#bfimodaltimeperiod");
+	bookingfor.waitSimpleWhiteBlock(currTr);
+	var currProdId = obj.attr("data-resid");
+	var currDate = obj.datepicker('getDate');
+//	var maxDate = obj.datepicker("option", "maxDate");
+//	var dateFormat = obj.datepicker("option", "dateFormat");
+//	var currMaxDate = jQuery.datepicker.parseDate(dateFormat, maxDate );
+//	var timeDiff = Math.abs(currMaxDate.getTime() - currDate.getTime());
+//	var diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24)) + 1; 
+    var diffDays = 1;
+	var intDate = bookingfor.convertDateToInt(currDate);
+    updateTimePeriodRange(intDate, currProdId, obj,diffDays);
+	obj.next().html(jQuery.datepicker.formatDate("D d M yy", currDate));
 }
 
-
-function dateTimePeriodChanged($, obj, selectedDate, currProdId){
-    instance = obj.data("datepicker");
-    date = jQuery.datepicker.parseDate(
-            instance.settings.dateFormat ||
-            jQuery.datepicker._defaults.dateFormat,
-            selectedDate, instance.settings);
-
-    var fromDate = new Date(date);
-    var intDate = bookingfor.convertDateToInt(fromDate);
-    updateTimePeriodRange(intDate, currProdId, obj);
-}
-
-function updateTimePeriodRange(currDate,currProdId,obj){
-    // pulizia select
-    // recupero dati via ajax
-    // ricalcolo prezzi via ajax
-
-    var currTr = jQuery(obj).closest("tr");
-
-    //var slotToEnableTimeSlot = [];
+function updateTimePeriodRange(currDate,currProdId,obj,maxDays){
+    var currTr = jQuery("#bfimodaltimeperiod");
     var curSelStart = currTr.find('.selectpickerTimePeriodStart').first()
     .find('option')
     .remove()
@@ -164,7 +129,7 @@ function updateTimePeriodRange(currDate,currProdId,obj){
         url: urlGetListCheckInDayPerTimes,
         type: "GET",
         dataType: "json",
-        data: { resourceId: currProdId, fromDate: currDate }
+        data: { resourceId: currProdId, fromDate: currDate,limitTotDays:maxDays }
     }).done(updateOptTimePeriodRange(curSelStart, curSelEnd));
 
 }
@@ -176,15 +141,6 @@ var updateOptTimePeriodRange = function (curSelStart, curSelEnd) {
 //                debugger;
 
                 jQuery.each(result, function (i, currTimeSlot) {
-//                   console.log(currTimeSlot.TimeMinStart)
-//                    var newValStart = moment(bookingfor.pad(currTimeSlot.TimeMinStart, 6), "HHmmss").format("HH:mm", { forceLength: true, trim: false });
-//                    var newValEnd = moment(bookingfor.pad(currTimeSlot.TimeMinEnd, 6), "HHmmss").format("HH:mm", { forceLength: true, trim: false });
-//					var tmpDate = new Date(1,1,1);
-//					tmpDate.setHours(0,0,0,0);
-//
-//					var newValStart = bookingfor.dateAdd(tmpDate,"minute",Number(currTimeSlot.TimeMinStart));
-//					var newValEnd = bookingfor.dateAdd(tmpDate,"minute",Number(currTimeSlot.TimeMinStart));
-
 					var newValStart = new Date(1,1,1);
 					var tmpCorrTimeStart = bookingfor.pad(currTimeSlot.TimeMinStart, 6);
 					newValStart.setHours(Number(tmpCorrTimeStart.substring(0, 2)),Number(tmpCorrTimeStart.substring(2, 4)),0,0);
@@ -200,233 +156,275 @@ var updateOptTimePeriodRange = function (curSelStart, curSelEnd) {
 
                     var currOptEnd = jQuery('<option>').text(bookingfor.pad(newValEnd.getHours(), 2) + ":" + bookingfor.pad(newValEnd.getMinutes(), 2)).attr('value', currTimeSlot.ProductId);
                     jQuery(currOptEnd).attr("data-TimeMinEnd", currTimeSlot.TimeMinEnd);
-                    jQuery(currOptStart).attr("class", "hourdenabled");
-                    jQuery(currOptEnd).attr("class", "hourdenabled");
+                    jQuery(currOptStart).attr("class", "bfi-hourdenabled");
+                    jQuery(currOptEnd).attr("class", "bfi-hourdenabled");
                     jQuery(currOptEnd).attr("data-availability", currTimeSlot.Availability);
 
                     if (currTimeSlot.Availability == 0) {
                         jQuery(currOptStart).attr("disabled", "disabled");
                         jQuery(currOptEnd).attr("disabled", "disabled");
-                        jQuery(currOptStart).attr("class", "hourdisabled");
-                        jQuery(currOptEnd).attr("class", "hourdisabled");
+                        jQuery(currOptStart).attr("class", "bfi-hourdisabled");
+                        jQuery(currOptEnd).attr("class", "bfi-hourdisabled");
                     }
                     curSelStart.append(currOptStart);
                     curSelEnd.append(currOptEnd);
 
                 });
-                //console.log(jQuery(curSelStart).attr("data-id"));
-
-                if(bookingfor.bsVersion ==3){
-					jQuery(curSelStart).selectpicker('refresh');
-					jQuery(curSelEnd).selectpicker('refresh');
-				}
 
                 jQuery(curSelStart).trigger('change');
-                //updateTotalSelectablePeriod(currProdId);
+				jQuery(jQuery("#bfimodaltimeperiod")).unblock();
 
             }
         }
     };
 };
 
-function updateTotalSelectablePeriod(currEl){
-//    console.log("updateTotalSelectablePeriod" + currEl.data("resid"))
-    var currTr = currEl.closest("tr");
-    var id = currEl.data("resid");
-    var currSel = currTr.find(".ddlrooms").first();
+function updateTotalSelectablePeriod(currEl, updateQuote) {
+   var dialogDiv = currEl.closest("div.bfi-timeperiod-change");
+// 	var currTr = jQuery(bfi_currTRselected).find(".bfi-timeperiod-change");
+	var resid = currEl.data("resid");
+    var rateplanid = currEl.data("rateplanid");
+//	var currSel = jQuery("#ddlrooms-"+resid+"-"+rateplanid).first();
+    var currSel = jQuery(bfi_currTRselected).find(".ddlrooms");
+    var currentSelection = currSel.val();
    
-    //var currSel = jQuery('#ddlrooms-'+id)
     //debugger;
     jQuery(currSel)
     .find('option')
     .remove()
     .end();
     var isSelectable = true;
-    var maxSelectable = 0
+    var maxSelectable = 0;
 
-    var selectStart = currTr.find(".selectpickerTimePeriodStart").first();
-    var selectEnd = currTr.find(".selectpickerTimePeriodEnd").first();
+    var selectStart = dialogDiv.find(".selectpickerTimePeriodStart").first();
+    var selectEnd = dialogDiv.find(".selectpickerTimePeriodEnd").first();
     for (var i = selectStart.prop('selectedIndex'); i <= selectEnd.prop('selectedIndex'); i++) {
-        var currOption = currTr.find('.selectpickerTimePeriodStart option').eq(i);
+        var currOption = dialogDiv.find('.selectpickerTimePeriodStart option').eq(i);
         var currAvailability =  Number(jQuery(currOption).attr('data-availability') );
         if(currAvailability==0){
             isSelectable = false;
             break;
         }
-        if(currAvailability<maxSelectable || i==selectStart.prop('selectedIndex')){
+        if (currAvailability < maxSelectable || i == selectStart.prop('selectedIndex')) {
             maxSelectable = currAvailability;
         }
     }
+	var singleMaxSelectable = Math.min(bfi_MaxQtSelectable, maxSelectable);
     if(isSelectable){
         currSel.show();
-        jQuery("#btnBookNow").show();
+//        jQuery("#btnBookNow").show();
 
-        if (jQuery(currSel).is('[class^="extrasselect"]')) {
-            var currFromDate = currTr.find(".ChkAvailibilityFromDateTimePeriod").first();
-            
-//			var mcurrFromDate = moment(currFromDate.val(), "DD/MM/YYYY").format("YYYYMMDD", { forceLength: true, trim: false });
-			var mcurrFromDate = bookingfor.convertDateToInt(jQuery(currFromDate).datepicker( "getDate" ));
-
-            
-			var currentTimeStart = selectStart.find("option:selected");
-            var currentTimeEnd = selectEnd.find("option:selected");
-            
-//			var newValStart = moment(pad(currentTimeStart.attr("data-TimeMinStart"), 6), "HHmmss");
-//            var newValEnd = moment(pad(currentTimeEnd.attr("data-TimeMinEnd"), 6), "HHmmss");
-			var tmpDate = new Date();
-			tmpDate.setHours(0,0,0,0);
-			var newValStart = bookingfor.dateAdd(tmpDate,"minute",Number(currentTimeStart.attr("data-TimeMinStart")));
-			var newValEnd = bookingfor.dateAdd(tmpDate,"minute",Number(currentTimeEnd.attr("data-TimeMinEnd")));
-
-//			var duration = moment.duration(newValEnd.diff(newValStart));
-			var diffMs = (newValEnd - newValStart);
-			var duration =  Math.floor((diffMs/1000)/60);
-
-
-            for (var i = 0; i <= maxSelectable; i++) {
-                currSel.append(jQuery('<option>').text(i).attr('value', id + ":" + i + ":" + mcurrFromDate + bookingfor.pad(currentTimeStart.attr("data-TimeMinStart"), 6) + ":" + duration + "::::"));
-                //currSel.append(jQuery('<option>').text(i).attr('value', i));
+//        if (jQuery(currSel).is('[class^="extrasselect"]')) {
+//            var currentSelectedQt = parseInt(currentSelection.split(":")[1]);
+//            var currFromDate = currTr.find(".ChkAvailibilityFromDateTimePeriod").first();
+//            
+//			var mcurrFromDate = bookingfor.convertDateToInt(jQuery(currFromDate).datepicker( "getDate" ));
+//
+//            
+//            var fromDate = jQuery.datepicker.formatDate("yy-mm-dd", jQuery(currFromDate).datepicker( "getDate" ));
+//			var currentTimeStart = selectStart.find("option:selected");
+//            var currentTimeEnd = selectEnd.find("option:selected");
+//            
+//			
+//			var newValStart = new Date(fromDate + "T" + bookingfor.pad(currentTimeStart.attr("data-TimeMinStart"), 6).replace(/(.{2})(.{2})(.{2})/,'$1:$2:$3') + "Z" );
+//			var newValEnd = new Date(fromDate + "T" + bookingfor.pad(currentTimeEnd.attr("data-TimeMinEnd"), 6).replace(/(.{2})(.{2})(.{2})/,'$1:$2:$3') + "Z" );
+//			var diffMs = (newValEnd - newValStart);
+//			var duration =  Math.floor((diffMs/1000)/60);
+//
+//
+//            for (var i = parseInt(currSel.attr("data-minvalue")) ; i <= parseInt(currSel.attr("data-maxvalue")); i++) {
+//                var opt = jQuery('<option>').text(i).attr('value', resid + ":" + i + ":" + mcurrFromDate + bookingfor.pad(currentTimeStart.attr("data-TimeMinStart"), 6) + ":" + duration + "::::");
+//                if (currentSelectedQt == i) { opt.attr("selected", "selected"); }
+//                currSel.append(opt);
+//            }
+//            if (currentSelectedQt > 0 && updateQuote) {
+//                quoteCalculatorServiceChanged(currSel, timeloadedItems[jQuery(currSel).attr("data-resid") + "-" + jQuery(currSel).attr("data-bindingproductid")]);
+//            }
+//            timeloadedItems[jQuery(currSel).attr("data-resid") + "-" + jQuery(currSel).attr("data-bindingproductid")] = true;
+//        } else {
+			if(jQuery(".ddlrooms-" + resid).first().hasClass("ddlrooms-indipendent")){
+				jQuery.each(jQuery(".ddlrooms-" + resid), function(j, itm) {
+					jQuery(itm).find('option').remove();
+					jQuery(itm).attr("data-availability", maxSelectable);
+					for (var i = 0; i <= singleMaxSelectable; i++) {
+                var opt = jQuery('<option>').text(i).attr('value', i);
+						if (i == 0) { opt.attr("selected", "selected"); }
+						jQuery(itm).append(opt);
+					}
+				});
+			} else {
+				var currentSelectedQt = parseInt(currentSelection);
+				if(currentSelectedQt == 0){currentSelectedQt = 1;}
+				for (var i = carttypeCorrector; i <= maxSelectable; i++) {
+					var opt = jQuery('<option>').text(i).attr('value', i);
+                if (currentSelectedQt == i) { opt.attr("selected", "selected"); }
+                currSel.append(opt);
             }
-        } else {
-            for (var i = carttypeCorrector; i <= maxSelectable; i++) {
-                currSel.append(jQuery('<option>').text(i).attr('value', i));
-            }
-        }
-
-
-        quoteCalculatorPeriodChanged(currSel);
+			}
+//           bfi_quoteCalculatorServiceChanged(currSel);
+//        }
 
     }else{
+		
         currSel.hide();
-        jQuery("#btnBookNow").hide();
+//        jQuery("#btnBookNow").hide();
     }
-
-    //UpdateQuote(currSel);
+//	UpdateQuote();
 }
-function quoteCalculatorPeriodChanged(currEl)
-{
-    var currTr = currEl.closest("tr");
-    var id = currEl.data("resid");
-    //var currSel = currTr.find(".ddlrooms").first();
+//function quoteCalculatorPeriodChanged(currEl, updateQuote) {
+//    var currTr = currEl.closest("div.bfi-timeperiod-change");
+//    var id = currEl.data("resid");
+//
+//    //debugger;
+//    var currentTimeStart = currTr.find(".selectpickerTimePeriodStart option:selected").val();
+//    var currentTimeEnd= currTr.find(".selectpickerTimePeriodEnd option:selected").val();
+//}
 
-    //debugger;
-    var currentTimeStart = currTr.find(".selectpickerTimePeriodStart option:selected").val();
-    var currentTimeEnd= currTr.find(".selectpickerTimePeriodEnd option:selected").val();
-    //jQuery('.totalextrasselect-'+ ddlid[1]+'-'+currSelPrice[0]+'-'+resId).block({message: ''});
-    getcompleterateplansstaybyidPerTime(currEl);
+function bfi_selecttimeperiod(currEl){
+    var currContainer = jQuery("#bfimodaltimeperiod");
+//    var currDiv = jQuery(currEl).closest(".bfi-timeperiod-change");
+//    var currDiv = jQuery(bfi_currTRselected).find(".bfi-timeperiod-change");
+
+	var currFromDate =currContainer.find(".ChkAvailibilityFromDateTimePeriod").first();
+    var resourceId = currEl.getAttribute("data-resid");
+    jQuery.unblockUI();
+	
+	updateTotalSelectablePeriod(jQuery(currEl), true);
+	var currdDlrooms = jQuery(bfi_currTRselected).find(".ddlrooms").first();
+	if(currdDlrooms.length==0){
+		currdDlrooms = jQuery("#ddlrooms-" + resourceId + "-0");
+	}
+	getcompleterateplansstaybyidPerTime(resourceId, currdDlrooms);
+	
+//	if (currdDlrooms.hasClass("ddlrooms-indipendent")) // if is a extra...
+//	{
+//	}else{
+//		bfi_quoteCalculatorServiceChanged(currdDlrooms);
+//	}
+
+	dialogTimeperiod.dialog( "close" );
 }
 
-function getcompleterateplansstaybyidPerTime(currEl) {
+function getcompleterateplansstaybyidPerTime(resourceId, currdDlrooms) {
     //debugger;
-    var currTr = currEl.closest("tr");
-    var resourceId = currEl.data("resid");
-    //resourceId = resId;
-    //el = jQuery('#data-id-' + resId);
-    var currFromDate =currTr.find(".ChkAvailibilityFromDateTimePeriod").first();
-
-    var currentTimeStart = currTr.find(".selectpickerTimePeriodStart option:selected");
-    var currentTimeEnd= currTr.find(".selectpickerTimePeriodEnd option:selected");
-
-    jQuery(currEl).block({
-        message: '<i class="fa fa-spinner fa-spin fa-3x fa-fw margin-bottom"></i><span class="sr-only">Loading...</span>',
-        css: {border: '2px solid #1D668B', padding: '20px', backgroundColor: '#fff', '-webkit-border-radius': '10px', '-moz-border-radius': '10px', color: '#1D668B', width: '80%'},
-        overlayCSS: {backgroundColor: '#1D668B', opacity: .7}
-    });
-
-//		var tmpDate = new Date();
-//		tmpDate.setHours(0,0,0,0);
-//		var newValStart = bookingfor.dateAdd(tmpDate,"minute",Number(currentTimeStart.attr("data-TimeMinStart")));
-//		var newValEnd = bookingfor.dateAdd(tmpDate,"minute",Number(currentTimeEnd.attr("data-TimeMinEnd")));
-
-		var newValStart = new Date(1,1,1);
-		var tmpCorrTimeStart = bookingfor.pad(currentTimeStart.attr("data-TimeMinStart"), 6);
-		newValStart.setHours(Number(tmpCorrTimeStart.substring(0, 2)),Number(tmpCorrTimeStart.substring(2, 4)),0,0);
-		var newValEnd = new Date(1,1,1);
-		var tmpCorrTimeEnd = bookingfor.pad(currentTimeEnd.attr("data-TimeMinEnd"), 6);
-		newValEnd.setHours(Number(tmpCorrTimeEnd.substring(0, 2)),Number(tmpCorrTimeEnd.substring(2, 4)),0,0);
-
-		var diffMs = (newValEnd - newValStart);
-		var duration =  Math.floor((diffMs/1000)/60);
-
-//		var newValStart = moment(bookingfor.pad(currentTimeStart.attr("data-TimeMinStart"), 6), "HHmmss");
-//		var newValEnd = moment(bookingfor.pad(currentTimeEnd.attr("data-TimeMinEnd"), 6), "HHmmss");
-
-//		var duration = moment.duration(newValEnd.diff(newValStart)).asMinutes();
-//		var checkInTime = moment(currFromDate.val(), "DD/MM/YYYY").format("YYYYMMDD", { forceLength: true, trim: false }) + bookingfor.pad(currentTimeStart.attr("data-TimeMinStart"), 6);
-		var mcurrFromDate = bookingfor.convertDateToInt(jQuery(currFromDate).datepicker( "getDate" ));
-		var checkInTime = mcurrFromDate + bookingfor.pad(currentTimeStart.attr("data-TimeMinStart"), 6);
+//    var currTr = jQuery('#bfi-timeperiod-'+resourceId);
+    var currTr = jQuery(bfi_currTRselected).find(".bfi-timeperiod");
+    
+	currTr.find(".bfi-hide").removeClass("bfi-hide");
+	
+	var currContainer = jQuery("#bfimodaltimeperiod");
 
 
-		var searchModel = jQuery('#calculatorForm').serializeObject();
-		var dataarray = jQuery('#calculatorForm').serializeArray();
-		dataarray.push({name: 'id', value: resourceId});
+	var currFromDate =currContainer.find(".ChkAvailibilityFromDateTimePeriod").first();
+    var currentTimeStart = currContainer.find(".selectpickerTimePeriodStart option:selected");
+    var currentTimeEnd= currContainer.find(".selectpickerTimePeriodEnd option:selected");
+
+
+	var currObjToLoock = jQuery(bfi_currTRselected).find("table"); //".bfi-table-resources";
+	if(currObjToLoock.length==0){
+		currObjToLoock = jQuery(bfi_currTRselected).closest("table");
+	}
+    bookingfor.waitSimpleWhiteBlock(currObjToLoock);
+
+	var mcurrFromDate = jQuery(currFromDate).datepicker( "getDate" );
+	var checkInTime = jQuery.datepicker.formatDate("yymmdd", mcurrFromDate) + bookingfor.pad(currentTimeStart.attr("data-TimeMinStart"), 6);
+
+	var fromDate = jQuery.datepicker.formatDate("yy-mm-dd", jQuery(currFromDate).datepicker( "getDate" ));
+	var newValStart = new Date(fromDate + "T" + bookingfor.pad(currentTimeStart.attr("data-TimeMinStart"), 6).replace(/(.{2})(.{2})(.{2})/,'$1:$2:$3') + "Z" );
+	var newValEnd = new Date(fromDate + "T" + bookingfor.pad(currentTimeEnd.attr("data-TimeMinEnd"), 6).replace(/(.{2})(.{2})(.{2})/,'$1:$2:$3') + "Z" );
+	
+	var diffMs = (newValEnd - newValStart);
+	var duration =  Math.floor((diffMs/1000)/60);
+	
+	var currCheckin =currTr.find(".bfi-time-checkin").first();
+	var currCheckinhours =currTr.find(".bfi-time-checkin-hours").first();
+	var currCheckout =currTr.find(".bfi-time-checkout").first();
+	var currCheckouthours =currTr.find(".bfi-time-checkout-hours").first();
+	var currduration =currTr.find(".bfi-total-duration").first();
+	currTr.attr("data-checkin",jQuery.datepicker.formatDate("yymmdd", mcurrFromDate));
+	currTr.attr("data-checkintime",checkInTime);
+	currTr.attr("data-timeminstart",bookingfor.pad(currentTimeStart.attr("data-TimeMinStart"), 6));
+	currTr.attr("data-timeminend",bookingfor.pad(currentTimeEnd.attr("data-TimeMinEnd"), 6));
+	currTr.attr("data-duration",duration);
+
+	currCheckin.html(jQuery.datepicker.formatDate("D d M yy", mcurrFromDate));
+	currCheckinhours.html(bookingfor.pad(currentTimeStart.attr("data-TimeMinStart"), 6).replace(/(.{2})(.{2})(.{2})/,'$1:$2') );
+	currCheckout.html(jQuery.datepicker.formatDate("D d M yy", mcurrFromDate));
+	currCheckouthours.html( bookingfor.pad(currentTimeEnd.attr("data-TimeMinEnd"), 6).replace(/(.{2})(.{2})(.{2})/,'$1:$2') );
+	currduration.html(duration/60);
+
+	if (jQuery(".ddlrooms-" + resourceId).first().hasClass("ddlrooms-indipendent")) // if is a extra...
+	{
+		var searchModel = jQuery('#bfi-calculatorForm').serializeObject();
+		var dataarray = jQuery('#bfi-calculatorForm').serializeArray();
 		dataarray.push({name: 'resourceId', value: resourceId});
-//		dataarray.push({name: 'pricetype', value:  accomodation.RatePlanId});
-//		dataarray.push({name: 'rateplanid', value: accomodation.RatePlanId});
 		dataarray.push({name: 'timeMinStart', value: currentTimeStart.attr("data-TimeMinStart")});
 		dataarray.push({name: 'timeMinEnd', value: currentTimeEnd.attr("data-TimeMinEnd")});
 		dataarray.push({name: 'CheckInTime', value: checkInTime});
-
-//		dataarray.push({name: 'selectableprices', value: accomodation.ExtraServices.join("|")});
-		dataarray.push({name: 'availabilitytype', value: currFromDate.attr("data-availabilityType")});
-		dataarray.push({name: 'duration', value: duration});
 		dataarray.push({name: 'searchModel', value: searchModel});
 
-    var jqxhr = jQuery.ajax({
-        url: urlGetCompleteRatePlansStay,
-        type: "POST",
-        dataType: "json",
-		data : dataarray
-//        data: {
-//            id: resourceId,
-//            fromDate: currFromDate.val() ,
-//            timeMinStart: currentTimeStart.attr("data-TimeMinStart"),
-//            timeMinEnd: currentTimeEnd.attr("data-TimeMinEnd"),
-//            productAvailabilityType: currFromDate.attr("data-availabilityType"),
-//            searchModel : searchModel
-//        }
-    });
+		dataarray.push({name: 'availabilitytype', value: 2});
+		dataarray.push({name: 'duration', value: duration});
 
-    jqxhr.done(function(result, textStatus, jqXHR)
-    {
-        if (result) {
-            if(result.length > 0)
-            {
-                //debugger
-                currStay = result[0].SuggestedStay;
-                //var CalculatedPrices = JSON.parse(result[0].CalculatedPricesString);
-                //var showPrice = false;
+		var jqxhr = jQuery.ajax({
+			url: urlGetCompleteRatePlansStay,
+			type: "POST",
+			dataType: "json",
+			data : dataarray
+		});
 
-                //var totalPrice = parseFloat(jQuery("#dvTotal-" + resId + " .totalQuote").html().replace("€&nbsp;",""));
-                //var totalDiscount = jQuery("#dvTotal-" + resId + " .totalQuoteDiscount").length > 0 ? parseFloat(jQuery("#dvTotal-" + resId + " .totalQuoteDiscount").html().replace("€&nbsp;","")) : 0;
-                //var totalRooms = parseInt(jQuery("#dvTotal-" + resId + " .lblLodging span").html());
+		jqxhr.done(function(result, textStatus, jqXHR)
+		{
+			if (result) {
+				if(result.length > 0)
+				{
+					jQuery.each(result, function(i, st) {
+					//debugger
+						currStay = st.SuggestedStay;
+						var currTrRateplan = jQuery("#data-id-" + resourceId + "-" + st.RatePlanId);
+					var currDivPrice = currTrRateplan.find(".bfi-price");
+					var currDivTotalPrice = currTrRateplan.find(".bfi-discounted-price");
+					var currDivPercentDiscount = currTrRateplan.find(".bfi-percent-discount");
+					var currSel = currTrRateplan.find(".ddlrooms");
 
-                jQuery("#data-id-" + resourceId).find(".com_bookingforconnector_merchantdetails-resource-stay-discount").html(bookingfor.number_format(currStay.TotalPrice, 2, '.', ''));
-                jQuery("#data-id-" + resourceId).find(".com_bookingforconnector_merchantdetails-resource-stay-discount").attr("data-value",currStay.TotalPrice);
-                jQuery("#data-id-" + resourceId).find(".com_bookingforconnector_merchantdetails-resourcelist-stay-total").html(bookingfor.number_format(currStay.DiscountedPrice, 2, '.', ''));
-                jQuery("#data-id-" + resourceId).find(".com_bookingforconnector_merchantdetails-resourcelist-stay-total").attr("data-value",currStay.DiscountedPrice);
+					currDivPrice.html(bookingfor.number_format(currStay.DiscountedPrice, 2, '.', ''))
+						.attr("data-value",currStay.DiscountedPrice)
+						.removeClass("red-color");
+					
+						currSel.attr("data-baseprice",bookingfor.number_format(currStay.DiscountedPrice, 2, '.', '') );
+						currSel.attr("data-basetotalprice",bookingfor.number_format(currStay.TotalPrice, 2, '.', '') );
+						currSel.attr("data-price",bookingfor.priceFormat(currStay.DiscountedPrice, 2, '.', '') );
+						currSel.attr("data-totalprice",bookingfor.priceFormat(currStay.TotalPrice, 2, '.', '') );
 
-                jQuery("#data-id-" + resourceId).find(".variationlabel").show();
-                jQuery("#data-id-" + resourceId).find(".variationlabel").attr("rel", currStay.SimpleDiscountIds);
-                if (currStay.DiscountedPrice >= currStay.TotalPrice) {
-                    jQuery("#data-id-" + resourceId).find(".com_bookingforconnector_merchantdetails-resourcelist-stay-total").removeClass("red-color");
-                    jQuery("#data-id-" + resourceId).find(".variationlabel").hide();
-                } else {
-                    jQuery("#data-id-" + resourceId).find(".com_bookingforconnector_merchantdetails-resourcelist-stay-total").addClass("red-color");
-                    jQuery("#data-id-" + resourceId).find(".variationlabel_percent").html(currStay.VariationPercent);
-                }
-                var currSel = jQuery('#ddlrooms-'+resourceId);
-                UpdateQuote(currSel);
+//					currSel.attr("data-price",currStay.DiscountedPrice)
+//						.attr("data-totalprice",currStay.TotalPrice);
+
+					currDivTotalPrice.hide();
+					currDivPercentDiscount.hide();
+					if (currStay.DiscountedPrice < currStay.TotalPrice) {
+						currDivTotalPrice.html(bookingfor.number_format(currStay.TotalPrice, 2, '.', ''))
+							.attr("data-value",currStay.TotalPrice)
+							.show();
+						currDivPrice.addClass("red-color");
+						currDivTotalPrice.attr("rel", currStay.SimpleDiscountIds);
+						currDivTotalPrice.find(".bfi-percent").html(currStay.VariationPercent);
+					}
+
+//					if (updateQuote) {
+						UpdateQuote();
+//					}
+					});
+
+				}
+			}
+		});
 
 
+		jqxhr.always(function() {
+			jQuery(currObjToLoock).unblock();
+		});
+	}else{
+		bfi_quoteCalculatorServiceChanged(currdDlrooms);
+	}
 
-
-            }
-        }
-    });
-
-
-    jqxhr.always(function() {
-        jQuery(currEl).unblock();
-    });
 }

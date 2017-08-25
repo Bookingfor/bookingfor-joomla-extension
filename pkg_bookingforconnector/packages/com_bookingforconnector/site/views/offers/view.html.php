@@ -8,9 +8,6 @@
 // No direct access to this file
 defined('_JEXEC') or die('Restricted access');
 
-// import Joomla view library
-jimport('joomla.application.component.view');
-
 /**
  * HTML View class for the HelloWorld Component
  */
@@ -25,20 +22,18 @@ class BookingForConnectorViewOffers extends BFCView
 	// Overwriting JView display method
 	function display($tpl = null, $preparecontent = false) 
 	{
-		// add stylesheet
-		JHTML::stylesheet('components/com_bookingforconnector/assets/css/bookingfor.css');
-		JHTML::stylesheet('components/com_bookingforconnector/assets/css/bookingfor-responsive.css');
+
+		$document 	= JFactory::getDocument();
+		$language 	= $document->getLanguage();		
 
 		// Initialise variables
 		$state		= $this->get('State');
+		$params = $state->params;
 		$items		= $this->get('Items');
 		$pagination	= $this->get('Pagination');
 		$sortColumn 	= $state->get('list.ordering');
 		$sortDirection 	= $state->get('list.direction');
 
-		$document 	= JFactory::getDocument();
-		$language 	= $document->getLanguage();		
-		$params = $state->params;
 		
 		// Check for errors.
 		if (count($errors = $this->get('Errors'))) {
@@ -46,16 +41,14 @@ class BookingForConnectorViewOffers extends BFCView
 			return false;
 		}
 		
-		$document->addScript('components/com_bookingforconnector/assets/js/jquery.shorten.js');
-
-		$pagination->setAdditionalUrlParam("filter_order", $sortColumn);
-		$pagination->setAdditionalUrlParam("filter_order_Dir", $sortDirection);
+//		$pagination->setAdditionalUrlParam("filter_order", $sortColumn);
+//		$pagination->setAdditionalUrlParam("filter_order_Dir", $sortDirection);
 		
-		$this->assignRef('state', $state);
-		$this->assignRef('params', $params);
-		$this->assignRef('items', $items);
-		$this->assignRef('pagination', $pagination);
-		$this->assignRef('language', $language);
+		$this->state = $state;
+		$this->language = $language;
+		$this->params = $params;
+		$this->items = $items;
+		$this->pagination = $pagination;
 		
 		// Display the view
 		parent::display($tpl);

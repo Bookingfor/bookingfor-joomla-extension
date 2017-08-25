@@ -31,6 +31,7 @@ class BookingForConnectorModelPayment extends JModelItem
 	private $urlCreateOrderPayment = null;
 	private $urlGetMerchantBookingTypes = null;
 	private $urlGetMerchantPayment = null;
+	private $urlGetLastOrderPayment = null;
 			
 	private $helper = null;
 	
@@ -45,6 +46,36 @@ class BookingForConnectorModelPayment extends JModelItem
 		$this->urlGetOrderPaymentsCount = '/OrderPayments/$count/';
 		$this->urlCreateOrderPayment = '/CreateOrderPayment';
 		$this->urlGetMerchantPayment = '/MerchantPayments(%d)';
+		$this->urlGetLastOrderPayment = '/GetLastOrderPayment';
+	}
+	public function GetLastOrderPayment($orderid)
+	{	
+		$orderPayment= null;
+		if(!empty( $orderid )){
+			$data = array(
+					'orderid' => $orderid,
+					'$format' => 'json'
+			);
+			
+			$options = array(
+					'path' => $this->urlGetLastOrderPayment,
+					'data' => $data
+			);
+			
+			$url = $this->helper->getQuery($options);
+			
+			
+			$r = $this->helper->executeQuery($url);
+			if (isset($r)) {
+				$res = json_decode($r);
+				if (!empty($res->d->GetLastOrderPayment)){
+					$orderPayment = $res->d->GetLastOrderPayment;
+				}elseif(!empty($res->d)){
+					$orderPayment = $res->d;
+				}
+			}
+		}
+		return $orderPayment;
 	}
 
 	public function getPaymentFromService($paymentsystemid)
@@ -61,7 +92,7 @@ class BookingForConnectorModelPayment extends JModelItem
 		);
 		
 		$options = array(
-				'path' => $this->urlGetPayment, /*sprintf($this->urlGetPayment, $paymentSystemId),*/
+				'path' => $this->urlGetPayment,
 				'data' => $data
 		);
 		
@@ -82,13 +113,8 @@ class BookingForConnectorModelPayment extends JModelItem
 
 	public function getPaymentsFromService($cultureCode='',$merchantId='')
 	{
-		$params = $this->getState('params');
 	
 		$data = array(
-				/*'$filter' => 'Enabled eq true',
-				'$top' => 1,
-				'$orderby' => 'IsDefault desc',
-				'$expand' => 'PaymentSystem',*/
 				'cultureCode' => '\'' . $cultureCode . '\'',
 				'getAllEnabled' => 1,
 				'merchantId' => $merchantId,
@@ -105,7 +131,6 @@ class BookingForConnectorModelPayment extends JModelItem
 		$r = $this->helper->executeQuery($url);
 		if (isset($r)) {
 			$res = json_decode($r);
-//			$paymentSystems = $res->d->results ?: $res->d;
 			if (!empty($res->d->results)){
 				$paymentSystems = $res->d->results;
 			}elseif(!empty($res->d)){
@@ -120,15 +145,11 @@ class BookingForConnectorModelPayment extends JModelItem
 	public function getOrderFromService($orderid)
 	{
 		$data = array(
-				/*'$filter' => 'Enabled eq true',
-				'$top' => 1,
-				 '$orderby' => 'IsDefault desc',*/
 				'checkMode' => 1,
 				'orderId' => $orderid,
 				'$format' => 'json'
 		);
 		$options = array(
-//				'path' => sprintf($this->urlGetOrder, $orderid),
 				'path' => $this->urlGetOrder,
 				'data' => $data
 		);
@@ -269,25 +290,12 @@ class BookingForConnectorModelPayment extends JModelItem
 	
 	public function getItem()
 	{
-		// Get a storage key.
-		$store = $this->getStoreId('getItem');
-	
-		// Try to load the data from internal storage.
-		if (isset($this->cache[$store]))
-		{
-			return $this->cache[$store];
-		}
 		$cultureCode = JFactory::getLanguage()->getTag();
-	
-		
 		if(empty($item)){
 			$item=new stdClass();
 		}
 
-		/* per recuperare i dati da request prima richiamo il getState e successivamente istanzio param per avere i parametri */
 		$state = $this->getState();
-		
-		/* */
 		$params = $state->params;
 		$currentMerchant = null;
 		$currentbookingTypeId = null;
@@ -339,12 +347,8 @@ class BookingForConnectorModelPayment extends JModelItem
 			}
 			
 		}	
-		
-		
-		// Add the items to the internal cache.
-		$this->cache[$store] = $item;
-	
-		return $this->cache[$store];
+				
+	  return $item;
 	}
 	
 	public function getOrderMerchantPayment($order) {

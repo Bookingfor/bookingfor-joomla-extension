@@ -44,11 +44,11 @@ class BookingForConnectorModelOnSellUnits extends JModelList
 	public function __construct($config = array())
 	{
 		parent::__construct($config);
-		$this->helper = new wsQueryHelper(COM_BOOKINGFORCONNECTOR_WSURL, COM_BOOKINGFORCONNECTOR_APIKEY);
+		$this->helper = new wsQueryHelper(COM_BOOKINGFORCONNECTOR_WSURL, COM_BOOKINGFORCONNECTOR_API_KEY);
 		$this->urlResources = '/ResourceonsellView'; //utilizza SearchOnSellSimple con i parametri che servono... fare un'altra chiamata che in sostanza fa la stessa cosa non serve
 		$this->urlResourcesCount = '/ResourceonsellView'; //utilizza GetSearchOnsellCount con i parametri che servono... fare un'altra chiamata che in sostanza fa la stessa cosa non serve
 		$this->resourcesCount = 0;
-		$this->urlGetResourcesByIds = '/GetResourceonsellsByIds';
+		$this->urlGetResourcesByIds = '/GetResourceonsellsByIdsSimple';
 		$this->urlResourceonsells = '/ResourceonsellView'; //utilizza SearchOnSellSimple con i parametri che servono... fare un'altra chiamata che in sostanza fa la stessa cosa non serve
 		$this->urlCategoryPriceMqAverages = '/GetCategoryPriceAverages';
 		$this->urlAvailableLocationsAverages = '/GetAvailableLocations';
@@ -68,7 +68,7 @@ class BookingForConnectorModelOnSellUnits extends JModelList
 		
 		$filter = '';
 		// get only enabled merchants because disabled are of no use
-		$this->helper->addFilter($filter, 'Enabled eq true', 'and');
+//		$this->helper->addFilter($filter, 'Enabled eq true', 'and');
 //		$this->helper->addFilter($filter, 'Merchant/Enabled eq true', 'and');
 
 		if (isset($masterTypologyId) && $masterTypologyId > 0) {
@@ -88,7 +88,7 @@ class BookingForConnectorModelOnSellUnits extends JModelList
 					'ids' => '\'' .$listsId. '\'',
 					'cultureCode' => BFCHelper::getQuotedString($language),
 					'$format' => 'json',
-					'$select' => 'Area,Rooms,Description,MerchantId,ResourceId,MerchantName,LocationName,Address,ImageUrl,ImageData,LogoUrl,XPos,YPos,LocationZone,IsNewBuilding,IsReservedPrice,IsAddressVisible,IsShowcase,IsForeground,AddedOn,IsHighlight,MainMerchantCategoryId,MerchantCategoryName'
+//					'$select' => 'Area,Rooms,Description,MerchantId,ResourceId,MerchantName,LocationName,Address,ImageUrl,ImageData,LogoUrl,XPos,YPos,LocationZone,IsNewBuilding,IsReservedPrice,IsAddressVisible,IsShowcase,IsForeground,AddedOn,IsHighlight,MainMerchantCategoryId,MerchantCategoryName'
 				)
 			);
 		$url = $this->helper->getQuery($options);
@@ -584,9 +584,9 @@ class BookingForConnectorModelOnSellUnits extends JModelList
 //		$options['data']['$orderby'] = "IsShowcase desc, IsForeground desc, Created  desc";
 		$options['data']['$orderby'] = 'AddedOn desc';
 
-//		if (isset($ordering)) {
-//			$options['data']['$orderby'] .= ", " . $ordering . ' ' . strtolower($direction);
-//		}
+		if (isset($ordering)) {
+			$options['data']['$orderby'] =  $ordering . ' ' . strtolower($direction);
+		}
 		
 		$url = $this->helper->getQuery($options);
 		
@@ -673,8 +673,8 @@ class BookingForConnectorModelOnSellUnits extends JModelList
 				'path' => $this->urlResources,
 				'data' => array(
 					/*'$skip' => $start,
-					'$top' => $limit,
-					'seed' => $seed,*/
+					'$top' => $limit,*/
+//					'seed' => $seed,
 					'$format' => 'json'
 				)
 			);
@@ -744,7 +744,11 @@ class BookingForConnectorModelOnSellUnits extends JModelList
 		//$typeId = $this->getTypeId();
 		$options = array(
 				'path' => $this->urlResourcesCount,
-				'data' => array()
+				'data' => array(
+						'$format' => 'json',
+						'$inlinecount' => 'allpages',
+						'$filter' => 'Enabled eq true and TypeId eq ' . $this->TypeId 
+				)
 			);
 		
 		$this->applyDefaultFilter($options);
@@ -755,7 +759,14 @@ class BookingForConnectorModelOnSellUnits extends JModelList
 		
 		$r = $this->helper->executeQuery($url);
 		if (isset($r)) {
-			$count = (int)$r;
+			$res = json_decode($r);
+			$count = 0;
+			if (isset($res->d->__count)){
+				$count = (int)$res->d->__count;
+			}elseif(isset($res->d)){
+				$count = (int)$res->d;
+			}
+//			$count = (int)$r;
 		}
 
 		return $count;
@@ -840,7 +851,7 @@ class BookingForConnectorModelOnSellUnits extends JModelList
 //		// adding other ordering to allow grouping
 		$options['data']['$orderby'] = 'AddedOn desc';
 		if (isset($ordering)) {
-			$options['data']['$orderby'] =  $ordering . ' ' . strtolower($direction);
+			$options['data']['$orderby'] .=  ", " . $ordering . ' ' . strtolower($direction);
 		}
 		
 		$url = $this->helper->getQuery($options);
@@ -895,12 +906,16 @@ class BookingForConnectorModelOnSellUnits extends JModelList
 
 	
 	protected function populateState($ordering = NULL, $direction = NULL) {
-		$filter_order = BFCHelper::getCmd('filter_order','AddedOn');
-		$filter_order_Dir = BFCHelper::getCmd('filter_order_Dir','desc');
+//		$filter_order = BFCHelper::getCmd('filter_order','AddedOn');
+//		$filter_order_Dir = BFCHelper::getCmd('filter_order_Dir','desc');
+		$filter_order = BFCHelper::getCmd('filter_order');
+		$filter_order_Dir = BFCHelper::getCmd('filter_order_Dir');
+
 		$session = JFactory::getSession();
-		$searchseed = $session->get('searchseed', rand(), 'com_bookingforconnector');
-		if (!$session->has('searchseed','com_bookingforconnector')) {
-			$session->set('searchseed', $searchseed, 'com_bookingforconnector');
+		$searchseed = BFCHelper::getSession('searchseed', rand(), 'com_bookingforconnector');
+//		if (!$session->has('searchseed','com_bookingforconnector')) {
+		if ($searchseed ==null) {
+			BFCHelper::setSession('searchseed', $searchseed, 'com_bookingforconnector');
 		}
  
 		$params = array(
@@ -908,11 +923,11 @@ class BookingForConnectorModelOnSellUnits extends JModelList
 			'masterTypeId' => BFCHelper::getInt('masterTypeId')
 		);
 		
-		$input = JFactory::getApplication()->input;
-		$show_latest = $input->get( 'show_latest' );  // show_latest
-		if ($show_latest) {
-			$params['show_latest'] = $show_latest;
-		}
+//		$input = JFactory::getApplication()->input;
+//		$show_latest = $input->get( 'show_latest' );  // show_latest
+//		if ($show_latest) {
+//			$params['show_latest'] = $show_latest;
+//		}
 		$this->setState('params', $params);
 		
 		return parent::populateState($filter_order, $filter_order_Dir);
@@ -936,8 +951,10 @@ class BookingForConnectorModelOnSellUnits extends JModelList
 		// Try to load the data from internal storage.
 		if (isset($this->cache[$store]))
 		{
+		
 			return $this->cache[$store];
 		}
+		
 		switch($type) {
 			case 'latest':
 				$items = $this->getLatestResourcesFromService(
