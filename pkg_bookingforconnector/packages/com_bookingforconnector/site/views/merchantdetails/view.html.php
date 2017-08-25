@@ -372,7 +372,7 @@ class BookingForConnectorViewMerchantDetails extends BFCView
 			JRoute::_('index.php?option=com_bookingforconnector&view=merchantdetails&merchantId=' . $merchant->MerchantId . ':' . BFCHelper::getSlug($merchant->Name))
 		);
 		
-		if ($layout != '') {
+		if ($layout != '' && $layout != 'default') {
 			$pathway->addItem(
 				JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_MERCHANTDETAILS_LAYOUT_' . strtoupper($layout) ),
 				JRoute::_('index.php?layout=' . $layout . '&option=com_bookingforconnector&view=merchantdetails&merchantId=' . $merchant->MerchantId . ':' . BFCHelper::getSlug($merchant->Name))
