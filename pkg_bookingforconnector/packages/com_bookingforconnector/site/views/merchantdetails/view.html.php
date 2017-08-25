@@ -206,7 +206,7 @@ class BookingForConnectorViewMerchantDetails extends BFCView
 			}
 			}
 
-			if($checkAnalytics && $this->checkAnalytics($listName) && $config->get('eecenabled', 0) == 1) {
+			if($checkAnalytics && $this->checkAnalytics($listName) && COM_BOOKINGFORCONNECTOR_EECENABLED == 1) {
 				$checkAnalytics = true;
 				switch($itemType) {
 					case 0:

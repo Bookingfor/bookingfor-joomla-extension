@@ -50,7 +50,7 @@ class BookingForConnectorViewCondominiums extends BFCView
 			BFCHelper::raiseWarning(500, implode("\n", $errors));
 			return false;
 		}
-		$analyticsEnabled = $this->checkAnalytics("Condominiums List") && $config->get('eecenabled', 0) == 1;
+		$analyticsEnabled = $this->checkAnalytics("Condominiums List") && COM_BOOKINGFORCONNECTOR_EECENABLED == 1;
 		$pagination->setAdditionalUrlParam("filter_order", $ordering);
 		$pagination->setAdditionalUrlParam("filter_order_Dir", $direction);
 		

@@ -69,7 +69,7 @@ class BookingForConnectorViewCondominium extends BFCView
 			}
 		}
 		$analyticsEnabled = $this->checkAnalytics("Condominium page");
-		if($analyticsEnabled && $config->get('eecenabled', 0) == 1) {
+		if($analyticsEnabled && COM_BOOKINGFORCONNECTOR_EECENABLED == 1) {
 			$obj = new stdClass;
 			$obj->id = "" . $item->CondominiumId . " - Resource Group";
 			$obj->name = $item->Name;

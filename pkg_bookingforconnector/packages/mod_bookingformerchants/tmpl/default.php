@@ -41,7 +41,7 @@ if(count($merchants) > 0){
 
 $listName = 'Merchant Highlight list';
 
-		$analyticsEnabled =  BFCHelper::checkAnalytics($listName) && $config->get('eecenabled', 0) == 1;
+		$analyticsEnabled =  BFCHelper::checkAnalytics($listName) && COM_BOOKINGFORCONNECTOR_EECENABLED == 1;
 		if($analyticsEnabled) {
 			$allobjects = array();
 			$initobjects = array();

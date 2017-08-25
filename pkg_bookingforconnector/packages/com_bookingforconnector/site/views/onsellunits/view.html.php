@@ -59,7 +59,7 @@ class BookingForConnectorViewOnSellUnits extends BFCView
 
 
 		
-		if(count($items) && $this->checkAnalytics('Sales Resource List' . ($params['show_latest'] ? ' - Latest' : '')) && $config->get('eecenabled', 0) == 1) {
+		if(count($items) && $this->checkAnalytics('Sales Resource List' . ($params['show_latest'] ? ' - Latest' : '')) && COM_BOOKINGFORCONNECTOR_EECENABLED == 1) {
 			$allobjects = array();
 			foreach ($items as $key => $value) {
 				$obj = new stdClass;

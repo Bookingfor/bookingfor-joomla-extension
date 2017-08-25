@@ -54,7 +54,7 @@ class BookingForConnectorViewMerchants extends BFCView
 			);');
 		}
 		
-		$analyticsEnabled = count($items) > 0 && $this->checkAnalytics("Merchants List") && $config->get('eecenabled', 0) == 1;
+		$analyticsEnabled = count($items) > 0 && $this->checkAnalytics("Merchants List") && COM_BOOKINGFORCONNECTOR_EECENABLED == 1;
 		$pagination->setAdditionalUrlParam("filter_order", $sortColumn);
 		$pagination->setAdditionalUrlParam("filter_order_Dir", $sortDirection);
 		$pagination->setAdditionalUrlParam("startswith", $startswith);

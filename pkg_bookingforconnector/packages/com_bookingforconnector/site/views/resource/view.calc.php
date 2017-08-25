@@ -64,7 +64,7 @@ class BookingForConnectorViewResource extends BFCView
 		
 		$_SESSION['search.params']['resourceId'] = $resourceId;
 		
-		$analyticsEnabled = $this->checkAnalytics("") && $config->get('eecenabled', 0) == 1;
+		$analyticsEnabled = $this->checkAnalytics("") && COM_BOOKINGFORCONNECTOR_EECENABLED == 1;
 		$this->assignRef('analyticsEnabled', $analyticsEnabled);
 		$this->assignRef('criteoConfig', $criteoConfig);			
 		

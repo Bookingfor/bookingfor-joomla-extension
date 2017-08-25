@@ -91,7 +91,7 @@ class BookingForConnectorViewResource extends BFCView
 				);');
 			}
 		}
-			if($item->IsCatalog && $analyticsEnabled && $config->get('eecenabled', 0) == 1) {
+			if($item->IsCatalog && $analyticsEnabled && COM_BOOKINGFORCONNECTOR_EECENABLED == 1) {
 				$obj = new stdClass;
 				$obj->id = "" . $item->ResourceId . " - Resource";
 				$obj->name = $item->Name;

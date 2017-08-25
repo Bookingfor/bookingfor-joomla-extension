@@ -138,7 +138,7 @@ class BookingForConnectorViewSearch extends BFCView
 			}
 		}
 
-		$analyticsEnabled = $this->checkAnalytics($listName) && $config->get('eecenabled', 0) == 1;
+		$analyticsEnabled = $this->checkAnalytics($listName) && COM_BOOKINGFORCONNECTOR_EECENABLED == 1;
 		if(count($totalItems) > 0 && COM_BOOKINGFORCONNECTOR_GAENABLED == 1 && !empty(COM_BOOKINGFORCONNECTOR_GAACCOUNT) && COM_BOOKINGFORCONNECTOR_EECENABLED == 1) {
 			$allobjects = array();
 			$initobjects = array();

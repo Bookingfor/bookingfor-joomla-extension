@@ -62,7 +62,7 @@ class BookingForConnectorViewSearchOnSell extends BFCView
 		}
 				
 		$analyticsEnabled = $this->checkAnalytics("Sales Resource List");
-		if(count($items) > 0 && $analyticsEnabled && $config->get('eecenabled', 0) == 1) {
+		if(count($items) > 0 && $analyticsEnabled && COM_BOOKINGFORCONNECTOR_EECENABLED == 1) {
 			$allobjects = array();
 			foreach ($items as $key => $value) {
 				$obj = new stdClass;
