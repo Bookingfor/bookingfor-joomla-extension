@@ -114,11 +114,11 @@ class BookingForConnectorViewMerchantDetails extends BFCView
 			$document->addScript('components/com_bookingforconnector/assets/js/jquery.rating.pack.js');
 		}
 		$listName = "";
+		$itemType = 0;
+		$totalItems = array();
+		$type = "";
 		if($checkAnalytics && !empty($items)) {
 			$checkAnalytics = false;
-			$itemType = 0;
-			$totalItems = array();
-			$type = "";
 			switch(BFCHelper::getString('layout', 'default')) {
 				case "resources":
 					$listName = "Resources List";
@@ -204,6 +204,8 @@ class BookingForConnectorViewMerchantDetails extends BFCView
 					$totalItems[] = $obj;
 					break;
 			}
+			}else{
+			$checkAnalytics = false;
 			}
 
 			if($checkAnalytics && $this->checkAnalytics($listName) && COM_BOOKINGFORCONNECTOR_EECENABLED == 1) {
