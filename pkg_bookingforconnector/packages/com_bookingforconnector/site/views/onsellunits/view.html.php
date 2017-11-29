@@ -58,8 +58,11 @@ class BookingForConnectorViewOnSellUnits extends BFCView
 		$pagination->setAdditionalUrlParam("locationzones", $params['locationzones']);
 
 
+		$listNameAnalytics = 7;
+		$listName = BFCHelper::$listNameAnalytics[$listNameAnalytics];// "Resources Search List";
+		$analyticsEnabled = count($items) > 0 && $this->checkAnalytics($listName) && COM_BOOKINGFORCONNECTOR_EECENABLED == 1;
 		
-		if(count($items) && $this->checkAnalytics('Sales Resource List' . ($params['show_latest'] ? ' - Latest' : '')) && COM_BOOKINGFORCONNECTOR_EECENABLED == 1) {
+		if($analyticsEnabled) {
 			$allobjects = array();
 			foreach ($items as $key => $value) {
 				$obj = new stdClass;
@@ -79,6 +82,8 @@ class BookingForConnectorViewOnSellUnits extends BFCView
 		$this->params = $params;
 		$this->items = $items;
 		$this->pagination = $pagination;
+		$this->analyticsEnabled = $analyticsEnabled;
+		$this->listNameAnalytics = $listNameAnalytics;
 
 		// Display the view
 		parent::display($tpl);

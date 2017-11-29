@@ -16,6 +16,8 @@ $resource = $this->item;
 $resource->IsCatalog = false;
 $resource->MaxCapacityPaxes = 0;
 $resource->TagsIdList = "";
+$listNameAnalytics = $this->listNameAnalytics;
+$fromsearchparam = "&lna=".$listNameAnalytics;
 
 //$resource_id = $resource->CondominiumId; //per form contactpopup
 $merchant = $resource->Merchant;
@@ -70,8 +72,6 @@ $comune = isset($resource->CityName)?$resource->CityName:"";
 $stato = isset($resource->StateName)?$resource->StateName:"";
 
 
-$uri  = 'index.php?option=com_bookingforconnector&view=condominium';
-
 if (!empty($resource->ServiceIdList)){
 	$services=BFCHelper::GetServicesByIds($resource->ServiceIdList, $language);
 }
@@ -99,7 +99,7 @@ $currUriresource = $uri.'&resourceId=' . $resource->CondominiumId . ':' . BFCHel
 if ($itemId<>0){
 	$currUriresource.='&Itemid='.$itemId;
 }
-$resourceRoute = JRoute::_($currUriresource);
+$resourceRoute = JRoute::_($currUriresource.$fromsearchparam);
 $routeRating = JRoute::_($currUriresource.'&layout=rating');				
 
 $reviewavg = 0;
@@ -110,7 +110,7 @@ $currUriMerchant = $uriMerchant. '&merchantId=' . $resource->MerchantId . ':' . 
 if ($itemIdMerchant<>0){
 	$currUriMerchant.= '&Itemid='.$itemIdMerchant;
 }
-$routeMerchant = JRoute::_($currUriMerchant);
+$routeMerchant = JRoute::_($currUriMerchant.$fromsearchparam);
 $payloadresource["@type"] = "Product";
 $payloadresource["@context"] = "http://schema.org";
 $payloadresource["name"] = $resourceName;

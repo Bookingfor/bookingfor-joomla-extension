@@ -41,6 +41,9 @@
 .bfi-nopad {
     padding: 0px;
 }
+.bfi-nomargin {
+    margin: 0px;
+}
 .bfi-red, .bfi-price.bfi-red, .bfi-error, .bfi-availability-low  {
     color: $color8;
 }
@@ -187,12 +190,20 @@ a.bfi-avg-value, a.bfi-avg-value:link, a.bfi-avg-value:hover {
 	}
 }
 .bfi-title-name {
-    color: $color1;
-    font-size: $font-size-xx-large;
-    line-height: 30px;
-    font-weight: $font-weight-bold;
-    margin: 0;
-	& span {
+	color: $color1;
+	font-size: $font-size-xx-large;
+	line-height: 30px;
+	font-weight: $font-weight-bold;
+	margin: 0;
+	& h1 { 
+		display: inline;
+		font-size: $font-size-xx-large;
+		line-height: 30px;
+		font-weight: $font-weight-bold;
+		margin: 0;
+	}
+	& span, h2 {
+		display: inline;
 		font-size: $font-size-large;
 		font-weight: $font-weight-base;
 		color: $color2;
@@ -221,6 +232,9 @@ a.bfi-avg-value, a.bfi-avg-value:link, a.bfi-avg-value:hover {
     margin-bottom: 10px;
     border: 1px solid $color11;
     background-color: $color13;
+    & form {
+        margin: 0 0;
+    }
 }
 .bfi-sort-item {
     cursor: pointer;
@@ -325,7 +339,7 @@ a.bfi-avg-value, a.bfi-avg-value:link, a.bfi-avg-value:hover {
 	font-size: $font-size-x-large;
 	font-weight: $font-weight-bold;
 }
-#bfi-filtertoggle .bfi-option-title {
+#bfi-filtertoggle .bfi-option-title, #bfi-filtertoggleMerchant .bfi-option-title {
     cursor: pointer;
     padding: 5px 5px 5px 0px;
     font-size: $font-size-regular;
@@ -567,6 +581,9 @@ a.bfi-avg-value, a.bfi-avg-value:link, a.bfi-avg-value:hover {
 	color: $color1;
 	    font-weight: $font-weight-bold;
     }
+    & .bfi-showperson-text-calculator {
+        margin-top: 6px;
+	}
     & .bfi-showperson-text-calculator .fieldLabel  {
 	text-decoration: none;
 	color: $color12;
@@ -574,13 +591,33 @@ a.bfi-avg-value, a.bfi-avg-value:link, a.bfi-avg-value:hover {
     }
 }
 .bfi-shopping-cart {
-    text-align: right;
-    background-color: $color11;
-    line-height: 14px;
-    padding: 2px 5px;
-    margin-top: 0px;
-    text-decoration: none;
+	text-align: right;
+	line-height: 14px;
+	padding: 2px 5px;
+	margin-top: 0px;
+	text-decoration: none;
 	font-size: $font-size-medium;
+	position: relative;
+}
+ .bfi-shopping-cart-widget{
+	background-color: $color13;
+ }
+.bfibadge {
+	position: absolute;
+	top:-10px;
+	right: -7px;
+	padding: 1px 4px;
+	border: 1px solid $color6;
+	border-radius:10px;
+	background-color: $color6;
+	-webkit-background-clip: padding-box;
+	font-size: $font-size-small;
+	color: white;
+	text-decoration: none;
+	text-shadow: 0 -1px 0 rgba(0,0,0,.6);
+}
+.bfibadge:empty {
+  display:none;
 }
 h4.bfi-titleform {
     margin: 5px 0;
@@ -595,6 +632,10 @@ h4.bfi-titleform {
 		font-size: $font-size-regular;
 	}
 }
+.bfi_strikethrough + .bfi-summary-body-resourceprice-total{
+    color: $color8;
+}
+
 .bfi-table-resources > thead > tr > th, .bfi-table-cart > thead > tr > th {
     width: 100%;
     background-color: $color10;
@@ -745,6 +786,7 @@ a.bfi-resname:link, a.bfi-resname:hover, .bfi-resname a {
     border-radius: $border-radius-base;
     margin: 0;
     padding: 0;
+    display:block;
 	& li, .ui-tabs .ui-tabs-nav li {
 		display: table-cell;
 		width: 1%;
@@ -780,6 +822,7 @@ a.bfi-resname:link, a.bfi-resname:hover, .bfi-resname a {
  .bfi-tab-content .ui-tabs-panel{
 	padding : 10px 10px;
 }
+.bfi-tab-content>.tab-pane{visibility:visible}
 .bfi-mod-bookingforsearch .bfi-form-vertical .bfi-searchbutton-wrapper {
 		margin: 10px auto 0 auto;
 		text-align: center;
@@ -1129,6 +1172,7 @@ div.star-rating{background:transparent!important;overflow:hidden!important}
 #bfi-resourcedetailsrequest input[type="radio"] {
     width: auto;
     min-width: 25px;
+    background-color: $color13;
 }
 .bfi-ccdescr, .bfi-ccimages {
     padding-left: 25px;
@@ -1187,24 +1231,27 @@ background:url('../images/energy-107.png') right center no-repeat ;
 }
 .bfi-label {
 	padding: 0 5px;
-    color: $color13;
-    background-color: $color1;
-    text-align: center;
-    display: inline-block;
-    border-radius: $border-radius-base;
+	color: $color13;
+	background-color: $color1;
+	text-align: center;
+	display: inline-block;
+	border-radius: $border-radius-base;
+	&.bfi-hide {
+		display: none;
+	}
 }
 .bfi-label-alternative {
 	@extend .bfi-label;
 	background-color: $color7;
 	&.bfi-hide {
-	    display: none;
+		display: none;
 	}
 }
 .bfi-label-alternative2 {
 	@extend .bfi-label;
 	background-color: $color8; 
 	&.bfi-hide {
-	    display: none;
+		display: none;
 	}
 }
 .bfi-street-address-block {
@@ -1531,6 +1578,20 @@ label.bfi-lblcheckzone {
 .bfi_826::before {
     content:"£\00a0";
 }
+.bfi-cart-coupon{
+	color: $color2;
+	margin-bottom: 8px;
+	& .bfi-btn {
+		padding: 3px 12px;
+	}
+}
+.bfi-coupon-details{
+	padding-right: 6px;
+	color: $color2;
+	text-decoration: underline;
+	margin-bottom:3px;
+	display: inline-block;
+}
 .bfi-currency-switcher {
 	display:inline-block;
     position: relative;
@@ -1587,7 +1648,10 @@ label.bfi-lblcheckzone {
   right: auto;
   bottom: auto;
 }
-
+.bfi-table-cart > thead > tr > th:nth-child(2),
+.bfi-table-cart > tbody > tr > td:nth-child(2) {
+display:none;
+}
 @media (min-width: 768px) {
 	.bfi-grid-group-item.bfi-list-group-item .bfi-sameheight {
 		min-height: 100%;

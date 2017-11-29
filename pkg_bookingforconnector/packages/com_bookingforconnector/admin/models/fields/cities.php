@@ -38,7 +38,9 @@ class JFormFieldCities extends JFormFieldList
 		{
 		foreach($locationZones as $lz)
 			{
-				$options[] = JHtml::_('select.option', $lz->CityId, $lz->Name);
+				if(!empty($lz->CityId)){
+					$options[] = JHtml::_('select.option', $lz->CityId, $lz->Name);
+				}
 			}
 		}
 		$options = array_merge(parent::getOptions(), $options);

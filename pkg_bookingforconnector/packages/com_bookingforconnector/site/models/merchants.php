@@ -2,7 +2,7 @@
 /**
  * @package   Bookingforconnector
  * @copyright Copyright (c)2006-2016 Ipertrade
- * @license    GNU General Public License version 2 or later; see LICENSE
+ * @license   GNU General Public License version 3, or later
  */
 
 // No direct access to this file
@@ -25,22 +25,23 @@ class BookingForConnectorModelMerchants extends JModelList
 	private $urlMerchants = null;
 	private $urlMerchantsCount = null;
 	private $merchantsCount = 0;
-	private $urlMerchantTypes = null;
 	private $urlMerchantCategories = null;
-	private $urlMerchantCategory = null;
-	private $urlMerchantGroups = null;
-	private $urlAllMerchants = null;
-	private $urlAllMerchantsCount = null;
 	private $urlLocationZones = null;
 	private $urlLocations = null;
 	private $urlGetMerchantsByIds = null;
-	private $urlCreateMerchantAndUser = null;
 	private $urlMerchantCategoriesRequest = null;
 	private $urlGetServicesByMerchantsCategoryId = null;
 	private $params = null;
 	private $itemPerPage = null;
 	private $ordering = null;
 	private $direction = null;
+
+	private $urlSearch = null;
+	private $currentOrdering = null;
+	private $currentDirection = null;
+	private $count = null;
+	private $currentData = null;
+	private $urlAllMerchants = null;
 	
 	private $helper = null;
 	
@@ -51,18 +52,14 @@ class BookingForConnectorModelMerchants extends JModelList
 		$this->urlMerchants = '/GetMerchantsByCategoryIds';
 		$this->urlMerchantsCount = '/GetMerchantsByCategoryIds/$count';
 		$this->merchantsCount = 0;
-		$this->urlMerchantTypes = '/MerchantTypes';		
 		$this->urlMerchantCategories = '/GetMerchantsCategory';
-		$this->urlMerchantCategory = '/MerchantCategories(%d)';
-		$this->urlMerchantGroups = '/MerchantGroups';
-		$this->urlAllMerchants = '/Merchants';
-		$this->urlAllMerchantsCount = '/Merchants/$count';
 		$this->urlLocations = '/GeographicZones';//'/Cities'; //'/Locations';
 		$this->urlLocationZones = '/GeographicZones';//'/LocationZones';
 		$this->urlGetMerchantsByIds = '/GetMerchantsByIdsExt';
-		$this->urlCreateMerchantAndUser = '/CreateMerchantAndUser';
 		$this->urlMerchantCategoriesRequest = '/GetMerchantsCategoryForRequest';
 		$this->urlGetServicesByMerchantsCategoryId = '/GetServicesByMerchantsCategoryId';
+		$this->urlSearch = '/SearchAllMerchants';
+		$this->urlAllMerchants = '/Merchants';
 	}
 	
 	public function setItemPerPage($itemPerPage) {
@@ -96,109 +93,166 @@ class BookingForConnectorModelMerchants extends JModelList
 	}
 	
 	public function applyDefaultFilter(&$options) {
-		$params = $this->params;
-		$startswith = $params['startswith'];
-		$typeId = $params['typeId'];
-		$rating = $params['rating'];
-		$categoryIds = $params['categoryId'];
-		$cityids = $params['cityids'];
-		
-		$filter = '';
-		// get only enabled merchants because disabled are of no use
-		//$this->helper->addFilter($filter, 'Enabled eq true', 'and');
+		$params = BFCHelper::getSearchMerchantParamsSession();
 
-//		if (isset($typeId) && $typeId > 0) {
-//			$this->helper->addFilter(
-//				$filter, 
-//				'MerchantTypeId eq ' . $typeId, 
-//				'and'
-//			);
-//		}
+		$searchid = isset($params['searchid']) ? $params['searchid'] : '';
+//		$masterTypeId = $params['masterTypeId'];
+//		$checkin = $params['checkin'];
+//		$checkout = $params['checkout'];
+//		$duration = $params['duration'];
+//		$persons = $params['paxes'];
+		$merchantCategoryId = isset($params['merchantCategoryId']) ? $params['merchantCategoryId'] : '';
+//		$paxages = $params['paxages'];
+//		$merchantId = $params['merchantId'];
+		$tags = isset($params['tags'])?$params['tags']:"";
+//		$searchtypetab = $params['searchtypetab'];
+		$stateIds = isset($params['stateIds']) ? $params['stateIds'] : ''; 
+		$regionIds = isset($params['regionIds']) ? $params['regionIds'] : ''; 
+		$cityIds = isset($params['cityIds']) ? $params['cityIds'] : '';
+		$zoneIds = isset($params['zoneIds']) ? $params['zoneIds'] : '';
+
+//		$merchantIds = $params['merchantIds'];
+		$merchantTagIds = isset($params['merchantTagIds']) ? $params['merchantTagIds'] : ''; 
+//		$productTagIds = $params['productTagIds'];
+
+		$rating = isset($params['rating']) ? $params['rating'] : ''; 
+
+//		$availabilitytype = $params['availabilitytype'];
+//		$itemtypes = $params['itemtypes'];
+//		$groupresulttype = $params['groupresulttype'];
+
+		$cultureCode =  isset($params['cultureCode']) ? $params['cultureCode'] : ''; 
 		
-		if (isset($rating) && $rating > 0) {
-			$this->helper->addFilter(
-				$filter, 
-				'Rating eq ' . $rating, 
-				'and'
-			);
+		$options['data']['calculate'] = 0;
+		$options['data']['checkAvailability'] = 0;
+		$filters = isset($params['filters']) ? $params['filters'] : null; 
+//				$filtersselected = BFCHelper::getFilterSearchParamsSession();
+		if(empty($filters)){
+			$filters = BFCHelper::getFilterSearchMerchantParamsSession();		
 		}
-
-		if ($filter!='')
-			$options['data']['$filter'] = $filter;
-
-		if (!empty($categoryIds)){
-			$strCategoryIds = "";
-			if(is_array($categoryIds)){
-				$strCategoryIds = implode('|',$categoryIds);
-			}else{
-				$strCategoryIds = $categoryIds;
+//		$resourceName = $params['resourceName'].'';
+//		$refid = $params['refid'].'';
+			
+		if (!empty($refid) or !empty($resourceName))  {
+//			$options['data']['calculate'] = 0;
+//			$options['data']['checkAvailability'] = 0;
+//			
+			if (isset($refid) && $refid <> "" ) {
+				$options['data']['refId'] = '\''.$refid.'\'';
 			}
-			$options['data']['categoryIds'] = '\''.str_replace(",","|",$strCategoryIds).'\'';
-		}
-		if (count($cityids) > 0){
-			$options['data']['cityids'] = '\''.implode(',',$cityids).'\'';
+			if (isset($resourceName) && $resourceName <> "" ) {
+				$options['data']['resourceName'] = '\''. $resourceName.'\'';
+			}
+		}else{
+				
+//			$onlystay = $params['onlystay'];
+//				
+//			$options['data']['calculate'] = $onlystay;
+//			$options['data']['checkAvailability'] = $onlystay;
+//			
+			if (isset($params['locationzone']) ) {
+				$locationzone = $params['locationzone'];
+			}
+			if (!empty($merchantCategoryId) && $merchantCategoryId > 0) {
+				$options['data']['merchantCategoryIds'] = '\'' .$merchantCategoryId.'\'';
+			}
+
+			$points = isset($params['points']) ? $params['points'] : '' ;
+			if (isset($points) && $points !='') {
+				$options['data']['points'] = '\'' . $points. '\'';
+			}
+
+			if (isset($locationzone) && $locationzone !='' && $locationzone !='0') {
+				$options['data']['zoneIds'] = '\''. $locationzone . '\'';
+			}
+			
+			if (!empty($tags)) {
+				$options['data']['tagids'] = '\'' . $tags . '\'';
+			}				
 		}
 
-		//passo sempre il dato anche quando è vuoto altrimenti non mi passa nessun valore
-		$options['data']['startswith'] = '\'' . $startswith . '\'';
-	}
-	
-	public function setMerchantAndUser($customerData = NULL, $password = NULL, $merchantType = 0, $merchantCategory = 0, $company = NULL, $userPhone = NULL, $webSite = NULL) {
-		$options = array(
-				'path' => $this->urlCreateMerchantAndUser,
-				'data' => array(
-					'customerData' => BFCHelper::getQuotedString(BFCHelper::getJsonEncodeString($customerData)),
-					'password' => BFCHelper::getQuotedString($password),
-					'company' => BFCHelper::getQuotedString($company),
-					'userPhone' => BFCHelper::getQuotedString($userPhone),
-					'webSite' => BFCHelper::getQuotedString($webSite),
-					'merchantType' => $merchantType,
-					'merchantCategory' => $merchantCategory,
-					'$format' => 'json'
-				)
-			);
-		$url = $this->helper->getQuery($options);
-		
-		$userId = -1;
-		
-		//$r = $this->helper->executeQuery($url);
-		$r = $this->helper->executeQuery($url,"POST");
-		if (isset($r)) {
-			$res = json_decode($r);
-			$tmpuserId = $res->d->results ?: $res->d;
-			$userId = $tmpuserId->CreateMerchantAndUser;
+
+		if (isset($cultureCode) && $cultureCode !='') {
+			$options['data']['cultureCode'] = '\'' . $cultureCode. '\'';
+		}
+		if (isset($searchid) && $searchid !='') {
+			$options['data']['searchid'] = '\'' . $searchid. '\'';
 		}
 		
-		return $userId;
-	}
-
-//	public function getMerchantTypes() {
-//		$options = array(
-//				'path' => $this->urlMerchantTypes,
-//				'data' => array(
-//					'$filter' => 'Enabled eq true',
-//					'$format' => 'json'
-//				)
-//			);
-//		$url = $this->helper->getQuery($options);
-//		
-//		$types = null;
-//		
-//		$r = $this->helper->executeQuery($url);
-//		if (isset($r)) {
-//			$res = json_decode($r);
-////			$types = $res->d->results ?: $res->d;
-//			if (!empty($res->d->results)){
-//				$types = $res->d->results;
-//			}elseif(!empty($res->d)){
-//				$types = $res->d;
-//			}
+//		if (isset($merchantId) && $merchantId > 0) {
+//			$options['data']['merchantid'] = $merchantId;
 //		}
-//		
-//		return $types;
-//
-//	}
 
+		if (isset($stateIds) && $stateIds !='') {
+			$options['data']['stateIds'] = '\'' . $stateIds. '\'';
+		}
+
+		if (isset($regionIds) && $regionIds !='') {
+			$options['data']['regionIds'] = '\'' . $regionIds. '\'';
+		}
+
+		if (isset($cityIds) && $cityIds !='') {
+			$options['data']['cityIds'] = '\'' . $cityIds. '\'';
+		}
+		
+		if (isset($zoneIds) && $zoneIds !='') {
+			$options['data']['zoneIds'] = '\'' . $zoneIds. '\'';
+		}
+
+//		if (isset($merchantIds) && $merchantIds !='') {
+//			$options['data']['merchantsList'] = '\'' . $merchantIds. '\'';
+//		}
+
+		if (isset($tags) && $tags !='') {
+			$options['data']['tagids'] = '\'' . $tags. '\'';
+		}
+		if (isset($rating) && $rating !='') {
+			$options['data']['mrcRatingIds'] = '\'' . $rating. '\'';
+		}
+
+		if (!empty($this->currentOrdering )) {
+			$options['data']['orderby'] = '\'' . $this->currentOrdering . '\'';
+			$options['data']['ordertype'] = '\'' . $this->currentDirection . '\'';
+		}
+			
+		if(!empty( $filters )){
+			if(isset( $filters['rating'] )){
+				$currRating = str_replace("|",",",$filters['rating']);
+				if(isset($rating) && $rating !=''){
+					$currRating .= "," . $rating;
+				}
+				
+				$options['data']['mrcRatingIds'] = BFCHelper::getQuotedString($currRating) ;
+			}
+			if(isset( $filters['avg'] )){
+				$options['data']['mrcAvgs'] = BFCHelper::getQuotedString(str_replace("|",",",$filters['avg'])) ;
+			}
+
+			if(!empty( $filters['merchantsservices'] )){
+				$options['data']['merchantServiceIds'] = BFCHelper::getQuotedString(str_replace("|",",",$filters['merchantsservices'])) ;
+			}
+
+			if(!empty( $filters['zones'] )){
+				$options['data']['zoneIds'] = BFCHelper::getQuotedString(str_replace("|",",",$filters['zones'])) ;
+			}
+
+//			if(!empty( $filters['offers'] )){
+//				$options['data']['discountedPriceOnly'] = 1 ;
+//			}
+			if(!empty( $filters['tags'] )){
+				$currTags = str_replace("|",",",$filters['tags']);
+//				if(!empty($tags )){
+//					$currTags .= "," . $tags;
+//				}
+				
+				$options['data']['merchantTagsIds'] = BFCHelper::getQuotedString($currTags) ;
+			}
+
+		}
+
+	}
+
+	
 	public function getLocationZonesFromService($locationId = NULL) {
 		$data=array(
 					'$select' => 'GeographicZoneId,Name,Order',			
@@ -262,21 +316,20 @@ class BookingForConnectorModelMerchants extends JModelList
 		if($jsonResult)	{
 			$arr = array();
 			if (!empty($locationZones)){
-			foreach($locationZones as $result) {
+				foreach($locationZones as $result) {
 					if (!empty($result->GeographicZoneId)){
 						$result->LocationZoneID = $resource->GeographicZoneId;
-				}
+					}
 					if(isset($result->GeographicZoneId) && !empty($result->Name) && isset($result->Order)){
-					$val= new StdClass;
+						$val= new StdClass;
 						$val->LocationZoneID = $result->GeographicZoneId ;
-					$val->Name = $result->Name;
+						$val->Name = $result->Name;
 						$val->Weight = $result->Order;
-					$arr[] = $val;
+						$arr[] = $val;
+					}
 				}
-			}
 			}
 			return json_encode($arr);
-				
 		}
 		return $locationZones;
 	}
@@ -352,12 +405,13 @@ class BookingForConnectorModelMerchants extends JModelList
 
 	}
 
-	public function getMerchantCategoriesFromService() {
+	public function getMerchantCategoriesFromService($language='') {
 		
 		$options = array(
 				'path' => $this->urlMerchantCategories,
 				'data' => array(
-						'$format' => 'json'
+						'$format' => 'json',
+						'cultureCode' => BFCHelper::getQuotedString($language),
 				)
 		);
 		$url = $this->helper->getQuery($options);
@@ -378,67 +432,23 @@ class BookingForConnectorModelMerchants extends JModelList
 		return $categoriesFromService;
 	}
 	
-	public function getMerchantCategories() {
+	public function getMerchantCategories($language='') {
 //		$session = JFactory::getSession();
-		$categories = BFCHelper::getSession('getMerchantCategories', null , 'com_bookingforconnector');
+		$categories = BFCHelper::getSession('getMerchantCategories'.$language, null , 'com_bookingforconnector');
 //		if (!$session->has('getMerchantCategories','com_bookingforconnector')) {
 		if ($categories==null) {
-			$categories = $this->getMerchantCategoriesFromService();
-			BFCHelper::setSession('getMerchantCategories', $categories, 'com_bookingforconnector');
+			$categories = $this->getMerchantCategoriesFromService($language);
+			BFCHelper::setSession('getMerchantCategories'.$language, $categories, 'com_bookingforconnector');
 		}
 		return $categories;
 	}
 	
-//	public function getMerchantCategoriesForRequest($language='') {
-//		$session = JFactory::getSession();
-//		$categories = BFCHelper::getSession('getMerchantCategoriesForRequest', null , 'com_bookingforconnector');
-////		if (!$session->has('getMerchantCategories','com_bookingforconnector')) {
-//		if ($categories==null) {
-//			$options = array(
-//					'path' => $this->urlMerchantCategories,
-//					'data' => array(
-//							'$filter' => 'Enabled eq true and IsForRequest eq true ',
-//							'$format' => 'json'
-//					)
-//			);
-//			$url = $this->helper->getQuery($options);
-//		
-//			$categoriesFromService = null;
-//		
-//			$r = $this->helper->executeQuery($url);
-//			if (isset($r)) {
-//				$res = json_decode($r);
-//				//$categoriesFromService = $res->d->results ?: $res->d;
-//				if (!empty($res->d->results)){
-//					$categoriesFromService = $res->d->results;
-//				}elseif(!empty($res->d)){
-//					$categoriesFromService = $res->d;
-//				}
-//			}
-//			$categories=array();
-//			if (!empty($categoriesFromService)){
-//				foreach( $categoriesFromService as $category) {
-//					$newCat = new StdClass;
-//					$newCat->MerchantCategoryId =  $category->MerchantCategoryId;
-//					$newCat->Name = BFCHelper::getLanguage($category->Name, $language);
-//
-//	//				$newCat = array(
-//	//					'MerchantCategoryId' => $category->MerchantCategoryId,
-//	//					'Name' => BFCHelper::getLanguage($category->Name, $language)
-//	//					);
-//					$categories[]=$newCat;
-//				}
-//
-//				BFCHelper::setSession('getMerchantCategoriesForRequest', $categories, 'com_bookingforconnector');
-//			}
-//		}
-//		return $categories;
-//	}
 
 	public function getMerchantCategoriesForRequest($language='') {
-		$session = JFactory::getSession();
-		$categories = $session->get('getMerchantCategoriesForRequest'.$language, null , 'com_bookingforconnector');
+//		$session = JFactory::getSession();
+//		$categories = $session->get('getMerchantCategoriesForRequest'.$language, null , 'com_bookingforconnector');
 //		if (!$session->has('getMerchantCategories','com_bookingforconnector')) {
+		$categories = BFCHelper::getSession('getMerchantCategoriesForRequest'.$language, null , 'com_bookingforconnector');
 		if ($categories==null) {
 			$options = array(
 					'path' => $this->urlMerchantCategoriesRequest,
@@ -478,36 +488,10 @@ class BookingForConnectorModelMerchants extends JModelList
 //					$categories[]=$newCat;
 //				}
 
-				$session->set('getMerchantCategoriesForRequest'.$language, $categories, 'com_bookingforconnector');
+//				$session->set('getMerchantCategoriesForRequest'.$language, $categories, 'com_bookingforconnector');
+				BFCHelper::setSession('getMerchantCategoriesForRequest'.$language, $categories, 'com_bookingforconnector');
 			}
 		}
-		return $categories;
-	}
-
-	public function getMerchantCategory($merchanCategoryId) {
-		$options = array(
-				'path' => sprintf($this->urlMerchantCategory, $merchanCategoryId),
-				'data' => array(
-						'$filter' => 'Enabled eq true',
-						'$expand' => 'Services',
-						'$format' => 'json'
-				)
-		);
-		$url = $this->helper->getQuery($options);
-	
-		$categories = null;
-	
-		$r = $this->helper->executeQuery($url);
-		if (isset($r)) {
-			$res = json_decode($r);
-//			$categories = $res->d->results ?: $res->d;
-			if (!empty($res->d->results)){
-				$categories = $res->d->results;
-			}elseif(!empty($res->d)){
-				$categories = $res->d;
-			}
-		}
-	
 		return $categories;
 	}
 
@@ -541,43 +525,7 @@ class BookingForConnectorModelMerchants extends JModelList
 		return $services;
 	}
 
-	public function getMerchantGroupsFromService() {
-		$options = array(
-				'path' => $this->urlMerchantGroups,
-				'data' => array(
-						'$filter' => 'Enabled eq true',
-						'$format' => 'json'
-				)
-		);
-		$url = $this->helper->getQuery($options);
-	
-		$categories = null;
-	
-		$r = $this->helper->executeQuery($url);
-		if (isset($r)) {
-			$res = json_decode($r);
-//			$categories = $res->d->results ?: $res->d;
-			if (!empty($res->d->results)){
-				$categories = $res->d->results;
-			}elseif(!empty($res->d)){
-				$categories = $res->d;
-			}
-		}
-	
-		return $categories;
-	}
-	
-	public function getMerchantGroups() {
-//		$session = JFactory::getSession();
-		$categories = BFCHelper::getSession('getMerchantGroups', null , 'com_bookingforconnector');
-		if ($categories==null) {
-			$categories = $this->getMerchantGroupsFromService();
-			BFCHelper::setSession('getMerchantGroups', $categories, 'com_bookingforconnector');
-		}
-		return $categories;
-	}
-
-	public  function getMerchantsByIds($listsId,$language='') {
+	public function getMerchantsByIds($listsId,$language='') {
 		$options = array(
 				'path' => $this->urlGetMerchantsByIds,
 				'data' => array(
@@ -603,7 +551,7 @@ class BookingForConnectorModelMerchants extends JModelList
 		return $merchants;
 	}
 
-		public function getMerchantByCategoryId($merchanCategoryId) {// with random order is not possible to order by another field
+	public function getMerchantByCategoryId($merchanCategoryId) {// with random order is not possible to order by another field
 
 		$options = array(
 				'path' => $this->urlMerchants,
@@ -640,86 +588,6 @@ class BookingForConnectorModelMerchants extends JModelList
 
 		return $merchants;
 	}
-	public function getMerchantsFromService($start, $limit, $ordering, $direction) {// with random order is not possible to order by another field
-
-		$params = $this->params;
-		$seed = $params['searchseed'];
-
-		$options = array(
-				'path' => $this->urlMerchants,
-				'data' => array(
-					/*'$skip' => $start,
-					'$top' => $limit,*/
-					'seed' => $seed,
-					'$format' => 'json'
-//					,'$select' => 'MerchantId,Name,Rating'
-				)
-			);
-
-		if (isset($start) && $start >= 0) {
-			$options['data']['skip'] = $start;
-		}
-		
-		if (isset($limit) && $limit > 0) {
-			$options['data']['top'] = $limit;
-		}
-		
-		$this->applyDefaultFilter($options);
-		
-
-		// adding other ordering to allow grouping
-		//$options['data']['$orderby'] = 'Rating desc';
-		if (isset($ordering) && !empty($ordering)) {
-			$options['data']['$orderby'] =  $ordering . ' ' . strtolower($direction);
-		}
-		
-		$url = $this->helper->getQuery($options);
-
-		$merchants = null;
-		
-		$r = $this->helper->executeQuery($url);
-		if (isset($r)) {
-			$res = json_decode($r);
-			//$merchants = $res->d->results ?: $res->d;
-			if (!empty($res->d->results)){
-				$merchants = $res->d->results;
-			}elseif(!empty($res->d)){
-				$merchants = $res->d;
-			}
-//			if(!empty($merchants) && empty($ordering)){
-//				shuffle($merchants);
-//			}
-
-		}
-
-		return $merchants;
-	}
-	
-	public function getTotal()
-	{
-		//$typeId = $this->getTypeId();
-		$options = array(
-				'path' => $this->urlMerchantsCount,
-				'data' => array()
-			);
-		
-		if (isset($limit) && $limit > 0) {
-			$options['data']['top'] = $limit;
-		}
-		
-		$this->applyDefaultFilter($options);
-				
-		$url = $this->helper->getQuery($options);
-		
-		$count = null;
-
-		$r = $this->helper->executeQuery($url);
-		if (isset($r)) {
-			$count = (int)$r;
-		}
-
-		return $count;
-	}
 	
 	protected function populateState($ordering = NULL, $direction = NULL) {
 //		$filter_order = BFCHelper::getCmd('filter_order','Name');
@@ -727,19 +595,22 @@ class BookingForConnectorModelMerchants extends JModelList
 		$filter_order = BFCHelper::getCmd('filter_order');
 		$filter_order_Dir = BFCHelper::getCmd('filter_order_Dir');
 
-		$session = JFactory::getSession();
-		$searchseed = $session->get('searchseed', rand(), 'com_bookingforconnector');
-		if (!$session->has('searchseed','com_bookingforconnector')) {
-			$session->set('searchseed', $searchseed, 'com_bookingforconnector');
+		$searchseed = BFCHelper::getSession('searchseed', null, 'com_bookingforconnector');
+		if (empty($searchseed)) {
+			$searchseed = rand();
+			BFCHelper::setSession('searchseed', $searchseed, 'com_bookingforconnector');
 		}
+
 		$this->params= array(
 			'typeId' => BFCHelper::getInt('typeId'),
+			'newsearch' => BFCHelper::getInt('newsearch'),
 			'categoryId' => BFCHelper::getArray('categoryId'),
 			'startswith' => BFCHelper::getVar('startswith',''),
 			'show_rating' => BFCHelper::getVar('show_rating','1'),
 			'default_display' => BFCHelper::getVar('default_display','0'),
 			'categoryId' => BFCHelper::getArray('categoryId'),
 			'rating' => BFCHelper::getVar('rating'),
+			'tagId' => BFCHelper::getVar('tagId'),
 			'cityids' => BFCHelper::getArray('cityids'),
 			'searchseed' => $searchseed
 	);	
@@ -748,44 +619,185 @@ class BookingForConnectorModelMerchants extends JModelList
 		return parent::populateState($filter_order, $filter_order_Dir);
 	}
 	
-	public function getItems()
-	{
-		// Get a storage key.
-		$store = $this->getStoreId();
+//	public function getItems()
+//	{
+//		// Get a storage key.
+//		$store = $this->getStoreId();
+//
+//		// Try to load the data from internal storage.
+//		if (isset($this->cache[$store]))
+//		{
+//			return $this->cache[$store];
+//		}
+//
+//		$items = $this->getMerchantsFromService(
+//			$this->getStart(), 
+//			$this->getState('list.limit'), 
+//			$this->getState('list.ordering'), 
+//			$this->getState('list.direction')
+//		);
+//
+//		// Add the items to the internal cache.
+//		$this->cache[$store] = $items;
+//
+//		return $this->cache[$store];
+//	}
+	
+	
+//	public function getItemsJson($jsonResult=false)
+//	{
+//		// Get a storage key.
+//		$items = $this->getLocationZones(
+//			((int)BFCHelper::getVar('locationId','0')),
+//			$jsonResult
+//		);
+//
+//		// Add the items to the internal cache.
+//		//$this->cache[$store] = $items;
+//
+//		//return $this->cache[$store];
+//		return $items;
+//	}
 
-		// Try to load the data from internal storage.
-		if (isset($this->cache[$store]))
-		{
-			return $this->cache[$store];
+	public function getItems($ignorePagination = false, $jsonResult = false, $start = 0, $count = 20) {
+		if ($this->currentData !== null){
+			return $this->currentData;
+		}
+		else{
+			$start = $this->getState('list.start'); 
+			$count = $this->getState('list.limit');
+			$this->retrieveItems($ignorePagination, $jsonResult, $start, $count);
+		}
+		return $this->currentData;
+	}
+
+	public function retrieveItems($ignorePagination = false, $jsonResult = false, $start = 0, $count = 20) {
+		if(!empty($_REQUEST['filter_order']) ){
+			$items = $this->getSearchResults(
+				$start,
+				$count,
+				$_REQUEST['filter_order'],
+				$_REQUEST['filter_order_Dir'],
+				$ignorePagination,
+				$jsonResult
+			);
+		} else {
+			$items = $this->getSearchResults(
+				$start,
+				$count,
+				'',
+				'',
+				$ignorePagination,
+				$jsonResult
+			);
+		}
+		$this->currentData = $items;
+	}
+
+	public function getTotal()
+	{
+		if ($this->count !== null){
+			return $this->count;
+		}
+		else{
+			$this->retrieveItems();
 		}
 
-		$items = $this->getMerchantsFromService(
-			$this->getStart(), 
-			$this->getState('list.limit'), 
-			$this->getState('list.ordering'), 
-			$this->getState('list.direction')
-		);
-
-		// Add the items to the internal cache.
-		$this->cache[$store] = $items;
-
-		return $this->cache[$store];
 	}
-	
-	
-	public function getItemsJson($jsonResult=false)
-	{
-		// Get a storage key.
-		$items = $this->getLocationZones(
-			((int)BFCHelper::getVar('locationId','0')),
-			$jsonResult
-		);
 
-		// Add the items to the internal cache.
-		//$this->cache[$store] = $items;
+	public function getSearchResults($start, $limit, $ordering, $direction, $ignorePagination = false, $jsonResult = false) {
 
-		//return $this->cache[$store];
-		return $items;
+		$this->currentOrdering = $ordering;
+		$this->currentDirection = $direction;
+		$params = array();
+		$firstParams = $this->params;																
+//		$searchid = isset($params['searchid']) ? $params['searchid'] : '';
+		$newsearch = isset($firstParams['newsearch']) ? $firstParams['newsearch'] : '1';
+
+		$results = $this->currentData;
+
+		if($newsearch == "1"){
+
+			BFCHelper::setSearchMerchantParamsSession(null);
+			BFCHelper::setFilterSearchMerchantParamsSession(null);
+			$start = 0;
+			$this->setState('list.start',$start);
+			$params['startswith'] = $firstParams['startswith'];
+			$params['rating'] = $firstParams['rating'];
+			$params['merchantCategoryId'] = isset($firstParams['categoryId']) ? implode(",",$firstParams['categoryId']) : ''; 
+			$params['cityIds'] = isset($firstParams['cityids']) ? implode(",",array_filter($firstParams['cityids'])) : ''; 
+			$params['tags'] = isset($firstParams['tagId']) ? implode(",",$firstParams['tagId']) : '';
+			$params['searchid'] = $firstParams['searchseed'];
+
+			BFCHelper::setSearchMerchantParamsSession($params);
+
+		}else{
+			$params = BFCHelper::getSearchMerchantParamsSession();
+			$filtersselected = BFCHelper::getArray('filters', null);
+			if ($filtersselected == null) { //provo a recuperarli dalla sessione...
+				$filtersselected = BFCHelper::getFilterSearchMerchantParamsSession();
+			}
+
+			BFCHelper::setFilterSearchMerchantParamsSession($filtersselected);
+		}
+			
+
+		if ($results == null) {
+//			echo 'No result: <br />';
+			$options = array(
+				'path' => $this->urlSearch,
+				'data' => array(
+						'$format' => 'json',
+						'topRresult' => 0
+				)
+			);
+			
+			if(!$ignorePagination){
+				if (isset($start) && $start >= 0) {
+					$options['data']['skip'] = $start;
+				}
+				
+				if (isset($limit) && $limit > 0) {
+					$options['data']['topRresult'] = $limit;
+				}
+			}
+
+			$this->applyDefaultFilter($options);
+
+			$url = $this->helper->getQuery($options);
+
+			$results = null;
+
+			$r = $this->helper->executeQuery($url);
+			if (isset($r)) {
+				$res = json_decode($r);
+				if (!empty($res->d->SearchAllMerchants)){
+					$results = $res->d->SearchAllMerchants;
+				}elseif(!empty($res->d)){
+					$results = $res->d;
+				}
+			}
+
+						
+			$filtersenabled = array();
+			if(!empty($results)){
+				$filtersenabled = json_decode($results->FiltersString);
+			}
+			BFCHelper::setSearchMerchantParamsSession($params);
+			if($newsearch == "1"){
+				BFCHelper::setFirstFilterSearchMerchantParamsSession($filtersenabled);
+			}
+			BFCHelper::setEnabledFilterSearchMerchantParamsSession($filtersenabled);
+		}
+		$resultsItems = null;
+
+		if(isset($results->ItemsCount)){
+			$this->count = $results->ItemsCount;
+			$resultsItems = json_decode($results->ItemsString);
+		}
+
+		return $resultsItems;
+
 	}
 
 	public function getMerchantsForSearch($text, $start, $limit, $ordering, $direction) {
@@ -848,5 +860,4 @@ class BookingForConnectorModelMerchants extends JModelList
 
 		return $merchants;
 	}
-	
 }

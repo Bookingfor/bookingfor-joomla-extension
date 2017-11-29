@@ -2,7 +2,7 @@
 /**
  * @package   Bookingforconnector
  * @copyright Copyright (c)2006-2016 Ipertrade
- * @license    GNU General Public License version 2 or later; see LICENSE
+ * @license   GNU General Public License version 3, or later
  */
 
 // No direct access to this file
@@ -20,29 +20,27 @@ $showmap = true;
 if($total<1){
 	$showmap = false;
 }
+$listNameAnalytics = $this->listNameAnalytics;
+$fromsearchparam = "&lna=".$listNameAnalytics;
 
 ?>
 <div id="bfi-merchantlist">
-	<div id="com_bookingforconnector-items-container-wrapper">
-		<?php if ($total > 0){ ?>
-			<div class="com_bookingforconnector-items-container">
-				<?php
-					echo  $this->loadTemplate('resources'); 
-				?>
-				<?php if ($this->pagination->get('pages.total') > 1) { ?>
-					<div class="text-center">
-					<div class="pagination">
-						<?php echo $this->pagination->getPagesLinks(); ?>
-					</div>
-					</div>
-				<?php } ?>
-			</div>
-		<?php }else{ ?>
-			<div class="com_bookingforconnector_search-noresults">
-				<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_SEARCH_VIEW_SEARCHRESULTS_NORESULTS') ?>
-			</div>
-		<?php } ?>
-	</div>
+	<?php if ($total > 0){ ?>
+			<?php
+				echo  $this->loadTemplate('resources'); 
+			?>
+			<?php if ($this->pagination->get('pages.total') > 1) { ?>
+				<div class="text-center">
+				<div class="pagination">
+					<?php echo $this->pagination->getPagesLinks(); ?>
+				</div>
+				</div>
+			<?php } ?>
+	<?php }else{ ?>
+		<div>
+			<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_SEARCH_VIEW_SEARCHRESULTS_NORESULTS') ?>
+		</div>
+	<?php } ?>
 </div>
 <script type="text/javascript">
 <!--

@@ -30,7 +30,7 @@ class BookingForConnectorModelCriteo extends JModelList
 	{
 		parent::__construct($config);
 		$this->helper = new wsQueryHelper(null,null);
-		$this->GetCriteoConfiguration = '/GetCriteoConfiguration';
+		$this->urlGetCriteoConfiguration = '/GetCriteoConfiguration';
 	}
 	public function getCriteoConfiguration($pagetype = 0, $merchantsList = array(), $orderId = null)
 	{
@@ -43,7 +43,7 @@ class BookingForConnectorModelCriteo extends JModelList
 			$language = JFactory::getLanguage()->getTag();
 
 			$options = array(
-					'path' => $this->GetCriteoConfiguration,
+					'path' => $this->urlGetCriteoConfiguration,
 					'data' => array(
 						'cultureCode' => BFCHelper::getQuotedString($language),
 						'$format' => 'json',

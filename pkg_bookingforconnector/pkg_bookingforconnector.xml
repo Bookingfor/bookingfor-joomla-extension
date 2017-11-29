@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <extension type="package" version="3.6" method="upgrade">
 	<name>BookingFor Connector Package</name>
-	<creationDate>2016-06-05</creationDate>
+	<creationDate>2017-11-05</creationDate>
 	<packagename>bookingforconnector</packagename>
-	<version>3.1.0</version>
+	<version>3.1.4</version>
 	<authorEmail>developer@ipertrade.com</authorEmail>
 	<authorUrl>http://www.ipertrade.com</authorUrl>
 	<url>http://www.ipertrade.com/</url>

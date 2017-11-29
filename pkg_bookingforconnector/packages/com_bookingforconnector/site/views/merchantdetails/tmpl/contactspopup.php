@@ -201,13 +201,15 @@ if(empty($maxCapacityPaxes)) {
 		</div>
 
 	<?php
+	$idrecaptcha = uniqid("bfirecaptcha");
+
 	JPluginHelper::importPlugin('captcha');
 	$dispatcher = JDispatcher::getInstance();
-	$dispatcher->trigger('onInit','recaptcha');
-	$recaptcha = $dispatcher->trigger('onDisplay', array(null, 'recaptcha', 'class=""'));
-	echo (isset($recaptcha[0])) ? $recaptcha[0] : '';
+	$dispatcher->trigger('onInit',$idrecaptcha);
+	$recaptcha1 = $dispatcher->trigger('onDisplay', array(null, $idrecaptcha, 'class="bfi-recaptcha"'));
+	echo (isset($recaptcha1[0])) ? $recaptcha1[0] : '';
 	?>
-	<div id="recaptcha-error" style="display:none"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_CAPTCHA_REQUIRED') ?></div>
+	<div id="recaptcha-error-<?php echo $idrecaptcha ?>" style="display:none"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_CAPTCHA_REQUIRED') ?></div>
 
 			<input type="hidden" id="actionform" name="actionform" value="formlabel" />
 			<input type="hidden" name="form[merchantId]" value="<?php echo $merchant->MerchantId;?>" > 
@@ -374,21 +376,21 @@ jQuery(function($){
 			},
 			submitHandler: function(form) {
 				if (typeof grecaptcha === 'object') {
-					var response = grecaptcha.getResponse();
+					var response = grecaptcha.getResponse(window.bfirecaptcha['<?php echo $idrecaptcha ?>']);
 					//recaptcha failed validation
 					if(response.length == 0) {
-						$('#recaptcha-error').show();
+						$('#recaptcha-error-<?php echo $idrecaptcha ?>').show();
 						return false;
 					}
 					//recaptcha passed validation
 					else {
-						$('#recaptcha-error').hide();
+						$('#recaptcha1-error-<?php echo $idrecaptcha ?>').hide();
 					}					 
 				}
 				form.submit();
 			}
 
-		});
+		});	
 	});
 //-->
 </script>

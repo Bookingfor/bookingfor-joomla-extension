@@ -24,8 +24,6 @@ $googlemapsapykey = $config->get('googlemapskey','');
 $document		= JFactory::getDocument();
 $language 	= $document->getLanguage();
 $mainframe = JFactory::getApplication();
-$currentComponent = JRequest::getCmd( 'option' );
-$currentView = JRequest::getCmd( 'view' );
 
 		  $instance['tablistSelected'] =  $params->get('tablistSelected');
 		  $instance['blockmonths'] = $params->get('blockmonths');

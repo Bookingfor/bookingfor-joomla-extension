@@ -8,7 +8,7 @@
 // No direct access to this file
 defined('_JEXEC') or die('Restricted access');
 
-function simpledom_load_file($filename)
+function bfi_simpledom_load_file($filename)
 {
 	$args = func_get_args();
 
@@ -25,7 +25,7 @@ function simpledom_load_file($filename)
 *
 * @return	SimpleDOM
 */
-function simpledom_load_string($string)
+function bfi_simpledom_load_string($string)
 {
 	$args = func_get_args();
 
@@ -40,6 +40,8 @@ function simpledom_load_string($string)
 /**
 * @package SimpleDOM
 */
+if ( ! class_exists( 'SimpleDOM' ) ) :
+
 class SimpleDOM extends SimpleXMLElement
 {
 	//=================================
@@ -625,6 +627,7 @@ class SimpleDOM extends SimpleXMLElement
 	* Roughly emulates the innerHTML property found in browsers, although it is not meant to
 	* perfectly match any specific implementation.
 	*
+	*
 	* @return	string			Content of current node
 	*/
 	public function innerHTML()
@@ -1054,3 +1057,4 @@ class SimpleDOM extends SimpleXMLElement
 	}
 	/**#@-*/
 }
+endif;

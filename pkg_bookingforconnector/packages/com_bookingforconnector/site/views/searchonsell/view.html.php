@@ -61,7 +61,11 @@ class BookingForConnectorViewSearchOnSell extends BFCView
 			$pagination->setAdditionalUrlParam("zoneId", $params['zoneId']);
 		}
 				
-		$analyticsEnabled = $this->checkAnalytics("Sales Resource List");
+		$listNameAnalytics = 8;
+		$listName = BFCHelper::$listNameAnalytics[$listNameAnalytics];// "Resources Search List";
+		$analyticsEnabled = count($items) > 0 && $this->checkAnalytics($listName) && COM_BOOKINGFORCONNECTOR_EECENABLED == 1;
+
+		$analyticsEnabled = $this->checkAnalytics($listName);
 		if(count($items) > 0 && $analyticsEnabled && COM_BOOKINGFORCONNECTOR_EECENABLED == 1) {
 			$allobjects = array();
 			foreach ($items as $key => $value) {
@@ -86,6 +90,7 @@ class BookingForConnectorViewSearchOnSell extends BFCView
 //		$this->typologies = $typologies;
 		$this->config = $config;
 		$this->analyticsEnabled = $analyticsEnabled;
+		$this->listNameAnalytics = $listNameAnalytics;
 		
 		// Display the view
 		parent::display($tpl);

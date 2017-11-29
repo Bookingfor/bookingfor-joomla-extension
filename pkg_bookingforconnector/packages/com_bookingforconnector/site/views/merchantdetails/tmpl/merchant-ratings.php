@@ -15,7 +15,8 @@ defined('_JEXEC') or die('Restricted access');
 	<?php
 	// preparo la lista per i filtri..
 	$list = BFCHelper::parseArrayList(JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEW_CONSTANTS_RATING_TYPOLOGIESLIST'));
-	$listfiltered = isset($_SESSION['ratings']['filters']['typologyid']) ? $_SESSION['ratings']['filters']['typologyid'] : 0;
+	$listfiltered = BFCHelper::getSession('ratingsfilterstypologyid', 0 , 'com_bookingforconnector');
+
 	$genericlist = JHTML::_('select.genericlist', $list, 'filters[typologyid]',array('onchange' => 'this.form.submit();') , 'value', 'text', $listfiltered);
 
 	if(isset($summaryRatings)) {
@@ -71,7 +72,7 @@ defined('_JEXEC') or die('Restricted access');
 		</div>
 	</div>
 	<div class="bfi-rating-container">
-			<?php $typologyId = isset($_SESSION['ratings']['filters']['typologyid']) ? $_SESSION['ratings']['filters']['typologyid'] : 0; ?>
+			<?php $typologyId = BFCHelper::getSession('ratingsfilterstypologyid', 0 , 'com_bookingforconnector'); ?>
 			<form action="<?php echo htmlspecialchars(JFactory::getURI()->toString()); ?>" method="post" name="adminForm" id="adminForm" class="bfi-rating-filter ratingformfilter">
 					<?php echo JText::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RATING_FILTER'); ?>
 					<?php echo $genericlist; ?>
@@ -190,7 +191,7 @@ defined('_JEXEC') or die('Restricted access');
 					<?php if (!empty($reply)) { ?>
 						<div class="bfi-rating-details bfi-arrow-box-top">
 							<div class="">
-							   <?php echo sprintf( JText::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RATING_MERCHANTREPLY'), $merchantname); ?>
+							   <?php echo sprintf( JText::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RATING_MERCHANTREPLY'), $merchantName); ?>
 								<span class="com_bookingforconnector_rating_date_small bfi-pull-right"><?php echo  $replydateLabel?></span>
 							</div>
 							<br />

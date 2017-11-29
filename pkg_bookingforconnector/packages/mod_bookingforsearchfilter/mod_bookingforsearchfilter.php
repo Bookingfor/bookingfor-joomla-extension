@@ -10,7 +10,8 @@ defined('_JEXEC') or die('Restricted access');
 $pathbase = JPATH_BASE . DIRECTORY_SEPARATOR . 'components' . DIRECTORY_SEPARATOR . 'com_bookingforconnector' . DIRECTORY_SEPARATOR;
 
 require_once $pathbase . 'defines.php';
-if(BFCHelper::getVar( 'view')!=="search") return ;
+//if(BFCHelper::getVar( 'view')!=="search") return ;
+if(BFCHelper::getVar( 'view')!=="merchants" && BFCHelper::getVar( 'view')!=="search") return ;
 
 
 $moduleclass_sfx = htmlspecialchars($params->get('moduleclass_sfx'));
@@ -26,5 +27,8 @@ $lang->load('com_bookingforconnector', $pathbase, 'en-EN', true);
 $lang->load('com_bookingforconnector', $pathbase, $lang->getTag(), true);
 
 bfi_load_scripts();
-
-require JModuleHelper::getLayoutPath('mod_bookingforsearchfilter', $params->get('layout', 'default'));
+$currLayout = 'default';
+if(BFCHelper::getVar( 'view')=="merchants"){
+	$currLayout = 'defaultmerchants';
+}
+require JModuleHelper::getLayoutPath('mod_bookingforsearchfilter', $params->get('layout', $currLayout));

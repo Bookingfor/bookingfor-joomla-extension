@@ -16,6 +16,7 @@ $resource = $this->item;
 $resource_id = $resource->ResourceId; //per form contactpopup
 $merchant = $resource->Merchant;
 $language = $this->language;
+$sitename = $this->sitename;
 
 $isportal = COM_BOOKINGFORCONNECTOR_ISPORTAL;
 $showdata = COM_BOOKINGFORCONNECTOR_SHOWDATA;
@@ -38,8 +39,8 @@ $rating_text = array('merchants_reviews_text_value_0' => JTEXT::_('COM_BOOKINGFO
 						'merchants_reviews_text_value_10' => JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RATING_VALUATION_10'),                                 
 					);
 
-$resourceName = BFCHelper::getLanguage($resource->Name, $language, null, array('ln2br'=>'ln2br', 'striptags'=>'striptags')); 
-$merchantName = BFCHelper::getLanguage($merchant->Name, $language, null, array('ln2br'=>'ln2br', 'striptags'=>'striptags')); 
+$resourceName = BFCHelper::getLanguage($resource->Name, $language, null, array('nobr'=>'nobr', 'striptags'=>'striptags')); 
+$merchantName = BFCHelper::getLanguage($merchant->Name, $language, null, array('nobr'=>'nobr', 'striptags'=>'striptags')); 
 $resourceDescription = BFCHelper::getLanguage($resource->Description, $language, null, array('ln2br'=>'ln2br', 'bbcode'=>'bbcode', 'striptags'=>'striptags'));
 
 
@@ -121,7 +122,7 @@ $currUriMerchant = $uriMerchant. '&merchantId=' . $resource->MerchantId . ':' . 
 if ($itemIdMerchant<>0){
 	$currUriMerchant.= '&Itemid='.$itemIdMerchant;
 }
-$routeMerchant = JRoute::_($currUriMerchant);
+$routeMerchant = JRoute::_($currUriMerchant,true, -1);
 
 $ProductAvailabilityType = $resource->AvailabilityType;
 
@@ -145,30 +146,56 @@ if ($merchant->RatingsContext != NULL && $merchant->RatingsContext > 0) {
 		}
 	}
 }
-$payloadresource["@type"] = "Product";
-$payloadresource["@context"] = "http://schema.org";
-$payloadresource["name"] = $resourceName;
-$payloadresource["description"] = $resourceDescription;
-$payloadresource["url"] = $resourceRoute; 
-if (!empty($resource->ImageUrl)){
-	$payloadresource["image"] = "https:".BFCHelper::getImageUrlResized('resources',$resource->ImageUrl, 'logobig');
-}
+
+/*---------------IMPOSTAZIONI SEO----------------------*/
+	$merchantDescriptionSeo = BFCHelper::getLanguage($merchant->Description, $language, null, array( 'nobr'=>'nobr', 'bbcode'=>'bbcode', 'striptags'=>'striptags')) ;
+	$resourceDescriptionSeo = BFCHelper::getLanguage($resource->Description, $language, null, array( 'nobr'=>'nobr', 'bbcode'=>'bbcode', 'striptags'=>'striptags')) ;
+	if (!empty($merchantDescriptionSeo) && strlen($merchantDescriptionSeo) > 170) {
+	    $merchantDescriptionSeo = substr($merchantDescriptionSeo,0,170);
+	}
+	if (!empty($resourceDescriptionSeo) && strlen($resourceDescriptionSeo) > 170) {
+	    $resourceDescriptionSeo = substr($resourceDescriptionSeo,0,170);
+	}
+
+	$titleHead = "$merchantName: $resourceName ($comune, $stato) - $merchant->MainCategoryName - $sitename";
+	$keywordsHead = "$merchantName, $resourceName, $comune, $stato, $merchant->MainCategoryName";
+	$routeSeo = ($isportal)? $routeMerchant: $base_url;
+	$resourceRouteSeo = JRoute::_($currUriresource,true, -1);
+
+	$this->document->setTitle($titleHead);
+	$this->document->setDescription($resourceDescriptionSeo);
+	$this->document->setMetadata('keywords', $keywordsHead);
+	$this->document->setMetadata('robots', "index,follow");
+	$this->document->setMetadata('og:title', $titleHead);
+	$this->document->setMetadata('og:description', $resourceDescriptionSeo);
+	$this->document->setMetadata('og:url', $resourceRouteSeo);
+
+	$payload["@type"] = "Organization";
+	$payload["@context"] = "http://schema.org";
+	$payload["name"] = $merchantName;
+	$payload["description"] = $merchantDescriptionSeo;
+	$payload["url"] = $routeSeo; 
+	if (!empty($merchant->LogoUrl)){
+		$payload["logo"] = "https:".BFCHelper::getImageUrlResized('merchant',$merchant->LogoUrl, 'logobig');
+	}
+
+	$payloadresource["@type"] = "Product";
+	$payloadresource["@context"] = "http://schema.org";
+	$payloadresource["name"] = $resourceName;
+	$payloadresource["description"] = $resourceDescriptionSeo;
+	$payloadresource["url"] = $resourceRouteSeo; 
+	if (!empty($resource->ImageUrl)){
+		$payloadresource["image"] = "https:".BFCHelper::getImageUrlResized('resources',$resource->ImageUrl, 'logobig');
+	}
+/*--------------- FINE IMPOSTAZIONI SEO----------------------*/
+
+
 ?>
 <script type="application/ld+json">// <![CDATA[
-<?php echo json_encode($payloadresource); ?>
+<?php echo json_encode($payloadresource,JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE); ?>
 // ]]></script>
-<?php 
-$payload["@type"] = "Organization";
-$payload["@context"] = "http://schema.org";
-$payload["name"] = $merchant->Name;
-$payload["description"] = BFCHelper::getLanguage($merchant->Description, $language, null, array( 'striptags'=>'striptags', 'bbcode'=>'bbcode','ln2br'=>'ln2br'));
-$payload["url"] = ($isportal)? $routeMerchant: $base_url; 
-if (!empty($merchant->LogoUrl)){
-	$payload["logo"] = "https:".BFCHelper::getImageUrlResized('merchant',$merchant->LogoUrl, 'logobig');
-}
-?>
 <script type="application/ld+json">// <![CDATA[
-<?php echo json_encode($payload); ?>
+<?php echo json_encode($payload,JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE); ?>
 // ]]></script>
 
 <div class="bfi-content bfi-hideonextra">	
@@ -177,7 +204,7 @@ if (!empty($merchant->LogoUrl)){
 	<div class="bfi-row">
 		<div class="bfi-col-md-10">
 	<?php } ?>
-			<div class="bfi-title-name bfi-hideonextra"><?php echo  $resourceName?> - <span class="bfi-cursor"><?php echo  $merchantName?></span></div>
+			<div class="bfi-title-name bfi-hideonextra"><h1><?php echo  $resourceName?></h1> - <h2 class="bfi-cursor"><?php echo  $merchantName?></h2></div>
 			<div class="bfi-address bfi-hideonextra">
 				<i class="fa fa-map-marker fa-1"></i> <?php if (($showResourceMap)) {?><a class="bfi-map-link" rel="#resource_map"><?php } ?><span class="street-address"><?php echo $indirizzo ?></span>, <span class="postal-code "><?php echo  $cap ?></span> <span class="locality"><?php echo $comune ?></span>, <span class="region"><?php echo  $stato ?></span>
 				<?php if (($showResourceMap)) {?></a><?php } ?>
@@ -382,7 +409,7 @@ if (!empty($merchant->LogoUrl)){
 		jQuery('#bfi-avgreview').click(function() {
 			jQuery('html, body').animate({ scrollTop: jQuery(".bfi-ratingslist").offset().top }, 2000);
 		});
-		jQuery('.bfi-title-name span').click(function() {
+		jQuery('.bfi-title-name h2').click(function() {
 			jQuery('html, body').animate({ scrollTop: jQuery(".bfi-merchant-simple").offset().top }, 2000);
 		});
 

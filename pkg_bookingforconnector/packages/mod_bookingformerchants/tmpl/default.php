@@ -59,7 +59,7 @@ $listName = 'Merchant Highlight list';
 			}
 			$document->addScriptDeclaration('var currentMerchants = ' .json_encode($allobjects) . ';
 			var initMerchant = ' .json_encode($initobjects) . ';
-			' . 'callAnalyticsEEc("addImpression", initMerchant, "list","MerchantHighlight");');
+			' . 'callAnalyticsEEc("addImpression", initMerchant, "list","Merchant Highlight");');
 		}
 
 ?>
@@ -71,7 +71,7 @@ $listName = 'Merchant Highlight list';
 		
 			$rating = $merchant->Rating;
 			$currUriMerchant = $uriMerchant. '&merchantId=' . $merchant->MerchantId . ':' . BFCHelper::getSlug($merchant->Name);
-			$merchantDescription = BFCHelper::shorten_string(BFCHelper::getLanguage($merchant->Description, $language, null, array('ln2br'=>'ln2br', 'bbcode'=>'bbcode', 'striptags'=>'striptags')), $descmaxchars);
+			$merchantDescription = BFCHelper::shorten_string(BFCHelper::getLanguage($merchant->Description, $language, null, array('bbcode'=>'bbcode', 'striptags'=>'striptags')), $descmaxchars);
 
 			$routeMerchant = JRoute::_($currUriMerchant);
 			$currMerchantImageUrl = $merchantImageUrl;
@@ -82,28 +82,30 @@ $listName = 'Merchant Highlight list';
 				$images = explode(",", $merchant->ImageData);
 				$currMerchantImageUrl = BFCHelper::getImageUrlResized('merchant',$images[0], 'small');
 			}
+			$merchantNameTrack =  BFCHelper::string_sanitize($merchant->Name);
+			$merchantCategoryNameTrack = BFCHelper::string_sanitize($merchant->MainCategoryName);
 		?>
 			<div class="bfi-bookingforconnector-merchants" >
 				<div class="bfi-row" style="height:100%">
 					<div class="bfi-row" >
-						<div class="bfi-col-md-12"><a href="<?php echo $routeMerchant?>" class="eectrack"  data-type="Merchant"  data-id="<?php echo $merchant->MerchantId?>" data-index="<?php echo $mrcKey?>" data-itemname="<?php echo $merchant->Name; ?>" data-brand="<?php echo $merchant->Name; ?>" data-category="<?php echo $merchant->MainCategoryName; ?>"><img src="<?php echo $currMerchantImageUrl; ?>" class="bfi-img-responsive center-block" /></a>
+						<div class="bfi-col-md-12"><a href="<?php echo $routeMerchant?>" class="eectrack" data-type="Merchant" data-id="<?php echo $merchant->MerchantId?>" data-index="<?php echo $mrcKey?>" data-itemname="<?php echo $merchantNameTrack; ?>" data-brand="<?php echo $merchantNameTrack; ?>" data-category="<?php echo $merchantCategoryNameTrack; ?>"><img src="<?php echo $currMerchantImageUrl; ?>" class="bfi-img-responsive center-block" /></a>
 						</div>
 					</div>
 					<div class="bfi-row" >
 						<div class="bfi-col-md-12 bfi-item-title" style="padding: 10px!important;">
-						<a class="eectrack" href="<?php echo $routeMerchant ?>" id="nameAnchor<?php echo $merchant->MerchantId?>"  data-type="Merchant"  data-id="<?php echo $merchant->MerchantId?>" data-index="<?php echo $mrcKey?>" data-itemname="<?php echo $merchant->Name; ?>" data-brand="<?php echo $merchant->Name; ?>" data-category="<?php echo $merchant->MainCategoryName; ?>"><?php echo  $merchant->Name ?></a> 
+						<a class="eectrack" href="<?php echo $routeMerchant ?>" id="nameAnchor<?php echo $merchant->MerchantId?>" data-type="Merchant" data-id="<?php echo $merchant->MerchantId?>" data-index="<?php echo $mrcKey?>" data-itemname="<?php echo $merchantNameTrack; ?>" data-brand="<?php echo $merchantNameTrack?>" data-category="<?php echo $merchantCategoryNameTrack; ?>"><?php echo  $merchant->Name ?></a> 
 						<?php if($rating > 0): ?>
 								<span class="bfi-item-rating">
 									<?php for($i = 0; $i < $rating; $i++) { ?>
 										<i class="fa fa-star"></i>
 									<?php } ?>	             
 								</span>
-						<?php endif; ?></label>
+						<?php endif; ?>
 						</div>
 					</div>
 					<div class="bfi-row hide" >
 						<div class="bfi_merchant-description bfi-col-md-12" style="padding-left: 10px!important;padding-right: 10px!important;">
-							<a href="<?php echo $routeMerchant ?>" id="nameAnchor<?php echo $merchant->MerchantId?>"><?php echo  $merchant->Name ?></a> 
+							<a href="<?php echo $routeMerchant ?>" id="nameAnchor<?php echo $merchant->MerchantId?>" class="eectrack" data-type="Merchant" data-id="<?php echo $merchant->MerchantId?>" data-index="<?php echo $mrcKey?>" data-itemname="<?php echo $merchantNameTrack; ?>" data-brand="<?php echo $merchantNameTrack?>" data-category="<?php echo $merchantCategoryNameTrack; ?>"><?php echo  $merchant->Name ?></a> 
 						</div>
 					</div>
 					<div class="bfi-row" >
@@ -114,7 +116,7 @@ $listName = 'Merchant Highlight list';
 							&nbsp;
 						</div>
 						<div class="bfi-col-md-11 secondarysectionitem" style="padding: 10px!important;">
-								<a href="<?php echo $routeMerchant?>" class="bfi-btn bfi-pull-right eectrack"  data-type="Merchant"  data-id="<?php echo $merchant->MerchantId?>" data-index="<?php echo $mrcKey?>" data-itemname="<?php echo $merchant->Name; ?>" data-brand="<?php echo $merchant->Name; ?>"  data-category="<?php echo $merchant->MainCategoryName; ?>"><?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_OFFER_DETAILS') ?></a>
+								<a href="<?php echo $routeMerchant?>" class="bfi-btn bfi-pull-right eectrack" data-type="Merchant" data-id="<?php echo $merchant->MerchantId?>" data-index="<?php echo $mrcKey?>" data-itemname="<?php echo $merchantNameTrack; ?>" data-brand="<?php echo $merchantNameTrack; ?>"  data-category="<?php echo $merchantCategoryNameTrack; ?>"><?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_OFFER_DETAILS') ?></a>
 						</div>
 					</div>
 				</div>

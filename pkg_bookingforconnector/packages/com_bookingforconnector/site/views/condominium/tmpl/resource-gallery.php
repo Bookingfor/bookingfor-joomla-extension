@@ -13,27 +13,13 @@ defined('_JEXEC') or die('Restricted access');
 $images = array();
 
 if(!empty($resource->ImagesData)) {
-	foreach(explode(',', $resource->ImagesData) as $image) {
+	$imageData = preg_replace('/\s+/', '', $resource->ImagesData);
+	foreach(explode(',', $imageData) as $image) {
 		if (!empty($image)){
 			$images[] = array('type' => 'image', 'data' => $image);
 		}
 	}
 }
-//if(!empty($resource->PlanimetryData)) {
-//	foreach(explode(',', $resource->PlanimetryData) as $image) {
-//		if (!empty($image)){
-//			$images[] =  array('type' => 'planimetry', 'data' => $image);
-//		}
-//	}
-//}
-//if(!empty($resource->VideoData)) {	
-//	foreach(explode(',', $resource->VideoData) as $image) {
-//		if (!empty($image)){
-//			$images[] =  array('type' => 'video', 'data' => $image);
-//		}
-//	}
-//}
-
 ?>
 <?php if (count ($images)>0){ ?>
 <?php

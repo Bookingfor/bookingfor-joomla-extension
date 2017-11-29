@@ -27,7 +27,7 @@ try {
 //	$imageData = new SimpleXmlElement($resource->ImageData);
 	if (!empty($resource->ImageData)){
 		if (strpos($resource->ImageData,'<xmlhashtable>') !== false) {
-			$imageData = simpledom_load_string($resource->ImageData);
+			$imageData = bfi_simpledom_load_string($resource->ImageData);
 			if(!empty($imageData)){  // valore xml
 				//$nodes = $imageData;
 				if (strpos($resource->ImageData,'order') !== false) {
@@ -62,7 +62,7 @@ try {
 //	$imageData = new SimpleXmlElement($resource->PlanimetryData);
 	if (!empty($resource->PlanimetryData)){
 		if (strpos($resource->PlanimetryData,'<xmlhashtable>') !== false) {
-			$imageData = simpledom_load_string($resource->PlanimetryData);
+			$imageData = bfi_simpledom_load_string($resource->PlanimetryData);
 			if(!empty($imageData)){  // valore xml
 				//$nodes = $imageData;
 				if (strpos($resource->ImageData,'order') !== false) {
@@ -92,7 +92,7 @@ try {
 //	$imageData = new SimpleXmlElement($resource->VideoData);
 	if (!empty($resource->VideoData)){
 		if (strpos($resource->VideoData,'<xmlhashtable>') !== false) {
-			$imageData = simpledom_load_string($resource->VideoData);
+			$imageData = bfi_simpledom_load_string($resource->VideoData);
 	//		$nodes = $imageData->sortedXPath('//video', '@order');  //dati ordinati per "order"
 			if (strpos($resource->VideoData,'order') !== false) {
 				$nodes = $imageData->sortedXPath('//video', '@order');  //dati ordinati per "order"

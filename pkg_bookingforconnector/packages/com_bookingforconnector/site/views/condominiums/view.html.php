@@ -37,30 +37,27 @@ class BookingForConnectorViewCondominiums extends BFCView
 		$language 	= $document->getLanguage();		
 		$params = $state->params;
 		
-		// add stylesheet
-		$document->addStyleSheet('components/com_bookingforconnector/assets/css/bookingfor.css');
-		$document->addStyleSheet('components/com_bookingforconnector/assets/css/bookingfor-responsive.css');
-
-		$document->addScript('components/com_bookingforconnector/assets/js/bf.js');
-		$document->addScript('components/com_bookingforconnector/assets/js/jquery.xml2json.js');
-		$document->addScript('components/com_bookingforconnector/assets/js/jquery.shorten.js');
-
 		// Check for errors.
 		if (count($errors = $this->get('Errors'))) {
 			BFCHelper::raiseWarning(500, implode("\n", $errors));
 			return false;
 		}
-		$analyticsEnabled = $this->checkAnalytics("Condominiums List") && COM_BOOKINGFORCONNECTOR_EECENABLED == 1;
+		$listNameAnalytics =2;
+		$listName = BFCHelper::$listNameAnalytics[$listNameAnalytics];// "Resources Search List";
+
+		$analyticsEnabled = count($items) > 0 && $this->checkAnalytics($listName) && COM_BOOKINGFORCONNECTOR_EECENABLED == 1;
+//		$analyticsEnabled = $this->checkAnalytics("Condominiums List") && COM_BOOKINGFORCONNECTOR_EECENABLED == 1;
 		$pagination->setAdditionalUrlParam("filter_order", $ordering);
 		$pagination->setAdditionalUrlParam("filter_order_Dir", $direction);
 		
-		$this->assignRef('config', $config);
-		$this->assignRef('state', $state);
-		$this->assignRef('params', $params);
-		$this->assignRef('items', $items);
-		$this->assignRef('pagination', $pagination);
-		$this->assignRef('language', $language);
-		$this->assignRef('analyticsEnabled', $analyticsEnabled);
+		$this->config = $config;
+		$this->state = $state;
+		$this->params = $params;
+		$this->items = $items;
+		$this->pagination = $pagination;
+		$this->language = $language;
+		$this->analyticsEnabled = $analyticsEnabled;
+		$this->listNameAnalytics = $listNameAnalytics;
 		
 		// Display the view
 		parent::display($tpl);

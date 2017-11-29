@@ -2,7 +2,7 @@
 /**
  * @package   Bookingforconnector
  * @copyright Copyright (c)2006-2016 Ipertrade
- * @license    GNU General Public License version 2 or later; see LICENSE
+ * @license   GNU General Public License version 3, or later
  */
 
 // No direct access to this file
@@ -19,14 +19,15 @@ if($total<1){
 	$showmap = false;
 }
 
-$merchantResults = $_SESSION['search.params']['merchantResults'];
-$condominiumsResults = $_SESSION['search.params']['condominiumsResults'];
+$currParam = BFCHelper::getSearchParamsSession();
+$merchantResults = $currParam['merchantResults'];
+$condominiumsResults = $currParam['condominiumsResults'];
 
 ?>
 <div id="bfi-merchantlist">
-	<div id="com_bookingforconnector-items-container-wrapper">
+	<div>
 		<?php if ($total > 0){ ?>
-			<div class="com_bookingforconnector-items-container">
+			<div>
 				<?php 
 					if($merchantResults) {
 						echo  $this->loadTemplate('merchants');
@@ -52,6 +53,45 @@ $condominiumsResults = $_SESSION['search.params']['condominiumsResults'];
 				<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_SEARCH_VIEW_SEARCHRESULTS_NORESULTS') ?>
 						<?php 
 						if($isportal ){
+							
+		$listMerchants = JModelLegacy::getInstance('Merchants', 'BookingForConnectorModel');
+		$state		= $listMerchants->getState();
+		$params = $state->params;
+
+		$listMerchantsparams = BFCHelper::getSearchMerchantParamsSession();
+		$locationzone = BFCHelper::getVar('locationzone',"");
+		$categoryId = BFCHelper::getVar('merchantCategoryId');
+		
+		if (!empty($locationzone)) {
+			$params['zoneIds'] = $locationzone ;
+		}
+		if (!empty($categoryId)) {
+			$params['categoryId'] = explode(',',$categoryId );
+		}
+		
+		$listMerchants->setParam($params);
+		BFCHelper::setSearchMerchantParamsSession($listMerchantsparams);
+		$items = $listMerchants->getItems();
+		$pagination	= $listMerchants->getPagination();
+//		$pagination->setAdditionalUrlParam("filter_order", $sortColumn);
+//		$pagination->setAdditionalUrlParam("filter_order_Dir", $sortDirection);
+//		$pagination->setAdditionalUrlParam("startswith", $startswith);
+//		$pagination->setAdditionalUrlParam("searchseed", $searchseed);
+		$pagination->setAdditionalUrlParam("newsearch", 0);
+		$pagination->setAdditionalUrlParam("altsearch", 1);
+
+		$this->addTemplatePath( JPATH_COMPONENT . '/views/merchants/tmpl/' );
+		$this->items = $items;
+		$this->pagination = $pagination;
+		$this->altsearch = 1;
+
+		echo  $this->loadTemplate();
+
+//echo "<pre>";
+//echo print_r($merchants);
+//echo "</pre>";
+
+							
 							//echo  $this->loadTemplate('merchantscategoryid');
 						}else{
 							echo  $this->loadTemplate('contacts');
@@ -297,11 +337,15 @@ var bfiCurrMarkerId = 0;
 	}
 //-->
 </script>
-<?php }else{ // showmap ?>
+<?php }else{ // showmap 
+	if ($total > 0){ 
+?>
 <script type="text/javascript">
 <!--
 		function openGoogleMapSearch() {}
 //-->
 </script>
 
-<?php } // showmap ?>
+<?php
+	}
+} // showmap ?>

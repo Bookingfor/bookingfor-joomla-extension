@@ -42,7 +42,6 @@ class BookingForConnectorViewResource extends BFCView
 		
 		$resource = $this->item;
 		$merchant = $resource->Merchant;
-		$cartType = 1; //$merchant->CartType;
 		$resourceId = $resource->ResourceId;
 		
 		$items=null;
@@ -62,7 +61,9 @@ class BookingForConnectorViewResource extends BFCView
 		}
 	
 		
-		$_SESSION['search.params']['resourceId'] = $resourceId;
+		$currParam = BFCHelper::getSearchParamsSession();
+		$currParam['resourceId'] = $resourceId;
+		BFCHelper::setSearchParamsSession($currParam);
 		
 		$analyticsEnabled = $this->checkAnalytics("") && COM_BOOKINGFORCONNECTOR_EECENABLED == 1;
 		$this->assignRef('analyticsEnabled', $analyticsEnabled);

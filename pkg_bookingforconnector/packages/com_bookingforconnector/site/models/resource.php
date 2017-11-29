@@ -69,6 +69,7 @@ class BookingForConnectorModelResource extends JModelList
 	private $urlGetListCheckInDayPerTimes = null;
 	private $urlGetMostRestrictivePolicyByIds = null;
 	private $urlGetPolicyById = null;
+	private $urlGetPolicyByIds = null;
 	
 	public function __construct($config = array())
 	{
@@ -123,6 +124,7 @@ class BookingForConnectorModelResource extends JModelList
 		$this->urlGetListCheckInDayPerTimes = '/GetListCheckInDayPerTimes';
 		$this->urlGetMostRestrictivePolicyByIds = '/GetMostRestrictivePolicyByIds';
 		$this->urlGetPolicyById = '/GetPolicyById';
+		$this->urlGetPolicyByIds = '/GetPolicyByIds';
 
 	}
 	
@@ -731,7 +733,8 @@ class BookingForConnectorModelResource extends JModelList
 
 	public function GetPolicyById($policyId, $cultureCode) {
 		if(empty($cultureCode)){
-			$cultureCode = $GLOBALS['bfi_lang'];
+//			$cultureCode = $GLOBALS['bfi_lang'];
+			$cultureCode = JFactory::getLanguage()->getTag();
 		}
 		$options = array(
 			'path' => $this->urlGetPolicyById,
@@ -755,11 +758,39 @@ class BookingForConnectorModelResource extends JModelList
 		}
 		return $types;
 	}
+	public function GetPolicyByIds($ids, $cultureCode) {
+		if(empty($cultureCode)){
+//			$cultureCode = $GLOBALS['bfi_lang'];
+			$cultureCode = JFactory::getLanguage()->getTag();
+		}
+		$options = array(
+			'path' => $this->urlGetPolicyByIds,
+			'data' => array(
+					'ids' => '\'' . $ids. '\'',
+					'cultureCode' => '\'' . $cultureCode . '\'',
+					'$format' => 'json'
+				)
+			);
+		$url = $this->helper->getQuery($options);
+		$types = null;
+		
+		$r = $this->helper->executeQuery($url);
+		if (isset($r)) {
+			$res = json_decode($r);
+			if (!empty($res->d->GetPolicyByIds)){
+				$types = $res->d->GetPolicyByIds;
+			}elseif(!empty($res->d)){
+				$types = $res->d;
+			}
+		}
+		return $types;
+	}
 
 
 	public function GetMostRestrictivePolicyByIds($policyIds, $cultureCode, $stayConfiguration ='', $priceValue=null, $days=null) {
 		if(empty($cultureCode)){
-			$cultureCode = $GLOBALS['bfi_lang'];
+//			$cultureCode = $GLOBALS['bfi_lang'];
+			$cultureCode = JFactory::getLanguage()->getTag();
 		}
 		$options = array(
 			'path' => $this->urlGetMostRestrictivePolicyByIds,
@@ -2209,7 +2240,7 @@ class BookingForConnectorModelResource extends JModelList
 		}
 		// typologyid filtering
 		if ($filters != null && $filters['typologyid'] != null) {
-			$_SESSION['ratings']['filters']['typologyid'] = $filters['typologyid'];
+			BFCHelper::setSession('ratingsfilterstypologyid', $filters['typologyid'] , 'com_bookingforconnector');
 		}
 		if ($filters != null && $filters['typologyid'] != null && $filters['typologyid']!= "0") {
 			$options['data']['$filter'] .= ' and TypologyId eq ' .$filters['typologyid'];

@@ -1133,6 +1133,9 @@ class BookingForConnectorController extends JControllerLegacy
 		if(!isset($duration)){
 			$duration =  BFCHelper::$defaultDaysSpan;
 		}
+		if(empty($duration)){
+			$duration = 1;
+		}
 		$packages  =  BFCHelper::getStayParam('packages');
 		$paxages =  BFCHelper::getStayParam('paxages',null);
 
@@ -1179,8 +1182,6 @@ class BookingForConnectorController extends JControllerLegacy
 		if(empty($formData)){
 		}
  		
-//		//Creazione utente se non esistente
-
 		$customer = BFCHelper::getCustomerData($formData);
 
 		$userNotes = $formData['note'];
@@ -1191,22 +1192,23 @@ class BookingForConnectorController extends JControllerLegacy
 		$OrderJson = $formData['hdnOrderData'];
 		$bookingTypeSelected = $formData['bookingtypeselected'];
 
-		$suggestedStays =  BFCHelper::CreateOrder($OrderJson,$cultureCode,$bookingTypeSelected);
+//		$suggestedStays =  BFCHelper::CreateOrder($OrderJson,$cultureCode,$bookingTypeSelected);
+		$suggestedStays = null;
 
-		$listCartorderid = array();
-		// recupero tutti i cartorderid per la cancellazione del carrello
-// WP =>			$orderModel = json_decode(stripslashes($OrderJson));
-			$orderModel = json_decode($OrderJson);
-            if ($orderModel->Resources != null && count($orderModel->Resources) > 0 )
-            {
-                foreach ($orderModel->Resources as $resource)
-                {
-					if(!empty($resource->CartOrderId)){
-						$listCartorderid[] = $resource->CartOrderId;
-					}
-				}
-			}
-		$listCartorderidstr = implode(",",$listCartorderid);
+//		$listCartorderid = array();
+//		// recupero tutti i cartorderid per la cancellazione del carrello
+//// WP =>			$orderModel = json_decode(stripslashes($OrderJson));
+//			$orderModel = json_decode($OrderJson);
+//            if ($orderModel->Resources != null && count($orderModel->Resources) > 0 )
+//            {
+//                foreach ($orderModel->Resources as $resource)
+//                {
+//					if(!empty($resource->CartOrderId)){
+//						$listCartorderid[] = $resource->CartOrderId;
+//					}
+//				}
+//			}
+//		$listCartorderidstr = implode(",",$listCartorderid);
 
 //		$suggestedStay = json_decode(stripslashes($formData['staysuggested']));
 //		$req = json_decode(stripslashes($formData['stayrequest']), true);
@@ -1222,11 +1224,12 @@ class BookingForConnectorController extends JControllerLegacy
 //		$customerDatas = array($customerData);
 
 		$ccdata = null;
-		if (BFCHelper::canAcquireCCData($formData)) { 
-			$ccdata = json_encode(BFCHelper::getCCardData($formData));
-			$ccdata = BFCHelper::encrypt($ccdata);
-			}
-
+//		if (BFCHelper::canAcquireCCData($formData)) { 
+		$ccdata = BFCHelper::getCCardData($formData);
+		if (!empty($ccdata)) {
+			$ccdata = BFCHelper::encrypt(json_encode($ccdata));
+		}
+//			}
 		$orderData = array(
 				'customerData' =>  array($customer),
 				'suggestedStay' =>$suggestedStays,
@@ -1270,6 +1273,8 @@ class BookingForConnectorController extends JControllerLegacy
 				$orderData['merchantBookingTypeId'],
 				$orderData['policyId']
                 );
+		$tmpUserId = BFCHelper::bfi_get_userId();
+		$currCart = BFCHelper::GetCartByExternalUser($tmpUserId, $language, true);
 
 		if (empty($order)){
 			$order ="";
@@ -1277,15 +1282,15 @@ class BookingForConnectorController extends JControllerLegacy
 		}
 		if (!empty($order)){
 			// cancello il carrello
-			BFCHelper::setSession('hdnBookingType', '', 'bfi-cart');
-			BFCHelper::setSession('hdnOrderData', '', 'bfi-cart');
-			if(!empty($listCartorderidstr)){
-				$tmpUserId = BFCHelper::bfi_get_userId();
-				$currCart = BFCHelper::DeleteFromCartByExternalUser($tmpUserId, $cultureCode, $listCartorderidstr);
-//				$tmpUserId = bfi_get_userId();
-//				$model = new BookingForConnectorModelOrders;
-//				$currCart = $model->DeleteFromCartByExternalUser($tmpUserId, $cultureCode, $listCartorderidstr);
-			}	
+//			BFCHelper::setSession('hdnBookingType', '', 'bfi-cart');
+//			BFCHelper::setSession('hdnOrderData', '', 'bfi-cart');
+//			if(!empty($listCartorderidstr)){
+//				$tmpUserId = BFCHelper::bfi_get_userId();
+//				$currCart = BFCHelper::DeleteFromCartByExternalUser($tmpUserId, $cultureCode, $listCartorderidstr);
+////				$tmpUserId = bfi_get_userId();
+////				$model = new BookingForConnectorModelOrders;
+////				$currCart = $model->DeleteFromCartByExternalUser($tmpUserId, $cultureCode, $listCartorderidstr);
+//			}	
 
 			
 			if(!empty($isgateway) && ($isgateway =="true" ||$isgateway =="1")){
@@ -1298,13 +1303,13 @@ class BookingForConnectorController extends JControllerLegacy
 
 			}else{
 				$numAdults = 0;
-				if(isset($suggestedStays->Paxes)){
-					$persons= explode("|", $suggestedStays->Paxes);
-					foreach($persons as $person) {
-						$totper = explode(":", $person);
-						$numAdults += (int)$totper[1];
-					}
-				}
+//				if(isset($suggestedStays->Paxes)){
+//					$persons= explode("|", $suggestedStays->Paxes);
+//					foreach($persons as $person) {
+//						$totper = explode(":", $person);
+//						$numAdults += (int)$totper[1];
+//					}
+//				}
 
 				$act = "OrderResource";
 				if(!empty($order->OrderType) && strtolower($order->OrderType) =="b"){
@@ -1322,7 +1327,7 @@ class BookingForConnectorController extends JControllerLegacy
 
 				$redirect = $redirect . 'act=' . $act  
 				 . '&orderid=' . $order->OrderId 
-				 . '&merchantid=' . $order->MerchantId 
+				 . (!empty($order->MerchantId )?'&merchantid=' . $order->MerchantId :"") 
 				 . '&OrderType=' . $order->OrderType 
 				 . '&OrderTypeId=' . $order->OrderTypeId 
 				 . '&totalamount=' . ($order->TotalAmount *100)
@@ -1346,13 +1351,17 @@ class BookingForConnectorController extends JControllerLegacy
 		//clear session data from request
 		BFCHelper::setSession('hdnBookingType', '', 'bfi-cart');
 		BFCHelper::setSession('hdnOrderData', '', 'bfi-cart');
+		
 //WP->		$OrderJson = stripslashes(BFCHelper::getVar("hdnOrderData"));
 		$OrderJson = (BFCHelper::getVar("hdnOrderData"));
+		$bfiResetCart = (BFCHelper::getVar("bfiResetCart","0"));
+
 		$language = isset($_REQUEST['language']) ? $_REQUEST['language'] : '' ;
 		$return = null;
 		if(!empty($OrderJson)){
 			$tmpUserId = BFCHelper::bfi_get_userId();
-			$currCart = BFCHelper::AddToCartByExternalUser($tmpUserId, $language, $OrderJson);
+//			$currCart = BFCHelper::AddToCartByExternalUser($tmpUserId, $language, $OrderJson, $bfiResetCart);
+			$currCart = BFCHelper::AddToCart($tmpUserId, $language, $OrderJson, $bfiResetCart);
 			if(!empty($currCart)){
 				$return = json_encode($currCart);
 			}
@@ -1367,6 +1376,8 @@ class BookingForConnectorController extends JControllerLegacy
 		$CartOrderId = stripslashes(BFCHelper::getVar("bfi_CartOrderId"));
 		$language = isset($_REQUEST['language']) ? $_REQUEST['language'] : '' ;
 		$redirect = JURI::root();
+		BFCHelper::setSession('hdnBookingType', '', 'bfi-cart');
+		BFCHelper::setSession('hdnOrderData', '', 'bfi-cart');
 		if(!empty($CartOrderId)){
 			$tmpUserId = BFCHelper::bfi_get_userId();
 			$currCart = BFCHelper::DeleteFromCartByExternalUser($tmpUserId, $language, $CartOrderId);
@@ -1393,6 +1404,19 @@ class BookingForConnectorController extends JControllerLegacy
 //		}
 //		wp_redirect($base_url);
 //		exit;
+	}
+
+	function addDiscountCodesToCart(){		
+		$bficoupons = BFCHelper::getVar("bficoupons");
+		$language = BFCHelper::getVar("bfilanguage");
+		$redirect = JRoute::_('index.php?option=com_bookingforconnector&view=cart');
+		if(!empty($bficoupons)){
+			$tmpUserId = BFCHelper::bfi_get_userId();
+			$currCart = BFCHelper::AddDiscountCodesCartByExternalUser($tmpUserId, $language, $bficoupons);
+		}
+		$app = JFactory::getApplication();
+		$app->redirect($redirect, false);
+		$app->close();
 	}
 
 	public function SearchByText() {

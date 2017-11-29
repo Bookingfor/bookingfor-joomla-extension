@@ -13,72 +13,86 @@ $params = $this->params;
 $document = $this->document;
 $language 	= $this->language;
 $currCart = null;
+$currPolicy = null;
+$currPolicyId = null;
 $totalOrder = 0;
+$totalCouponDiscount = 0;
 $currencyclass = bfi_get_currentCurrency();
 $isportal = COM_BOOKINGFORCONNECTOR_ISPORTAL;
 $usessl = COM_BOOKINGFORCONNECTOR_USESSL;
+$enablecoupon = COM_BOOKINGFORCONNECTOR_ENABLECOUPON;
 
-$CartMultimerchantEnabled = BFCHelper::getCartMultimerchantEnabled(); 
+//$PaymentsCentralized = !BFCHelper::getCartMultimerchantEnabled();
+
 $listStayConfigurations = array();
 $dateTimeNow =  new DateTime();
 
-if (isset($_POST['hdnOrderData']) && isset($_POST['hdnPolicyIds'])  ) {
-	$policyByIds = $_POST['hdnPolicyIds'];
-	$hdnOrderData = $_POST['hdnOrderData'];
-// WP =>	$listResources = json_decode(stripslashes($hdnOrderData));
-	$listResources = json_decode($hdnOrderData);
-	
-	foreach ($listResources as $keyRes=>$res) {
-		
-		$currCheckIn = DateTime::createFromFormat('d/m/Y\TH:i:s', $res->FromDate);
-		$currCheckOut = DateTime::createFromFormat('d/m/Y\TH:i:s', $res->FromDate);
-		if ($res->AvailabilityType == 2)
-		{
-			
-			$currCheckIn = DateTime::createFromFormat("YmdHis", $res->CheckInTime);
-			$currCheckOut = DateTime::createFromFormat("YmdHis", $res->CheckInTime);
-			$currCheckOut->add(new DateInterval('PT' . $res->TimeDuration . 'M'));
-		}		
-		if ($res->AvailabilityType == 3)
-		{
-			
-			$currCheckIn = DateTime::createFromFormat("Ymd", $res->FromDate);
-			$currCheckOut = clone $currCheckIn;
-			$currCheckIn->setTime(0,0,1);
-			$currCheckOut->setTime(0,0,1);
-			$currCheckIn->add(new DateInterval('PT' . $res->TimeSlotStart . 'M'));
-			$currCheckOut->add(new DateInterval('PT' . $res->TimeSlotEnd . 'M'));
-		}		
-		$currStayConfiguration = array("productid"=>$res->ResourceId,"price"=>$res->TotalAmount,"start"=>$currCheckIn->format("Y-m-d\TH:i:s"),"end"=> $currCheckOut->format("Y-m-d\TH:i:s"));
-		$listStayConfigurations[] = $currStayConfiguration;
-	}
-		
-	$currPolicy = BFCHelper::GetMostRestrictivePolicyByIds($policyByIds, $language,json_encode($listStayConfigurations));
-	
-	BFCHelper::setSession('hdnPolicyId', $currPolicy->PolicyId, 'bfi-cart');
-	BFCHelper::setSession('hdnOrderData', $hdnOrderData, 'bfi-cart');
+//if (isset($_POST['hdnOrderData']) && isset($_POST['hdnPolicyIds'])  ) {
+//	$policyByIds = $_POST['hdnPolicyIds'];
+//	$hdnOrderData = $_POST['hdnOrderData'];
+//// WP =>	$listResources = json_decode(stripslashes($hdnOrderData));
+//	$listResources = json_decode($hdnOrderData);
+//	
+//	foreach ($listResources as $keyRes=>$res) {
+//		
+//		$currCheckIn = DateTime::createFromFormat('d/m/Y\TH:i:s', $res->FromDate);
+//		$currCheckOut = DateTime::createFromFormat('d/m/Y\TH:i:s', $res->FromDate);
+//		if ($res->AvailabilityType == 2)
+//		{
+//			
+//			$currCheckIn = DateTime::createFromFormat("YmdHis", $res->CheckInTime);
+//			$currCheckOut = DateTime::createFromFormat("YmdHis", $res->CheckInTime);
+//			$currCheckOut->add(new DateInterval('PT' . $res->TimeDuration . 'M'));
+//		}		
+//		if ($res->AvailabilityType == 3)
+//		{
+//			
+//			$currCheckIn = DateTime::createFromFormat("Ymd", $res->FromDate);
+//			$currCheckOut = clone $currCheckIn;
+//			$currCheckIn->setTime(0,0,1);
+//			$currCheckOut->setTime(0,0,1);
+//			$currCheckIn->add(new DateInterval('PT' . $res->TimeSlotStart . 'M'));
+//			$currCheckOut->add(new DateInterval('PT' . $res->TimeSlotEnd . 'M'));
+//		}		
+//		$currStayConfiguration = array("productid"=>$res->ResourceId,"price"=>$res->TotalAmount,"start"=>$currCheckIn->format("Y-m-d\TH:i:s"),"end"=> $currCheckOut->format("Y-m-d\TH:i:s"));
+//		$listStayConfigurations[] = $currStayConfiguration;
+//	}
+//		
+//	$currPolicy = BFCHelper::GetMostRestrictivePolicyByIds($policyByIds, $language,json_encode($listStayConfigurations));
+//	$currPolicyId = $currPolicy->PolicyId;
+//	BFCHelper::setSession('hdnPolicyId', $currPolicyId, 'bfi-cart');
+//	BFCHelper::setSession('hdnOrderData', $hdnOrderData, 'bfi-cart');
+//
+//}
+//$sessionBookingType = BFCHelper::getSession('hdnPolicyId', '', 'bfi-cart');
+//$sessionOrderData = BFCHelper::getSession('hdnOrderData', '', 'bfi-cart');
+//
+//
+//if (!empty($sessionBookingType) && !empty($sessionOrderData)  ) {
+//	$bookingType = $sessionBookingType;
+//	$hdnOrderData = $sessionOrderData;
+//	$currCart= new stdClass;
+//// WP =>	$currCart->CartConfiguration = stripslashes('{"Resources":' .$hdnOrderData . ',"SearchModel":null,"PolicyId":'.$bookingType.',"TotalAmount":0.0,"TotalDiscountedAmount":0.0,"CartOrderId":null}');
+//	$currCart->CartConfiguration = ('{
+//		"Resources":' .$hdnOrderData . ',
+//		"SearchModel":null,
+//		"PolicyId":'.$bookingType.',
+//		"TotalAmount":0.0,
+//		"TotalDiscountedAmount":0.0,
+//		"CartOrderId":null,
+//		"DiscountCodes":null
+//		}');
+//}
+//
+//
+//if(empty($currCart)){
+//	$tmpUserId = BFCHelper::bfi_get_userId();
+//	$currCart = BFCHelper::GetCartByExternalUser($tmpUserId, $language, true);
+//}
 
-}
-$sessionBookingType = BFCHelper::getSession('hdnPolicyId', '', 'bfi-cart');
-$sessionOrderData = BFCHelper::getSession('hdnOrderData', '', 'bfi-cart');
 
-
-if (!empty($sessionBookingType) && !empty($sessionOrderData)  ) {
-	$bookingType = $sessionBookingType;
-	$hdnOrderData = $sessionOrderData;
-	$currCart= new stdClass;
-// WP =>	$currCart->CartConfiguration = stripslashes('{"Resources":' .$hdnOrderData . ',"SearchModel":null,"PolicyId":'.$bookingType.',"TotalAmount":0.0,"TotalDiscountedAmount":0.0,"CartOrderId":null}');
-	$currCart->CartConfiguration = ('{"Resources":' .$hdnOrderData . ',"SearchModel":null,"PolicyId":'.$bookingType.',"TotalAmount":0.0,"TotalDiscountedAmount":0.0,"CartOrderId":null}');
-}
-
-
-if($CartMultimerchantEnabled && empty($currCart)){
 	$tmpUserId = BFCHelper::bfi_get_userId();
 	$currCart = BFCHelper::GetCartByExternalUser($tmpUserId, $language, true);
-}
-
-
-if($CartMultimerchantEnabled){
 
 	$cartEmpty=empty($currCart);
 	$cartConfig = null;
@@ -99,6 +113,29 @@ if($CartMultimerchantEnabled){
 $allResourceId = array();
 $allServiceIds = array();
 $allPolicyHelp = array();
+$allResourceBookable = array();
+$allResourceNoBookable = array();
+
+///**test**/
+//		$cartConfig->DiscountCodes = null;
+//		$singeCouponTest = new stdClass;
+//		$singeCouponTest->Name = "test";
+//		$singeCouponTest->Code = "12345";
+//		$singeCouponTest->MerchantName = "nome merchant";
+//		$singeCouponTest->Description = "descrizione codice sconto n.12345 con valore 5 euri";
+//		$singeCouponTest->Value = 5;
+//
+//		$bficoupons = $resourceId=BFCHelper::getVar( 'bficoupons');
+//
+//		if(!empty( $bficoupons )){
+//			$cartConfig->DiscountCodes = array();
+//			$cartConfig->DiscountCodes[] =$singeCouponTest;
+//			if($bficoupons=="coupon"){
+//				$cartConfig->DiscountCodes[] =$singeCouponTest;
+//			}
+//		}
+///**end test**/
+
 
 $cNationList = BFCHelper::parseArrayList(JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEW_CONSTANTS_NATIONSLIST'));
 $cultureCode = strtolower(substr($this->language, 0, 2));
@@ -151,26 +188,34 @@ $nation = !empty(count($nations)) ? $nations[0] : $cultureCode;
 		$cartId= isset($currCart->CartId)?$currCart->CartId:0;
 //		$config = json_decode($currCart->CartConfiguration);
 
-		$cCCTypeList = array();
+		$cCCTypeList = array("Visa","MasterCard");
 		$minyear = date("y");
 		$maxyear = $minyear+5;
 //		$formRoute = $base_url .'/bfi-api/v1/task?task=sendOrders'; 
 		$formRoute = "index.php?option=com_bookingforconnector&task=sendOrders"; 
 		$formRouteDelete = "index.php?option=com_bookingforconnector&task=DeleteFromCart"; 
+		$formRouteaddDiscountCodes = "index.php?option=com_bookingforconnector&task=addDiscountCodesToCart"; 
 
 		$privacy = BFCHelper::GetPrivacy($language);
 		$additionalPurpose = BFCHelper::GetAdditionalPurpose($language);
 
 		$policyId = $cartConfig->PolicyId;
-		$currPolicy =  BFCHelper::GetPolicyById($policyId, $language);
+//		$currPolicy =  BFCHelper::GetPolicyById($policyId, $language);
 		
 		$deposit = 0;
-		$totalWithVariation	 = 0;
+		$totalWithVariation = 0;
+		$totalRequestedWithVariation = 0;
+		$totalRequest = 0;
 		$totalAmount = 0;	
 		$totalQt = 0;	
 		$listMerchantsCart = array();
 		$listResourcesCart = array();
 		$listResourceIdsToDelete = array();
+//		$listMerchantBookingTypes = array();
+		$listPolicyIds = array();
+//		$listPolicyIdsBookable = array();
+//		$listPolicyIdsNoBookable = array();
+
 		$now = new DateTime();
 		$now->setTime(0,0,0);
 
@@ -265,10 +310,8 @@ $nation = !empty(count($nations)) ? $nations[0] : $cultureCode;
 	foreach ($listMerchantsCart as $merchant_id=>$merchantResources) // foreach $listMerchantsCart
 	{
 		$MerchantDetail = $merchantDetail[$merchant_id];  //$modelMerchant->getItem($merchant_id);	 
-		
 		$currUriMerchant = $uriMerchant. '&merchantId=' . $MerchantDetail->MerchantId. ':' . BFCHelper::getSlug($MerchantDetail->Name);
 		$routeMerchant = JRoute::_($currUriMerchant);
-
 		$nRowSpan = 1;
 		
 		$rating = $MerchantDetail->Rating;
@@ -391,6 +434,14 @@ if(!empty($MerchantDetail->AcceptanceCheckIn) && !empty($MerchantDetail->Accepta
 					}
 				}
 
+				$IsBookable = $res->IsBookable;
+				if ($IsBookable) {
+				    $allResourceBookable[] = $resource->Name;
+				}else{
+				    $allResourceNoBookable[] = $resource->Name;
+				}
+
+				$totalQt += $res->SelectedQt;
 												
 			?>
                                 <tr>
@@ -510,7 +561,7 @@ if(!empty($MerchantDetail->AcceptanceCheckIn) && !empty($MerchantDetail->Accepta
 										$currCheckOut->add(new DateInterval('PT' . $res->TimeDuration . 'M'));
 										
 										$currDiff = $currCheckOut->diff($currCheckIn);
-										$timeDuration = $currDiff->h + ($currDiff->i/60);
+										$timeDuration = $currDiff->h + round(($currDiff->i/60), 2);
 										
 										$currCheckIn = new JDate($currCheckIn->format('Y-m-d\TH:i:s')); 
 										$currCheckOut = new JDate($currCheckOut->format('Y-m-d\TH:i:s')); 
@@ -665,7 +716,7 @@ if(!empty($MerchantDetail->AcceptanceCheckIn) && !empty($MerchantDetail->Accepta
 										<?php } ?>
 									<?php } ?>
 									</td>
-                                    <td class="text-nowrap"><!-- Unit price -->
+                                    <td class="text-nowrap bfi-text-right"><!-- Unit price -->
                                         <?php if ($res->TotalDiscounted < $res->TotalAmount) { ?>
                                             <span class="text-nowrap bfi_strikethrough  bfi_<?php echo $currencyclass ?>"><?php echo BFCHelper::priceFormat(($res->TotalAmount - $totalAmountPricesExtraIncluded)/$res->SelectedQt); ?></span>
                                         <?php } ?>
@@ -678,12 +729,23 @@ if(!empty($MerchantDetail->AcceptanceCheckIn) && !empty($MerchantDetail->Accepta
 <!-- options  -->									
 					<div style="position:relative;">
 					<?php 
+
+$currPolicy = json_decode($res->PolicyValue);
+
 $policy = $currPolicy;
 $policyId= 0;
 $policyHelp = "";
 if(!empty( $policy )){
+
 	$currValue = $policy->CancellationBaseValue;
 	$policyId= $policy->PolicyId;
+	$listPolicyIds[] = $policyId;
+//	if($IsBookable){
+//		$listPolicyIdsBookable[] = $policyId;
+//
+//	}else{
+//		$listPolicyIdsNoBookable[] = $policyId;
+//	}
 
 	switch (true) {
 		case strstr($policy->CancellationBaseValue ,'%'):
@@ -882,14 +944,19 @@ if($res->IncludedMeals >-1){
 							   </div>
 							</div>
 						</div>
+						<?php if(!$IsBookable) { ?>
+							<div class="bfi-bookingenquiry"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_RESOURCE_VIEW_BOOKINGENQUIRY') ?></div>
+						<?php } ?>
 					</div>
 
 <!-- end options  -->
+
 									</td>
                                     <td>
 										<?php echo $res->SelectedQt ?>
+										
                                     </td>
-                                    <td class="text-nowrap">
+                                    <td class="text-nowrap bfi-text-right">
                                         <?php if ($res->TotalDiscounted < $res->TotalAmount) { ?>
                                             <span class="text-nowrap bfi_strikethrough  bfi_<?php echo $currencyclass ?>"><?php echo BFCHelper::priceFormat(($res->TotalAmount - $totalAmountPricesExtraIncluded)); ?></span>
                                         <?php } ?>
@@ -897,7 +964,11 @@ if($res->IncludedMeals >-1){
                                             <span class="text-nowrap bfi-summary-body-resourceprice-total bfi_<?php echo $currencyclass ?>"><?php echo BFCHelper::priceFormat(($res->TotalDiscounted - $totalPricesExtraIncluded)); ?></span>
 
                                         <?php } ?>
-											<form action="<?php echo $formRouteDelete ?>" method="POST" style="display: inline-block;"><input type="hidden" name="bfi_CartOrderId" id="bfi_CartOrderId" value="<?php echo $res->CartOrderId ?>" /><input type="hidden" name="bfi_cartId" id="bfi_cartId" value="<?php echo $cartId ?>" /><button class="bfi-btn-delete" data-title="Delete" type="submit" name="remove_order" value="delete" onclick="return confirm('<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_CARTDETAILS_CONFIRMDELETE') ?>')">x</button></form>
+											<form action="<?php echo $formRouteDelete ?>" method="POST" style="display: inline-block;" class="bfi-cartform-delete">
+											<input type="hidden" name="bfi_CartOrderId"  value="<?php echo $res->CartOrderId ?>" />
+											<input type="hidden" name="bfi_cartId"  value="<?php echo $cartId ?>" />
+											<input type="hidden" name="bficurrRes"  value="<?php echo htmlspecialchars(json_encode($res), ENT_COMPAT, 'UTF-8')?>" />
+											<button class="bfi-btn-delete" data-title="Delete" type="submit" name="remove_order" value="delete">x</button></form>
 									</td>
                                 </tr>
 
@@ -906,6 +977,7 @@ if($res->IncludedMeals >-1){
 									foreach($pricesExtraIncluded as $sdetail) {
 										$sdetailName = $sdetail->Name;
 										$sdetailName = substr($sdetailName, 0, strrpos($sdetailName, ' - '));
+										$sdetailName = str_replace("$$", "'", $sdetailName);
 								 ?>	
                                         <tr class="bfi-cart-extra">
                                             <td>
@@ -1000,7 +1072,7 @@ if($res->IncludedMeals >-1){
 													?>
                                             </td>
                                             <td><!-- paxes --></td>
-                                            <td class="text-nowrap"><!-- Unit price -->
+                                            <td class="text-nowrap bfi-text-right"><!-- Unit price -->
                                                 <?php if($sdetail->TotalDiscounted < $sdetail->TotalAmount){ ?>
                                                     <span class="text-nowrap bfi_strikethrough  bfi_<?php echo $currencyclass ?>"><?php echo BFCHelper::priceFormat($sdetail->TotalAmount/$sdetail->CalculatedQt);?></span>
                                                 <?php } ?>
@@ -1012,7 +1084,7 @@ if($res->IncludedMeals >-1){
                                             <td>
 												<?php echo $sdetail->CalculatedQt ?>
 											</td>
-                                            <td class="text-nowrap">
+                                            <td class="text-nowrap bfi-text-right">
                                                 <?php if($sdetail->TotalDiscounted < $sdetail->TotalAmount){ ?>
                                                     <span class="text-nowrap bfi_strikethrough  bfi_<?php echo $currencyclass ?>"><?php echo BFCHelper::priceFormat($sdetail->TotalAmount);?></span>
                                                 <?php } ?>
@@ -1125,7 +1197,7 @@ if($res->IncludedMeals >-1){
 													?>
                                             </td>
                                             <td><!-- paxes --></td>
-                                            <td class="text-nowrap"><!-- Unit price -->
+                                            <td class="text-nowrap bfi-text-right"><!-- Unit price -->
                                                 <?php if($sdetail->TotalDiscounted < $sdetail->TotalAmount){ ?>
                                                     <span class="text-nowrap bfi_strikethrough  bfi_<?php echo $currencyclass ?>"><?php echo BFCHelper::priceFormat($sdetail->TotalAmount/$sdetail->CalculatedQt);?></span>
                                                 <?php } ?>
@@ -1137,7 +1209,7 @@ if($res->IncludedMeals >-1){
                                             <td>
 												<?php echo $sdetail->CalculatedQt ?>
 											</td>
-                                            <td class="text-nowrap">
+                                            <td class="text-nowrap bfi-text-right">
                                                 <?php if($sdetail->TotalDiscounted < $sdetail->TotalAmount){ ?>
                                                     <span class="text-nowrap bfi_strikethrough  bfi_<?php echo $currencyclass ?>"><?php echo BFCHelper::priceFormat($sdetail->TotalAmount);?></span>
                                                 <?php } ?>
@@ -1148,9 +1220,25 @@ if($res->IncludedMeals >-1){
                                         </tr>
                             <?php 
 								$totalWithVariation +=$sdetail->TotalDiscounted ;
+								
+								if(!$IsBookable) {
+									$totalRequestedWithVariation +=$sdetail->TotalDiscounted ;
+								}
+
                                     } // foreach $svc
                                 } // if res->ExtraServices
 							$totalWithVariation +=$res->TotalDiscounted ;
+
+							if(!$IsBookable) {
+								$totalRequestedWithVariation +=$res->TotalDiscounted ;
+							}
+							if ($IsBookable && !empty($res->DiscountCodes)) {
+							    foreach($res->DiscountCodes as $discountCode){
+									$totalRequestedWithVariation +=$discountCode->Value ;
+								} 
+							}
+
+
 $currStayConfiguration = array("productid"=>$res->ResourceId,"price"=>$res->TotalAmount,"start"=>$currCheckIn->format("Y-m-d H:i:s"),"end"=> $currCheckOut->format("Y-m-d H:i:s"));
 
 $listStayConfigurations[] = $currStayConfiguration;
@@ -1165,14 +1253,67 @@ $listStayConfigurations[] = $currStayConfiguration;
 	} // foreach $listMerchantsCart
 
 //$totalRequest = BFCHelper::priceFormat($totalWithVariation);
-$totalRequest = $totalWithVariation;
+$totalRequest = $totalWithVariation - $totalRequestedWithVariation;
 
 ?>
 		</table>
+	</div>
+<?php
+
+$allCoupon = null;
+$allDiscountCodes = array();
+$countCoupon = 0;
+if($enablecoupon && isset($cartConfig->DiscountCodes) && count($cartConfig->DiscountCodes)>0) {
+	$allCoupon = $cartConfig->DiscountCodes;
+	$countCoupon=count($allCoupon);
+	foreach ($allCoupon as $singeCoupon) {
+		$totalCouponDiscount += $singeCoupon->Value;
+		$allDiscountCodes[] =  $singeCoupon->Code;
+	}
+} 
+if($enablecoupon){
+$textbtnCoupon = JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_CARTDETAILS_ADDCOUPON');
+if($countCoupon>0){
+	$textbtnCoupon = '<i class="fa fa-plus-circle" aria-hidden="true"></i> ' . JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_CARTDETAILS_ADDMORECOUPON');	
+}
+
+?>
+	<div class="bfi-content bfi-border bfi-cart-coupon"><a name="bficoupon"></a>
+	<form method="post" action="<?php echo $formRouteaddDiscountCodes ?>" class="form-validate bfi-nomargin"  >
+		<input type="hidden" name="bfilanguage"  value="<?php echo $language ?>" />
+		<span class="bfi-simple-label"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_CARTDETAILS_COUPON') ?></span>	
+		<input type="text" name="bficoupons"  id="bficoupons" size="25" style="width:auto;display:inline-block;" placeholder="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_CARTDETAILS_COUPON_PLH') ?>"  aria-required="true" required title="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_REQUIRED'); ?>"/>
+		<button class="bfi-btn bfi-alternative" data-title="Add" type="submit" name="addcoupon" value="" id="bfiaddcoupon"><?php echo $textbtnCoupon ?></button>
+	</form>
 	</div>	
-	<div class=" bfi-border bfi-text-right bfi-pad0-10">
+<?php
+} 
+?>
+		
+	
+	<div class="bfi-content bfi-border bfi-text-right bfi-pad0-10">
+	<?php 
+	if($enablecoupon && isset($cartConfig->DiscountCodes) && count($cartConfig->DiscountCodes)>0) {
+		foreach ($allCoupon as $singeCoupon) { 
+	?>
+	<span class="bfi-coupon-details"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_CARTDETAILS_DISCOUNTCOUPON') ?> <?php echo $singeCoupon->Name ?> - <span class="text-nowrap bfi_<?php echo $currencyclass ?>"> <?php echo BFCHelper::priceFormat($singeCoupon->Value);?></span></span>
+		<div class="webui-popover-content">
+			<div class="bfi-options-popover">
+				<strong><?php echo $singeCoupon->MerchantName ?></strong><br />
+				<?php echo BFCHelper::getLanguage($singeCoupon->Description , $language, null, array( 'striptags'=>'striptags', 'bbcode'=>'bbcode','ln2br'=>'ln2br')) ; ?>
+			</div>
+		</div><br />
+	<?php 
+		}
+	}
+	?>
+	
 		<span class="text-nowrap bfi-summary-body-resourceprice-total"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_CARTDETAILS_TOTAL') ?></span>	
-		<span class="text-nowrap bfi-summary-body-resourceprice-total bfi_<?php echo $currencyclass ?>"> <?php echo BFCHelper::priceFormat($totalWithVariation);?></span>	
+		<?php if ($totalCouponDiscount>0) { ?>
+			<span class="text-nowrap bfi_strikethrough  bfi_<?php echo $currencyclass ?>"><?php echo BFCHelper::priceFormat(($totalWithVariation)); ?></span>
+		<?php } ?>
+
+		<span class="text-nowrap bfi-summary-body-resourceprice-total bfi_<?php echo $currencyclass ?>"> <?php echo BFCHelper::priceFormat($totalWithVariation - $totalCouponDiscount);?></span>	
 	</div>	
 
 <br />
@@ -1204,10 +1345,81 @@ $routeThanksKo = JRoute::_($uriCart.'&layout=errors');
 
 
 //$currPolicy = $modelResource->GetMostRestrictivePolicyByIds($listPolicyIdsstr, $language,json_encode($listStayConfigurations));
-$bookingTypes = json_decode($currPolicy->MerchantBookingTypesString);
-//MerchantBookingTypesString=[{"BookingTypeId":167,"AcquireCreditCardData":false,"Value":null,"Name":null,"Description":"","Data":null,"IsDefault":false,"IsGateway":false,"DeferredPayment":true,"PaymentSystemId":18,"PaymentSystemName":null,"SandboxMode":false,"PaymentSystemRefId":null,"PayOnArrival":false,"DepositRelativeValue":null,"DepositValue":0.0}]
+
+
+$listPolicyIdsstr = implode(",",$listPolicyIds);
+$currPolicies = BFCHelper::GetPolicyByIds($listPolicyIdsstr, $language);
+$currPoliciesNoBookable = array();
+$currPoliciesBookable = array();
+$currPoliciesDescriptions="";
+
+if(!empty( $currPolicies )){
+	$currPoliciesNoBookable = array_filter($currPolicies, function ($currPolicy) {
+		return (!$currPolicy->RequirePayment);
+	});
+	$currPoliciesBookable = array_filter($currPolicies, function ($currPolicy) {
+		return ($currPolicy->RequirePayment);
+	});
+	foreach ($currPolicies as $currentPolicy ) {
+		$currPoliciesDescriptions .= $currentPolicy->Description;
+	}
+
+}
+
+
+
+$bookingTypes = null;
+$showCC = false;
+if(count($currPoliciesNoBookable) >0 ){
+	foreach ($currPoliciesNoBookable as $currPolicyNoBookable) {
+		if(strrpos($currPolicyNoBookable->MerchantBookingTypesString,'"AcquireCreditCardData":true')>0){
+			$showCC = true;
+			break;
+		}
+	}
+}
+
+//$firstCCRequiredBookingTypeIds=[];
+if(!empty($currPoliciesBookable) && count($currPoliciesBookable) == 1){
+	$currPolicy = array_shift($currPoliciesBookable);
+	$bookingTypes = json_decode($currPolicy->MerchantBookingTypesString);
+}
+if(Count($currPoliciesBookable) >1){
+	$allMerchantBookingTypes = (array_map(function ($i) { return json_decode($i->MerchantBookingTypesString); }, $currPoliciesBookable));
+	$allMerchantBookingTypes = array_map('unserialize', array_unique(array_map('serialize', $allMerchantBookingTypes)));	
+	if(Count($allMerchantBookingTypes) == 1){
+		$bookingTypes = array_shift($allMerchantBookingTypes);
+	} else{		
+		$bookingTypeIds = array();
+		foreach($allMerchantBookingTypes as $merchantBookingType){
+			 usort($merchantBookingType, "BFCHelper::bfi_sortOrder");
+			 $bookingTypeIds[] = array_unique(array_map(function ($i) { return $i->BookingTypeId; }, $merchantBookingType));
+			 $firstMBT = reset($merchantBookingType); 
+			 if ($firstMBT->AcquireCreditCardData) {
+				$showCC = true;	
+//				$firstCCRequiredBookingTypeIds[]=$firstMBT->BookingTypeId;
+			 }
+		}
+		$availableBookingTypeIds = call_user_func_array('array_intersect', $bookingTypeIds);
+		if(!empty($availableBookingTypeIds)){
+			$allbookingTypes = array();
+			foreach ($allMerchantBookingTypes as $merchantBookingTypes ) {
+				foreach ($merchantBookingTypes as $merchantBookingType ) {
+					$bookingTypeId = $merchantBookingType->BookingTypeId;
+					if (!isset($allbookingTypes[$bookingTypeId])) {
+						$allbookingTypes[$bookingTypeId] = $merchantBookingType;
+					}
+				}
+			}
+			$bookingTypes = array_filter($allbookingTypes, function ($merchantBookingType) use ($availableBookingTypeIds) {
+				return in_array($merchantBookingType->BookingTypeId,$availableBookingTypeIds) ;
+			});
+		}
+	}
+ 
+}
+
 $bookingTypedefault ="";
-//$bookingTypesDesc ="";
 $bookingTypesoptions = array();
 $bookingTypesValues = array();
 $bookingTypeFrpmForm = isset($_REQUEST['bookingType'])?$_REQUEST['bookingType']:"";
@@ -1329,7 +1541,7 @@ if(!empty($bookingTypes)){
 			</div>
 			<div >
 				<label><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_PHONE'); ?> *</label>
-				<input type="text" value="" size="20" name="form[Phone]" id="Phone" required  title="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_PHONE_REQUIRED'); ?>">
+				<input type="text" value="+39" data-rule-minlength="4" size="20" name="form[Phone]" id="Phone" required  title="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_PHONE_REQUIRED'); ?>" data-msg-minlength="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_PHONE_REQUIRED'); ?>">
 			</div><!--/span-->
 			<div >
 				<label><?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_CHECKIN_ETA_HOUR') ?></label>
@@ -1380,7 +1592,9 @@ if(!empty($bookingTypes)){
 <!-- VIEW_ORDER_PAYMENTMETHOD -->
 		<div class="bfi-paymentoptions" style="display:none;" id="bfi-bookingTypesContainer">
 			<h2><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_PAYMENTSYSTEM') ?></h2>
-			<p><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_PAYMENTSYSTEM_DESCR') ?></p>
+			<p><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_PAYMENTSYSTEM_DESCR') ?>:
+				<?php echo implode(", ", $allResourceBookable) ?>	
+			</p>
 			<?php  foreach ($bookingTypesoptions as $key => $value) { ?>
 				<label for="form[bookingType]<?php echo $key ?>" id="form[bookingType]<?php echo $key ?>-lbl" class="radio">	
 					<input type="radio" name="form[bookingType]" id="form[bookingType]<?php echo $key ?>" value="<?php echo $key ?>" <?php echo $bookingTypedefault == $key ? 'checked="checked"' : "";  ?>  ><?php echo $value ?><div class="ccdescr"></div>
@@ -1399,6 +1613,11 @@ if(!empty($bookingTypes)){
 
 <div style="display:none;" id="bfi-ccInformations" class="borderbottom paymentoptions">
 		<h2><?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_CCSUBTITLE') ?></h2>
+<?php if($showCC) { ?>
+		<div><?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_CCSUBTITLE_REQWITHCC') ?>: 
+		<?php echo implode(", ", $allResourceNoBookable) ?>
+		</div>
+<?php } ?>
 		<div class="bfi-row">   
 			<div class="bfi-col-md-6">
 				<label><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_CCTYPE'); ?> </label>
@@ -1437,8 +1656,9 @@ if(!empty($bookingTypes)){
 		</div>
 
 </div>	
-		<?php if(!empty($currPolicy)) { ?>
-<?php 
+<?php
+if(!empty($currPolicy)) {
+
 $policyHelp = "";
 $policy = $currPolicy;
 if(!empty( $policy )){
@@ -1481,7 +1701,7 @@ if (count($allPolicyHelp)>0) {
 }
 					?>
 
-<?php echo $currPolicy->Description; ?></textarea>
+<?php echo $currPoliciesDescriptions; ?></textarea>
 		</div>
 		<?php } ?>
 		<div class=" bfi-checkbox-wrapper">
@@ -1492,7 +1712,7 @@ if (count($allPolicyHelp)>0) {
 <?php if(!empty($additionalPurpose)) { ?>
 		<div class=" bfi-checkbox-wrapper">
 				<input name="form[accettazioneadditionalPurpose]" id="agreeadditionalPurpose" aria-invalid="true" aria-required="false" type="checkbox" title="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_REQUIRED'); ?>">
-				<label class="bfi-shownextelement"><?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_CONFIRMADDITIONALPURPOSE') ?></label>
+				<label class="bfi-shownextelement"><?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_ADDITIONALPURPOSE') ?></label>
 				<textarea name="form[additionalPurpose]" class="" style="display:none;height:200px;margin-top:15px !important;" readonly ><?php echo $additionalPurpose ?></textarea>    
 		</div>
 <?php } ?>
@@ -1523,7 +1743,7 @@ echo (isset($recaptcha[0])) ? $recaptcha[0] : '';
 		<input type="hidden" name="form[hdnOrderDataCart]" id="hdnOrderDataCart" value='<?php echo $currCart->CartConfiguration ?>' />
 		<input type="hidden" name="form[bookingtypeselected]" id="bookingtypeselected" value='<?php echo $bookingTypeIddefault?>' />
 		<input type="hidden" id="CartId" name="form[CartId]" value="<?php echo isset($currCart->CartId)?$currCart->CartId:''; ?>">
-		<input type="hidden" id="policyId" name="form[policyId]" value="<?php echo $currPolicy->PolicyId?>">
+		<input type="hidden" id="policyId" name="form[policyId]" value="<?php echo $currPolicyId?>">
 
 		</div>
 
@@ -1533,49 +1753,150 @@ echo (isset($recaptcha[0])) ? $recaptcha[0] : '';
 		</div>
 
 <?php
-$selectedSystemType = array_values(array_filter($bookingTypesValues, function($bt) use($bookingTypedefault) {return $bt->BookingTypeId == $bookingTypedefault;}))
+$selectedSystemType = array_values(array_filter($bookingTypesValues, function($bt) use($bookingTypedefault) {return $bt->BookingTypeId == $bookingTypedefault;}));
+$currSelectedSystemType = 0;
+if(!empty( $selectedSystemType )){
+	$currSelectedSystemType = $selectedSystemType[0]->PaymentSystemRefId;
+}
 ?>
 <script type="text/javascript">
 <!--
 var bookingTypesValues = null;
 
 var completeStay = <?php echo $currCart->CartConfiguration; ?>;
-var selectedSystemType = "<?php echo $selectedSystemType[0]->PaymentSystemRefId; ?>";
+var bfiMerchants = <?php echo json_encode($merchantDetail) ?>;
+var selectedSystemType = "<?php echo $currSelectedSystemType; ?>";
+var allCartItems = [];
+var bfiAllDiscountCodes = <?php echo json_encode($allDiscountCodes) ?>;
+
 jQuery(function($)
 		{
-			jQuery('.bfi-options-help i').webuiPopover({trigger:'hover',placement:'left-bottom',style:'bfi-webuipopover'});
+			
+			jQuery('#bfiaddcoupon').on("click", function(e){
+				var currCode= jQuery("#bficoupons").val();
+				if(bfiAllDiscountCodes.length>0 && jQuery.inArray(currCode, bfiAllDiscountCodes) !== -1){
+					alert("<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_CARTDETAILS_COUPONUSED') ?>");
+					jQuery("#bficoupons").val('');
+					return false;
+				}
+				return true;
+			});
+			
+			jQuery('.bfi-cartform-delete').on("submit", function(e){
+				e.preventDefault();
+					var conf = confirm('<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_CARTDETAILS_CONFIRMDELETE') ?>');
+					if (conf)
+					{
+					<?php if(COM_BOOKINGFORCONNECTOR_GAENABLED == 1 && !empty(COM_BOOKINGFORCONNECTOR_GAACCOUNT) && COM_BOOKINGFORCONNECTOR_EECENABLED == 1){ ?>
+						var currForm = jQuery(this);	
+						var currRes= jQuery.parseJSON(currForm.find("input[name=bficurrRes]").val());
+						var allDelItems = [ {
+										"id": currRes.ResourceId + " - Resource",
+										"name": currRes.Name ,
+										"category": bfiMerchants[currRes.MerchantId].MainCategoryName,
+										"brand": bfiMerchants[currRes.MerchantId].Name,
+										"price": currRes.TotalDiscounted,
+										"quantity": currRes.SelectedQt,
+										"variant": currRes.RatePlanName.toUpperCase(),
+									}];
+						if(currRes.ExtraServices.length>0){
+							for (i in currRes.ExtraServices) {
+								currRes.ExtraServices[i].category = bfiMerchants[currRes.MerchantId].MainCategoryName;
+								currRes.ExtraServices[i].brand = bfiMerchants[currRes.MerchantId].Name;
+								currRes.ExtraServices[i].variant = currRes.RatePlanName.toUpperCase();
+							}
+							var allDelSrvItems = jQuery.makeArray(jQuery.map(currRes.ExtraServices, function(elm) {
+											return {
+												"id": elm.PriceId + " - Service",
+												"name": elm.Name ,
+												"category": elm.category,
+												"brand": elm.brand,
+												"price": elm.TotalDiscounted,
+												"quantity": elm.CalculatedQt,
+												"variant": elm.variant,
+											};
+										}));
+							jQuery.merge( allDelItems, allDelSrvItems );
+						}
+						callAnalyticsEEc("addProduct", allDelItems, "removefromcart", "", {
+							"step": 1
+						},
+						"Add to Cart"
+					);
 
-			var svcTotal = 0;
-			var allItems = jQuery.makeArray(jQuery.map(jQuery.grep(completeStay.Resources, function(svc) {
-				return svc.Tag == "ExtraServices";
-			}), function(svc) {
-				svcTotal += svc.TotalDiscounted;
-				return {
-					"id": "" + svc.PriceId + " - Service",
-					"name": svc.Name,
-					"category": "Services",
-					"brand": "<?php //echo $merchant->Name?>",
-					"price": (svc.TotalDiscounted / svc.CalculatedQt).toFixed(2),
-					"quantity": svc.CalculatedQt
-				};
-			}));
+					<?php } ?>
+						 this.submit();
+					//form.submit();
+					}
+					return conf;
+				});
+			
+			jQuery('.bfi-options-help i').webuiPopover({trigger:'hover',placement:'left-bottom',style:'bfi-webuipopover'});
+			jQuery('.bfi-coupon-details').webuiPopover({trigger:'hover',placement:'left-bottom',style:'bfi-webuipopover'});
+
+			var allItems = jQuery.makeArray(jQuery.map(completeStay.Resources, function(elm) {
+							return {
+								"id": elm.ResourceId + " - Resource",
+								"name": elm.Name ,
+								"category": bfiMerchants[elm.MerchantId].MainCategoryName,
+								"brand": bfiMerchants[elm.MerchantId].Name,
+								"price": elm.TotalDiscounted,
+								"quantity": elm.SelectedQt,
+								"variant": elm.RatePlanName.toUpperCase(),
+							};
+						}));
+			var allSrvItems = jQuery.makeArray(jQuery.map(jQuery.map(jQuery.grep(completeStay.Resources, function(res) {
+				return res.ExtraServices.length>0;
+			}), function(resserv) {
+							for (i in resserv.ExtraServices) {
+								resserv.ExtraServices[i].category = bfiMerchants[resserv.MerchantId].MainCategoryName;
+								resserv.ExtraServices[i].brand = bfiMerchants[resserv.MerchantId].Name;
+								resserv.ExtraServices[i].variant = resserv.RatePlanName.toUpperCase();
+							}
+							return resserv.ExtraServices;
+			}), function(elm) {
+							return {
+								"id": elm.PriceId + " - Service",
+								"name": elm.Name ,
+								"category": elm.category,
+								"brand": elm.brand,
+								"price": elm.TotalDiscounted,
+								"quantity": elm.CalculatedQt,
+								"variant": elm.variant,
+							};
+						}));
+			allCartItems = jQuery.merge( jQuery.merge( [], allItems ), allSrvItems );
+
+//			var allItems = jQuery.makeArray(jQuery.map(jQuery.grep(completeStay.Resources, function(svc) {
+//				return svc.Tag == "ExtraServices";
+//			}), function(svc) {
+//				svcTotal += svc.TotalDiscounted;
+//				return {
+//					"id": "" + svc.PriceId + " - Service",
+//					"name": svc.Name,
+//					"category": "Services",
+//					"brand": "<?php //echo $merchant->Name?>",
+//					"price": (svc.TotalDiscounted / svc.CalculatedQt).toFixed(2),
+//					"quantity": svc.CalculatedQt
+//				};
+//			}));
 			/*
 			jQuery.each(allItems, function(svc) {
 				svcTotal += prc.TotalDiscounted;
 			});
 			*/
-			allItems.push({
-				"id": "<?php //echo $resource->ResourceId?> - Resource",
-				"name": "<?php //echo $resource->Name?>",
-				"category": "<?php //echo $resource->MerchantCategoryName?>",
-				"brand": "<?php //echo $merchant->Name?>",
-				"variant": completeStay.RefId ? completeStay.RefId.toUpperCase() : "",
-				"price": completeStay.TotalDiscounted - svcTotal,
-				"quantity": 1
-			});
+//			allItems.push({
+//				"id": "<?php //echo $resource->ResourceId?> - Resource",
+//				"name": "<?php //echo $resource->Name?>",
+//				"category": "<?php //echo $resource->MerchantCategoryName?>",
+//				"brand": "<?php //echo $merchant->Name?>",
+//				"variant": completeStay.RefId ? completeStay.RefId.toUpperCase() : "",
+//				"price": completeStay.TotalDiscounted,
+//				"quantity": 1
+//			});
 			
 			<?php if(COM_BOOKINGFORCONNECTOR_GAENABLED == 1 && !empty(COM_BOOKINGFORCONNECTOR_GAACCOUNT) && COM_BOOKINGFORCONNECTOR_EECENABLED == 1): ?>
-				callAnalyticsEEc("addProduct", allItems, "checkout", "", {
+				callAnalyticsEEc("addProduct", allCartItems, "checkout", "", {
 					"step": 1
 				});
 			<?php endif;?>
@@ -1587,9 +1908,9 @@ jQuery(function($)
 				$(this).next().toggle();
 			});
 			
-			<?php if(!empty($bookingTypesValues)) : ?>
+			<?php if(!empty($bookingTypesValues)) { ?>
 			bookingTypesValues = <?php echo json_encode($bookingTypesValues) ?>;// don't use quotes
-			<?php endif; ?>
+			<?php } ?>
 			$("#bfi-resourcedetailsrequest").validate(
 		    {
 				rules: {
@@ -1669,14 +1990,13 @@ jQuery(function($)
 						} else {
 							// Mark it so that the next submit can be ignored
 							$form.data('submitted', true);
-							var svcTotal = 0;
 						
 							<?php if(COM_BOOKINGFORCONNECTOR_GAENABLED == 1 && !empty(COM_BOOKINGFORCONNECTOR_GAACCOUNT) && COM_BOOKINGFORCONNECTOR_EECENABLED == 1): ?>
-							callAnalyticsEEc("addProduct", allItems, "checkout", "", {
+							callAnalyticsEEc("addProduct", allCartItems, "checkout", "", {
 								"step": 2,
 							});
 							
-							callAnalyticsEEc("addProduct", allItems, "checkout_option", "", {
+							callAnalyticsEEc("addProduct", allCartItems, "checkout_option", "", {
 								"step": 2,
 								"option": selectedSystemType
 							});
@@ -1694,7 +2014,7 @@ jQuery(function($)
 			});
 			var bookingTypeVal= $("input[name='form[bookingType]']");
 			var container = $('#bfi-bookingTypesContainer');
-			if(bookingTypeVal.length>1 && container.length>0){
+			if(bookingTypeVal.length>0 && container.length>0){
 					container.show();
 			}
 			function checkBT(){
@@ -1707,46 +2027,55 @@ jQuery(function($)
 								currCC = $("input[name='BookingType']")[0];
 								$(currCC).prop("checked", true);
 							}
-							var cc = $(currCC).val();
-							var ccVal = cc.split(":");
-							var reqCC = ccVal[1];
-							if (reqCC) { 
-								ccInfo.show();
-							} else {
-								ccInfo.hide();
-							}
-							var idBT = ccVal[0];
-							$("#bookingtypeselected").val(idBT);
-
-							$.each(bookingTypesValues, function(key, value) {
-								if(idBT == value.BookingTypeId){
-//									$("#bookingTypeTitle").html(value.Name);
-//									$("#bookingTypeDesc").html(value.Description);
-									if(value.Deposit!=null && value.Deposit!='0'){
-										
-										$("#totaldepositrequested").show();
-										$("#totaldeposit").html(bookingfor.priceFormat(value.Deposit, 2, '.', ''));
-
-//										$("#bf-summary-footer-deposit").show();
-//										$("#footer-deposit").html(value.Deposit);
-
-										$("#isgateway").val("0");
-										if(value.DeferredPayment=='0' || value.DeferredPayment==false){
-											$("#isgateway").val(value.IsGateway ? "1" : "0");
-										}
-										return false;
-									}else{
-										$("#isgateway").val("0");
-										$("#totaldepositrequested").hide();
-									}
+							if ($(currCC).length>0)
+							{
+								var cc = $(currCC).val();
+								var ccVal = cc.split(":");
+								var reqCC = ccVal[1];
+								if (reqCC || <?php echo ($showCC) ?"true":"false";
+								 ?>) { 
+									ccInfo.show();
+								} else {
+									ccInfo.hide();
 								}
-							});
-							
+								var idBT = ccVal[0];
+								$("#bookingtypeselected").val(idBT);
+
+								$.each(bookingTypesValues, function(key, value) {
+									if(idBT == value.BookingTypeId){
+	//									$("#bookingTypeTitle").html(value.Name);
+	//									$("#bookingTypeDesc").html(value.Description);
+										if(value.Deposit!=null && value.Deposit!='0'){
+											
+											$("#totaldepositrequested").show();
+											$("#totaldeposit").html(bookingfor.priceFormat(value.Deposit, 2, '.', ''));
+
+	//										$("#bf-summary-footer-deposit").show();
+	//										$("#footer-deposit").html(value.Deposit);
+
+											$("#isgateway").val("0");
+											if(value.DeferredPayment=='0' || value.DeferredPayment==false){
+												$("#isgateway").val(value.IsGateway ? "1" : "0");
+											}
+											return false;
+										}else{
+											$("#isgateway").val("0");
+											$("#totaldepositrequested").hide();
+										}
+									}
+								});	
+							}else{
+								if (<?php echo ($showCC) ?"true":"false"; ?>) { 
+									ccInfo.show();
+								} else {
+									ccInfo.hide();
+								}
+							}
 						}
 						catch (err)
 						{
+							alert(err)
 						}
-
 					}
 			}
 			checkBT();
@@ -1760,6 +2089,11 @@ var listServiceIds = "<?php echo implode(",", $allServiceIds) ?>";
 var bfisrvloaded=false;
 var resGrp = [];
 var loadedResGrp=false;
+var shortenOption = {
+		moreText: "<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_VIEW_READMORE')?>",
+		lessText: "<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_VIEW_READLESS')?>",
+		showChars: '150'
+};
 
 function getAjaxInformationsResGrp(){
 	if (!loadedResGrp)
@@ -1843,8 +2177,8 @@ function bfiUpdateInfo(){
 			});
 			jQuery(this).html(srvArr.join(", "));
 		}
-
 	});
+	jQuery(".bfisimpleservices").shorten(shortenOption);
 }
 
 jQuery(document).ready(function () {
@@ -1856,14 +2190,11 @@ jQuery(document).ready(function () {
 </form>
 </div>		
 </div>		
+</div>		
 		<?php 
 				
 		
 		}
-
-}else{
-	echo __('Cart Not enabled! ', 'bfi');
-}
 
 ?>   
 <!-- {emailcloak=off} -->

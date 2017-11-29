@@ -2,7 +2,7 @@
 /**
  * @package   Bookingforconnector
  * @copyright Copyright (c)2006-2016 Ipertrade
- * @license    GNU General Public License version 2 or later; see LICENSE
+ * @license   GNU General Public License version 3, or later
  */
 
 // No direct access to this file
@@ -38,7 +38,7 @@ function bfi_setSessionFromSubmittedData() {
 		//$merchantResults = !empty($merchantCategoryId) && in_array($merchantCategoryId, BFCHelper::getCategoryMerchantResults($cultureCode));
 		$merchantResults = ($groupresulttype==1);
 	}
-
+	$currParamInSession = BFCHelper::getSearchParamsSession();
 	$currParam = array(
 		'searchid' => isset($_REQUEST['searchid']) ? $_REQUEST['searchid'] : '',
 		'searchtypetab' => isset($_REQUEST['searchtypetab']) ? $_REQUEST['searchtypetab'] : '',
@@ -81,15 +81,14 @@ function bfi_setSessionFromSubmittedData() {
 		'rateplanId' => isset($_REQUEST['pricetype']) ? $_REQUEST['pricetype'] : '',
 		'variationPlanId' => isset($_REQUEST['variationPlanId']) ? $_REQUEST['variationPlanId'] : '',
 		'gotCalculator' => isset($_REQUEST['gotCalculator']) ? $_REQUEST['gotCalculator'] : '',
-		'totalDiscounted' => isset($_SESSION['search.params']['totalDiscounted']) ? $_SESSION['search.params']['totalDiscounted'] : '',
-		'suggestedstay' => isset($_SESSION['search.params']['suggestedstay']) ? $_SESSION['search.params']['suggestedstay'] : '',
+		'totalDiscounted' => isset($currParamInSession['totalDiscounted']) ? $currParamInSession['totalDiscounted'] : '',
+		'suggestedstay' => isset($currParamInSession['suggestedstay']) ?$currParamInSession['suggestedstay'] : '',
 		'points' => BFCHelper::getVar('searchType')=="1" ? BFCHelper::getVar('points') : "",
 	);
 	
 	BFCHelper::setSearchParamsSession($currParam);
 	
 			
-	$_SESSION['search.params'] = $currParam;
 }
 }
 
@@ -113,6 +112,9 @@ if (!defined('COM_BOOKINGFORCONNECTOR_CONFIG_LOADED')) {
 		$isportal = $config->get('isportal', 1);
 		$showdata = $config->get('showdata', 1);
 		$sendtocart = $config->get('bfi_sendtocart_key', 0);
+		$showbadge = $config->get('bfi_showbadge_key', 0);
+
+		$enablecoupon = $config->get('bfi_enablecoupon_key', 0);
 		
 		$usessl = $config->get('bfi_usessl_key',0);
 		$ssllogo = $config->get('bfi_ssllogo_key','');
@@ -185,6 +187,8 @@ if (!defined('COM_BOOKINGFORCONNECTOR_CONFIG_LOADED')) {
 		bfiDefine( 'COM_BOOKINGFORCONNECTOR_ISPORTAL', $isportal );
 		bfiDefine( 'COM_BOOKINGFORCONNECTOR_SHOWDATA', $showdata );
 		bfiDefine( 'COM_BOOKINGFORCONNECTOR_SENDTOCART', $sendtocart );
+		bfiDefine( 'COM_BOOKINGFORCONNECTOR_SHOWBADGE', $showbadge );
+		bfiDefine( 'COM_BOOKINGFORCONNECTOR_ENABLECOUPON', $enablecoupon );
 		
 		bfiDefine( 'COM_BOOKINGFORCONNECTOR_USESSL', $usessl );
 		bfiDefine( 'COM_BOOKINGFORCONNECTOR_SSLLOGO', $ssllogo );
@@ -207,9 +211,6 @@ if (!defined('COM_BOOKINGFORCONNECTOR_CONFIG_LOADED')) {
 		bfiDefine( 'COM_BOOKINGFORCONNECTOR_MAXQTSELECTABLE', $bfi_maxqtSelectable_key );
 		
 		bfiDefine( 'COM_BOOKINGFORCONNECTOR_DEFAULTDISPLAYLIST', $bfi_defaultdisplaylist_key );
-		
-		bfiDefine( 'COM_BOOKINGFORCONNECTOR_CARTMULTIMERCHANTENABLED', false );
-
 
 		define('COM_BOOKINGFORCONNECTOR_CONFIG_LOADED', 1);
 
@@ -297,6 +298,7 @@ if ( ! class_exists( 'bfi_load_scripts' ) ) {
 						"CurrencyExchanges":'.json_encode(BFCHelper::getCurrencyExchanges()).',
 						"bfi_defaultdisplay":'.json_encode(COM_BOOKINGFORCONNECTOR_DEFAULTDISPLAYLIST).',
 						"bfi_sendtocart":'.json_encode(COM_BOOKINGFORCONNECTOR_SENDTOCART).',			
+						"bfi_eecenabled":'.json_encode(COM_BOOKINGFORCONNECTOR_EECENABLED).',			
 						"bfi_carturl":"'. $url_cart_page.'"
 					};
 			');
@@ -385,9 +387,33 @@ if ( ! class_exists( 'BFCHelper' ) ) {
 		private static $currentState = array();
 		private static $defaultCheckMode = 5;
 		private static $favouriteCookieName = "BFFavourites";
-			
+		private static $ordersCookieName = "BFOrders";
+
 		private static $justloaded = false;
 
+		public static $currencyCode = array(
+			978 => 'EUR',
+			191 => 'HRK',
+			840 => 'USD',
+			392 => 'JPY',
+			124 => 'CAD',
+			36 => 'AUD',
+			643 => 'RUB',
+			200 => 'CZK',
+			702 => 'SGD',
+			826 => 'GBP',
+		);
+		public static $listNameAnalytics = array(
+			0 => 'Direct access',
+			1 => 'Merchants Group List',
+			2 => 'Resources Group List',
+			3 => 'Resources Search List',
+			4 => 'Merchants List',
+			5 => 'Resources List',
+			6 => 'Offers List',
+			7 => 'Sales Resources List',
+			8 => 'Sales Resources Search List',
+		);
 		private static $image_paths = array(
 			'merchant' => '/merchants/',
 			'resources' => '/products/unita/',
@@ -519,7 +545,7 @@ if ( ! class_exists( 'BFCHelper' ) ) {
 		
 		public static function getCategoryMerchantResults($language='') {
 			$groupOnSearch = array();
-			$merchantCategories = BFCHelper::getMerchantCategoriesForRequest($language);
+			$merchantCategories = BFCHelper::getMerchantCategories($language);
 			if(!empty($merchantCategories)){
 				$groupOnSearch = array_unique(array_map(function ($i) { 
 					if($i->GroupOnSearch){
@@ -606,10 +632,10 @@ if ( ! class_exists( 'BFCHelper' ) ) {
 	/* -------------------------------- */
 
 		public static function getCartMultimerchantEnabled() {
-//			JModelLegacy::addIncludePath(JPATH_ROOT. DIRECTORY_SEPARATOR .'components' . DIRECTORY_SEPARATOR . 'com_bookingforconnector'. DIRECTORY_SEPARATOR . 'models', 'BookingForConnectorModel');
-//			$model = JModelLegacy::getInstance('Portal', 'BookingForConnectorModel');
-//			return $model->getCartMultimerchantEnabled();
-			return true;
+			JModelLegacy::addIncludePath(JPATH_ROOT. DIRECTORY_SEPARATOR .'components' . DIRECTORY_SEPARATOR . 'com_bookingforconnector'. DIRECTORY_SEPARATOR . 'models', 'BookingForConnectorModel');
+			$model = JModelLegacy::getInstance('Portal', 'BookingForConnectorModel');
+			return $model->getCartMultimerchantEnabled();
+//			return true;
 		}
 
 		public static function GetPrivacy($language) {
@@ -796,12 +822,6 @@ if ( ! class_exists( 'BFCHelper' ) ) {
 			return $model->SearchResult($term, $language, $limit, $onlyLocations);
 		}
 		
-	//	public static function getMerchantGroups() {
-	//		JModelLegacy::addIncludePath(JPATH_ROOT. DIRECTORY_SEPARATOR .'components' . DIRECTORY_SEPARATOR . 'com_bookingforconnector'. DIRECTORY_SEPARATOR . 'models', 'BookingForConnectorModel');
-	//		$model = JModelLegacy::getInstance('Merchants', 'BookingForConnectorModel');
-	//		return $model->getMerchantGroups();
-	//	}
-		
 		public static function getResource() {
 			JModelLegacy::addIncludePath(JPATH_ROOT. DIRECTORY_SEPARATOR .'components' . DIRECTORY_SEPARATOR . 'com_bookingforconnector'. DIRECTORY_SEPARATOR . 'models', 'BookingForConnectorModel');
 			$model = JModelLegacy::getInstance('Resource', 'BookingForConnectorModel');
@@ -829,10 +849,10 @@ if ( ! class_exists( 'BFCHelper' ) ) {
 //			return $model;
 //		}
 		
-		public static function getMerchantCategories() {
+		public static function getMerchantCategories($language='') {
 			JModelLegacy::addIncludePath(JPATH_ROOT. DIRECTORY_SEPARATOR .'components' . DIRECTORY_SEPARATOR . 'com_bookingforconnector'. DIRECTORY_SEPARATOR . 'models', 'BookingForConnectorModel');
 			$model = JModelLegacy::getInstance('Merchants', 'BookingForConnectorModel');
-			return $model->getMerchantCategories();
+			return $model->getMerchantCategories($language);
 		}
 		public static function getMerchantCategoriesForRequest($language='') {
 			JModelLegacy::addIncludePath(JPATH_ROOT. DIRECTORY_SEPARATOR .'components' . DIRECTORY_SEPARATOR . 'com_bookingforconnector'. DIRECTORY_SEPARATOR . 'models', 'BookingForConnectorModel');
@@ -840,11 +860,7 @@ if ( ! class_exists( 'BFCHelper' ) ) {
 			return $model->getMerchantCategoriesForRequest($language);
 		}
 
-		public static function getMerchantCategory($merchanCategoryId) {
-			JModelLegacy::addIncludePath(JPATH_ROOT. DIRECTORY_SEPARATOR .'components' . DIRECTORY_SEPARATOR . 'com_bookingforconnector'. DIRECTORY_SEPARATOR . 'models', 'BookingForConnectorModel');
-			$model = JModelLegacy::getInstance('Merchants', 'BookingForConnectorModel');
-			return $model->getMerchantCategory($merchanCategoryId);
-		}
+
 	   public static function getMerchantByCategoryId($merchanCategoryId) {
 			JModelLegacy::addIncludePath(JPATH_ROOT. DIRECTORY_SEPARATOR .'components' . DIRECTORY_SEPARATOR . 'com_bookingforconnector'. DIRECTORY_SEPARATOR . 'models', 'BookingForConnectorModel');
 			$model = JModelLegacy::getInstance('Merchants', 'BookingForConnectorModel');
@@ -1156,17 +1172,6 @@ if ( ! class_exists( 'BFCHelper' ) ) {
 //			return $model->unsubscribeAlertOnSell($hash, $id);
 //		}
 //
-//		public static function setMerchantAndUser($customerData = NULL, $password = NULL, $merchantType = 0, $merchantCategory = 0, $company = NULL, $userPhone = NULL, $webSite = NULL) {
-//			JModelLegacy::addIncludePath(JPATH_ROOT. DIRECTORY_SEPARATOR .'components' . DIRECTORY_SEPARATOR . 'com_bookingforconnector'. DIRECTORY_SEPARATOR . 'models', 'BookingForConnectorModel');
-//			$model = JModelLegacy::getInstance('Merchants', 'BookingForConnectorModel');
-//			return $model->setMerchantAndUser($customerData, $password, $merchantType, $merchantCategory, $company, $userPhone, $webSite);
-//		}
-//
-//		public static function sendNLPRequest($email = NULL, $cultureCode = NULL, $firstname = NULL, $lastname = NULL, $IDcategoria = NULL, $phone = NULL, $address = NULL, $nation = NULL, $reqUrlReg = NULL,$denominazione= NULL, $referer = NULL) {
-//			JModelLegacy::addIncludePath(JPATH_ROOT. DIRECTORY_SEPARATOR .'components' . DIRECTORY_SEPARATOR . 'com_bookingforconnector'. DIRECTORY_SEPARATOR . 'models', 'BookingForConnectorModel');
-//			$model = JModelLegacy::getInstance('NewsLetterPlus', 'BookingForConnectorModel');
-//			return $model->sendRequest($email, $cultureCode, $firstname, $lastname, $IDcategoria, $phone, $address, $nation, $reqUrlReg,$denominazione= NULL, $referer);
-//		}
 
 		public static function getCountAllResourcesOnSell() {
 			JModelLegacy::addIncludePath(JPATH_ROOT. DIRECTORY_SEPARATOR .'components' . DIRECTORY_SEPARATOR . 'com_bookingforconnector'. DIRECTORY_SEPARATOR . 'models', 'BookingForConnectorModel');
@@ -1230,6 +1235,12 @@ if ( ! class_exists( 'BFCHelper' ) ) {
 			JModelLegacy::addIncludePath(JPATH_ROOT. DIRECTORY_SEPARATOR .'components' . DIRECTORY_SEPARATOR . 'com_bookingforconnector'. DIRECTORY_SEPARATOR . 'models', 'BookingForConnectorModel');
 			$model = JModelLegacy::getInstance('Resource', 'BookingForConnectorModel');
 			return $model->GetMostRestrictivePolicyByIds($policyIds, $cultureCode, $stayConfiguration, $priceValue, $days);
+		}
+
+		public static function GetPolicyByIds($policyIds, $cultureCode) {
+			JModelLegacy::addIncludePath(JPATH_ROOT. DIRECTORY_SEPARATOR .'components' . DIRECTORY_SEPARATOR . 'com_bookingforconnector'. DIRECTORY_SEPARATOR . 'models', 'BookingForConnectorModel');
+			$model = JModelLegacy::getInstance('Resource', 'BookingForConnectorModel');
+			return $model->GetPolicyByIds($policyIds, $cultureCode);
 		}
 
 //		public static function getCheckAvailabilityCalendar($resourceId = null,$checkIn= null,$checkOut= null) {
@@ -1358,28 +1369,33 @@ if ( ! class_exists( 'BFCHelper' ) ) {
 						case 'nomore1br':
 							$retVal = preg_replace("/\n+/", "\n", $retVal);
 							break;
+						case 'nobr':
+							$retVal = preg_replace("/\n+/", " ", $retVal);
+							break;
 						case 'bbcode':
 							$search = array (
-								'[b]', '[/b]',
-									'[i]', '[/i]',
-									'[u]', '[/u]',
-									'[s]','[/s]',
-									'[ul]','[/ul]',
-									'[li]', '[/li]',
-									'[ol]', '[/ol]'
+								'~\[b\](.*?)\[/b\]~s',
+								'~\[i\](.*?)\[/i\]~s',
+								'~\[u\](.*?)\[/u\]~s',
+								'~\[s\](.*?)\[/s\]~s',
+								'~\[ul\](.*?)\[/ul\]~s',
+								'~\[li\](.*?)\[/li\]~s',
+								'~\[ol\](.*?)\[/ol\]~s',
+								'~\[size=(.*?)\](.*?)\[/size\]~s',
+								'/(?<=<ul>|<\/li>)\s*?(?=<\/ul>|<li>)/is'
 							);
-
 							$replace = array (
-								'<b>', '</b>',
-									'<i>', '</i>',
-									'<u>', '</u>',
-									'<s>', '</s>',
-									'<ul>','</ul>',
-									'<li>','</li>',
-									'<ol>','</ol>'
+								'<b>$1</b>',
+								'<i>$1</i>',
+								'<u>$1</u>',
+								'<s>$1</s>',
+								'<ul>$1</ul>',
+								'<li>$1</li>',
+								'<ol>$1</ol>',
+								'<font size="$1">$2</font>',
+								''
 							);
-							$retVal = str_replace($search, $replace, $retVal);
-							$retVal = preg_replace('/(?<=<ul>|<\/li>)\s*?(?=<\/ul>|<li>)/is', '', $retVal); // cleen for br
+							$retVal = preg_replace($search, $replace, $retVal); // cleen for br
 
 							break;
 						default:
@@ -1687,29 +1703,121 @@ if ( ! class_exists( 'BFCHelper' ) ) {
 			return null;
 		}
 
+//for analytics
+		public static function AddToCookieOrders($id) {
+			$expire=time()+60*60*24*30;
+			$counter = 1;
+			$lisTordersCookie = (string) $id;
+			$varCook = BFCHelper::getCookie(self::$ordersCookieName);				
+			if (isset($varCook))
+			{
+				$arr= explode("_", $varCook);
+				if ( !self::IsInCookieOrders($id)){
+					array_push($arr, (string)$id);
+				}
+				$arr = array_filter( $arr );
+				$counter = count($arr);
+				$lisTordersCookie = (string)implode("_", $arr);				
+			}
+			$config = JFactory::getConfig();
+			$cookie_domain = $config->get('cookie_domain', '');
+			$cookie_path = $config->get('cookie_path', '/');
+			$ok = setcookie(self::$ordersCookieName, $lisTordersCookie, $expire, $cookie_path, '');
+			return $counter;
+		}
+				
+		public static function IsInCookieOrders($id) {
+			$varCook = BFCHelper::getCookie(self::$ordersCookieName);
+			
+			
+			if (isset($varCook))
+			{
+				$arr= explode("_", $varCook);
+				return in_array($id, $arr);
+			}
+			return false;
+		}
+		
+
 		public static function setSearchOnSellParamsSession($params) {
 			$sessionkey = 'searchonsell.params';
-//			$session = JFactory::getSession();
-//			$session->set($sessionkey, $params, 'com_bookingforconnector'); 
-			$pars = self::setSession($sessionkey, $params, 'com_bookingforconnector'); // $_SESSION[$sessionkey];
+			self::setSession($sessionkey, $params, 'com_bookingforconnector'); 
 		}
 		
 		public static function getSearchOnSellParamsSession() {
 			$sessionkey = 'searchonsell.params';
-			$session = JFactory::getSession();
-			$pars = self::getSession($sessionkey, '', 'com_bookingforconnector'); // $_SESSION[$sessionkey];
+			$pars = self::getSession($sessionkey, '', 'com_bookingforconnector'); 
 			return $pars;
 		}
 		
+		public static function setSearchMerchantParamsSession($params) {
+			$sessionkey = 'searchmerchant.params';
+			$pars = array();
+			$pars['merchantCategoryId'] = !empty($params['merchantCategoryId']) ? $params['merchantCategoryId']: 0;
+			if(isset($params['searchid'])){
+				$pars['searchid'] = $params['searchid'];
+			}
+			if(isset($params['newsearch'])){
+				$pars['newsearch'] = $params['newsearch'];
+			}
+			if(isset($params['points'])){
+				$pars['points'] = $params['points'];
+			}
+			$pars['locationzones'] = !empty($params['locationzones']) ? $params['locationzones']: "";
+			$pars['locationzone'] = !empty($params['locationzone']) ? $params['locationzone']: "";
+			$pars['stateIds'] = !empty($params['stateIds']) ? $params['stateIds']: "";
+			$pars['regionIds'] = !empty($params['regionIds']) ? $params['regionIds']: "";
+			$pars['cityIds'] = !empty($params['cityIds']) ? $params['cityIds']: "";
+			$pars['zoneIds'] = !empty($params['zoneIds']) ? $params['zoneIds']: "";
+			$pars['cultureCode'] = !empty($params['cultureCode']) ? $params['cultureCode']: "";
+			$pars['merchantTagIds'] = !empty($params['merchantTagIds']) ? $params['merchantTagIds']:"";
+			$pars['tags'] = !empty($params['tags']) ? $params['tags']:"";
+			$pars['rating'] = !empty($params['rating']) ? $params['rating']:"";
+			$pars['filters'] = !empty($params['filters']) ? $params['filters']: "";
+			self::setSession($sessionkey, $pars, 'com_bookingforconnector'); 
+		}
+		public static function getSearchMerchantParamsSession() {
+			$sessionkey = 'searchmerchant.params';
+			$pars = self::getSession($sessionkey, '', 'com_bookingforconnector'); 
+			return $pars;
+		}
+		public static function setFilterSearchMerchantParamsSession($paramsfilters) {
+			$sessionkey = 'searchmerchant.filterparams';
+			self::setSession($sessionkey, $paramsfilters, 'com_bookingforconnector'); 
+		}
+		
+		public static function getFilterSearchMerchantParamsSession() {
+			$sessionkey = 'searchmerchant.filterparams';
+			$paramsfilters = self::getSession($sessionkey, '', 'com_bookingforconnector'); 
+			return $paramsfilters;
+		}
+
+		public static function setEnabledFilterSearchMerchantParamsSession($paramsfilters) {
+			$sessionkey = 'searchmerchant.enabledfilterparams';
+			self::setSession($sessionkey, $paramsfilters, 'com_bookingforconnector'); 
+		}
+		
+		public static function getEnabledFilterSearchMerchantParamsSession() {
+			$sessionkey = 'searchmerchant.enabledfilterparams';
+			$paramsfilters = self::getSession($sessionkey, '', 'com_bookingforconnector'); 
+			return $paramsfilters;
+		}
+		public static function setFirstFilterSearchMerchantParamsSession($paramsfilters) {
+			$sessionkey = 'searchmerchant.firstfilterparams';
+			self::setSession($sessionkey, $paramsfilters, 'com_bookingforconnector'); 
+		}
+		
+		public static function getFirstFilterSearchMerchantParamsSession() {
+			$sessionkey = 'searchmerchant.firstfilterparams';
+			$paramsfilters = self::getSession($sessionkey, '', 'com_bookingforconnector'); 
+			return $paramsfilters;
+		}
+
+
+
 		public static function setSearchParamsSession($params) {
 			$sessionkey = 'search.params';
 			$pars = array();
-			
-//			$pars['checkin'] = $params['checkin'];
-//			$pars['checkout'] = $params['checkout'];
-//			$pars['duration'] = $params['duration'];
-//			$pars['paxes'] = $params['paxes'];
-//			$pars['paxages'] = $params['paxages'];
 			if(isset($params['checkin'])){
 				$pars['checkin'] = $params['checkin'];
 			}
@@ -1733,6 +1841,7 @@ if ( ! class_exists( 'BFCHelper' ) ) {
 			$pars['merchantCategoryId'] = !empty($params['merchantCategoryId']) ? $params['merchantCategoryId']: 0;
 			$pars['zoneId'] = !empty($params['zoneId']) ? $params['zoneId']: 0;
 			$pars['cityId'] = !empty($params['cityId']) ? $params['cityId']: 0;
+			$pars['locationzone'] = !empty($params['locationzone']) ? $params['locationzone']: "";
 			$pars['locationzones'] = !empty($params['locationzones']) ? $params['locationzones']: "";
 			$pars['zoneIds'] = !empty($params['zoneIds']) ? $params['zoneIds']: "";
 			$pars['cultureCode'] = !empty($params['cultureCode']) ? $params['cultureCode']: "";
@@ -1745,7 +1854,6 @@ if ( ! class_exists( 'BFCHelper' ) ) {
 			$pars['productTagIds'] = !empty($params['productTagIds']) ? $params['productTagIds']:"";
 			$pars['merchantTagIds'] = !empty($params['merchantTagIds']) ? $params['merchantTagIds']:"";
 
-//			$pars['merchantId'] = $params['merchantId'];
 			if(isset($params['merchantId'])){
 				$pars['merchantId'] = $params['merchantId'];
 			}
@@ -1758,12 +1866,6 @@ if ( ! class_exists( 'BFCHelper' ) ) {
 			if(isset($params['groupresulttype'])){
 				$pars['groupresulttype'] = $params['groupresulttype'];
 			}
-//			$pars['searchid'] = $params['searchid'];		
-//			$pars['newsearch'] = $params['newsearch'];		
-//			$pars['stateIds'] = $params['stateIds'];		
-//			$pars['regionIds'] = $params['regionIds'];		
-//			$pars['cityIds'] = $params['cityIds'];		
-//			$pars['points'] = $params['points'];		
 			if(isset($params['searchid'])){
 				$pars['searchid'] = $params['searchid'];
 			}
@@ -1782,53 +1884,45 @@ if ( ! class_exists( 'BFCHelper' ) ) {
 			if(isset($params['points'])){
 				$pars['points'] = $params['points'];
 			}
-
-			$session = JFactory::getSession();
-			$session->set($sessionkey, $pars, 'com_bookingforconnector');
-			$_SESSION[$sessionkey] = $pars;
+			self::setSession($sessionkey, $pars, 'com_bookingforconnector'); 
 
 		}
 		
 		public static function getSearchParamsSession() {
 			$sessionkey = 'search.params';
-			$session = JFactory::getSession();
-			$pars = $session->get($sessionkey, '', 'com_bookingforconnector'); 
+			$pars = self::getSession($sessionkey, '', 'com_bookingforconnector'); 
 			return $pars;
 		}
 		
 		public static function setFilterSearchParamsSession($paramsfilters) {
 			$sessionkey = 'search.filterparams';
-			$session = JFactory::getSession();
-			$session->set($sessionkey, $paramsfilters, 'com_bookingforconnector');
+			self::setSession($sessionkey, $paramsfilters, 'com_bookingforconnector'); 
 		}
 		
 		public static function getFilterSearchParamsSession() {
 			$sessionkey = 'search.filterparams';
-			$session = JFactory::getSession();
-			$paramsfilters = $session->get($sessionkey, '', 'com_bookingforconnector');
+			$paramsfilters = self::getSession($sessionkey, '', 'com_bookingforconnector'); 
 			return $paramsfilters;
 		}
 
 		public static function setEnabledFilterSearchParamsSession($paramsfilters) {
 			$sessionkey = 'search.enabledfilterparams';
-			$session = JFactory::getSession();
-			$session->set($sessionkey, $paramsfilters, 'com_bookingforconnector');
+			self::setSession($sessionkey, $paramsfilters, 'com_bookingforconnector'); 
 		}
 		
 		public static function getEnabledFilterSearchParamsSession() {
 			$sessionkey = 'search.enabledfilterparams';
-			$session = JFactory::getSession();
-			$paramsfilters = $session->get($sessionkey, '', 'com_bookingforconnector'); 
+			$paramsfilters = self::getSession($sessionkey, '', 'com_bookingforconnector'); 
 			return $paramsfilters;
 		}
 		public static function setFirstFilterSearchParamsSession($paramsfilters) {
 			$sessionkey = 'search.firstfilterparams';
-			$_SESSION[$sessionkey] = $paramsfilters;
+			self::setSession($sessionkey, $paramsfilters, 'com_bookingforconnector'); 
 		}
 		
 		public static function getFirstFilterSearchParamsSession() {
 			$sessionkey = 'search.firstfilterparams';
-			$paramsfilters = isset($_SESSION[$sessionkey]) ? $_SESSION[$sessionkey] : array() ;
+			$paramsfilters = self::getSession($sessionkey, '', 'com_bookingforconnector'); 
 			return $paramsfilters;
 		}
 
@@ -2247,17 +2341,19 @@ if ( ! class_exists( 'BFCHelper' ) ) {
 			if ($formData == null) {
 				$formData = $_POST['form'];
 			}
-			
-			$ccData = array(
-					'Type' => self::getOptionsFromSelect($formData,'cc_circuito'),
-					'TypeId' => self::getOptionsFromSelect($formData,'cc_circuito'),
-					'Number' => $formData['cc_numero'],
-					'Name' => $formData['cc_titolare'],
-					'ExpiryMonth' => $formData['cc_mese'],
-					'ExpiryYear' => $formData['cc_anno']
-			);
-			
-			return $ccData;
+			if(isset($formData['cc_numero']) && !empty($formData['cc_numero'])) {
+				$ccData = array(
+						'Type' => self::getOptionsFromSelect($formData,'cc_circuito'),
+						'TypeId' => self::getOptionsFromSelect($formData,'cc_circuito'),
+						'Number' => $formData['cc_numero'],
+						'Name' => $formData['cc_titolare'],
+						'ExpiryMonth' => $formData['cc_mese'],
+						'ExpiryYear' => $formData['cc_anno']
+				);
+				
+				return $ccData;
+			}
+			return null;
 		}
 
 		public static function ConvertIntTimeToDate($timeMinEnd)
@@ -2297,6 +2393,7 @@ if ( ! class_exists( 'BFCHelper' ) ) {
 
 		
 		public static function checkAnalytics($listName) {
+			$gaaccount = COM_BOOKINGFORCONNECTOR_GAACCOUNT;
 			if(!self::$justloaded){
 				self::$justloaded = true;
 				$writeJs = true;
@@ -2304,8 +2401,6 @@ if ( ! class_exists( 'BFCHelper' ) ) {
 				   $writeJs = false;
 				}
 				$document 	= JFactory::getDocument();
-				$config = JComponentHelper::getParams('com_bookingforconnector');
-				$gaaccount = COM_BOOKINGFORCONNECTOR_GAACCOUNT;
 				if(COM_BOOKINGFORCONNECTOR_GAENABLED == 1 && !empty(COM_BOOKINGFORCONNECTOR_GAACCOUNT)) {
 					if($writeJs) {
 						$document->addScriptDeclaration('
@@ -2317,7 +2412,7 @@ if ( ! class_exists( 'BFCHelper' ) ) {
 							(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
 							m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
 							})(window,document,"script","https://www.google-analytics.com/analytics.js","ga");
-							ga("create","' . $config->get('gaaccount') . '"' . (strpos(JURI::current(), 'localhost') !== false ? ', {
+							ga("create","' . $gaaccount . '"' . (strpos(JURI::current(), 'localhost') !== false ? ', {
 							  "cookieDomain": "none"
 							}' : ', "auto"') . ');
 						}');
@@ -2335,7 +2430,7 @@ if ( ! class_exists( 'BFCHelper' ) ) {
 										callAnalyticsEEc("", "", (jQuery(this).attr("id") == "grid-view" ? "GridView" : "ListView"), null, "changeView", "View&Sort");
 									}
 								});
-								jQuery("body").on("click", ".com_bookingforconnector-sort-item", function(e){
+								jQuery("body").on("click", ".bfi-sort-item", function(e){
 									if(e.originalEvent) {
 										var listname = "OrderBy";
 										var sortType = "";
@@ -2363,6 +2458,8 @@ if ( ! class_exists( 'BFCHelper' ) ) {
 									}
 								});
 								jQuery("body").on("mouseup", ".eectrack", function(e) {
+									var currList = jQuery(this).attr("data-list") || null;
+
 									if( e.which <= 2 ) {
 										callAnalyticsEEc("addProduct", [{
 											id: jQuery(this).attr("data-id") + " - " + jQuery(this).attr("data-type"),
@@ -2371,7 +2468,7 @@ if ( ! class_exists( 'BFCHelper' ) ) {
 											brand: jQuery(this).attr("data-brand"), 
 											//variant: jQuery(this).attr("data-type"),
 											position: parseInt(jQuery(this).attr("data-index")), 
-										}], "viewDetail", null, jQuery(this).attr("data-id"), jQuery(this).attr("data-type"));
+										}], "viewDetail", currList, jQuery(this).attr("data-id"), jQuery(this).attr("data-type"));
 									}
 								});
 							}
@@ -2411,13 +2508,19 @@ if ( ! class_exists( 'BFCHelper' ) ) {
 										bookingfor_gapageviewsent++;
 										break;
 									case "addtocart":
-										ga("set", "&cu", "EUR");
+										ga("set", "&cu", "'.self::$currencyCode[bfi_get_defaultCurrency()].'");
 										ga("ec:setAction", "add", actiondetail);
 										ga("send", "event", "Bookingfor - " + itemtype, "click", "addToCart");
 										bookingfor_gapageviewsent++;
 										break;
+									case "removefromcart":
+										ga("set", "&cu", "'.self::$currencyCode[bfi_get_defaultCurrency()].'");
+										ga("ec:setAction", "remove", actiondetail);
+										ga("send", "event", "Bookingfor - " + itemtype, "click", "addToCart");
+										bookingfor_gapageviewsent++;
+										break;
 									case "purchase":
-										ga("set", "&cu", "EUR");
+										ga("set", "&cu", "'.self::$currencyCode[bfi_get_defaultCurrency()].'");
 										ga("ec:setAction", "purchase", actiondetail);
 										ga("send","pageview");
 										bookingfor_gapageviewsent++;
@@ -2444,9 +2547,7 @@ if ( ! class_exists( 'BFCHelper' ) ) {
 				return false;
 			}
 
-			$config = JComponentHelper::getParams('com_bookingforconnector');
-			$gaaccount = $config->get('gaaccount', '');
-			if($config->get('gaenabled', 0) == 1 && !empty($gaaccount)) {
+			if(COM_BOOKINGFORCONNECTOR_GAENABLED == 1 && !empty(COM_BOOKINGFORCONNECTOR_GAACCOUNT)) {
 				return true;
 			}
 			return false;
@@ -2527,7 +2628,6 @@ if ( ! class_exists( 'BFCHelper' ) ) {
 
 		public static function getSession($string, $defaultValue=null, $prefix ='') {
 			if(empty(COM_BOOKINGFORCONNECTOR_ENABLECACHE)) return null;
-	//		return isset($_SESSION[$prefix.$string]) ? $_SESSION[$prefix.$string] : $defaultValue;
 			$session = JFactory::getSession();
 			return $session->get($string, $defaultValue , $prefix);
 
@@ -2535,7 +2635,6 @@ if ( ! class_exists( 'BFCHelper' ) ) {
 		public static function setSession($string, $value=null, $prefix ='') {
 			$session = JFactory::getSession();
 			$session->set($string, $value, $prefix);
-	//		$_SESSION[$prefix.$string] = $value;
 		}
 
 		public static function getAppication($string, $defaultValue=null) {
@@ -3095,11 +3194,18 @@ if ( ! class_exists( 'BFCHelper' ) ) {
 				return $lstOrderStay;
 		}
 
-		public static function AddToCartByExternalUser($tmpUserId, $language, $OrderJson) {
+		public static function AddToCart($tmpUserId, $language, $OrderJson, $ResetCart) {
 			JModelLegacy::addIncludePath(JPATH_ROOT. DIRECTORY_SEPARATOR .'components' . DIRECTORY_SEPARATOR . 'com_bookingforconnector'. DIRECTORY_SEPARATOR . 'models', 'BookingForConnectorModel');
 	//WP->			$model = new BookingForConnectorModelOrders;
 			$model = JModelLegacy::getInstance('Orders', 'BookingForConnectorModel');
-			return $model->AddToCartByExternalUser($tmpUserId, $language, $OrderJson);
+			return $model->AddToCart($tmpUserId, $language, $OrderJson, $ResetCart);
+		}	
+
+		public static function AddToCartByExternalUser($tmpUserId, $language, $OrderJson, $ResetCart) {
+			JModelLegacy::addIncludePath(JPATH_ROOT. DIRECTORY_SEPARATOR .'components' . DIRECTORY_SEPARATOR . 'com_bookingforconnector'. DIRECTORY_SEPARATOR . 'models', 'BookingForConnectorModel');
+	//WP->			$model = new BookingForConnectorModelOrders;
+			$model = JModelLegacy::getInstance('Orders', 'BookingForConnectorModel');
+			return $model->AddToCartByExternalUser($tmpUserId, $language, $OrderJson, $ResetCart);
 		}	
 		public static function DeleteFromCartByExternalUser($tmpUserId, $language, $CartOrderId) {
 			JModelLegacy::addIncludePath(JPATH_ROOT. DIRECTORY_SEPARATOR .'components' . DIRECTORY_SEPARATOR . 'com_bookingforconnector'. DIRECTORY_SEPARATOR . 'models', 'BookingForConnectorModel');
@@ -3107,11 +3213,17 @@ if ( ! class_exists( 'BFCHelper' ) ) {
 			$model = JModelLegacy::getInstance('Orders', 'BookingForConnectorModel');
 			return $model->DeleteFromCartByExternalUser($tmpUserId, $language, $CartOrderId);
 		}	
-		public static function GetCartByExternalUser($userId, $language, $includeDetails = true) {
+		public static function AddDiscountCodesCartByExternalUser($tmpUserId, $language, $bficoupons) {
 			JModelLegacy::addIncludePath(JPATH_ROOT. DIRECTORY_SEPARATOR .'components' . DIRECTORY_SEPARATOR . 'com_bookingforconnector'. DIRECTORY_SEPARATOR . 'models', 'BookingForConnectorModel');
 	//WP->			$model = new BookingForConnectorModelOrders;
 			$model = JModelLegacy::getInstance('Orders', 'BookingForConnectorModel');
-			return $model->GetCartByExternalUser($userId, $language, $includeDetails);
+			return $model->AddDiscountCodesCartByExternalUser($tmpUserId, $language, $bficoupons);
+		}	
+		public static function GetCartByExternalUser($tmpUserId, $language, $includeDetails = true) {
+			JModelLegacy::addIncludePath(JPATH_ROOT. DIRECTORY_SEPARATOR .'components' . DIRECTORY_SEPARATOR . 'com_bookingforconnector'. DIRECTORY_SEPARATOR . 'models', 'BookingForConnectorModel');
+	//WP->			$model = new BookingForConnectorModelOrders;
+			$model = JModelLegacy::getInstance('Orders', 'BookingForConnectorModel');
+			return $model->GetCartByExternalUser($tmpUserId, $language, $includeDetails);
 		}	
 		public static function bfi_get_userId() {
 			$tmpUserId = BFCHelper::getSession('tmpUserId', null , 'com_bookingforconnector');		
@@ -3135,7 +3247,7 @@ if ( ! class_exists( 'BFCHelper' ) ) {
 			return $tmpUserId;
 		}	
 
-		public static function bfi_sortRatePlans($a, $b)
+		public static function bfi_sortOrder($a, $b)
 		{
 			return $a->SortOrder - $b->SortOrder;
 		}
@@ -3158,6 +3270,10 @@ if ( ! class_exists( 'BFCHelper' ) ) {
 			return $currB;
 		}
 
+		public static function string_sanitize($s) {
+			$result = preg_replace("/[^a-zA-Z0-9\s]+/", "", html_entity_decode($s, ENT_QUOTES));
+			return $result;
+		}
 
 }
 }

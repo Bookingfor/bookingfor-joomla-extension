@@ -19,6 +19,8 @@ $googlemapsapykey = COM_BOOKINGFORCONNECTOR_GOOGLE_GOOGLEMAPSKEY;
 //$sitename = $this->sitename;
 $language = $this->language;
 $resources = $this->items;
+$listNameAnalytics = $this->listNameAnalytics;
+$fromsearchparam = "&lna=".$listNameAnalytics;
 
 $total = $this->pagination->total;
 
@@ -96,14 +98,14 @@ if($itemId == 0){
 		$currUriresource = $uri.'&resourceId=' . $resource->ResourceId . ':' . BFCHelper::getSlug($resourceName);
 		if ($itemId<>0)
 			$currUriresource.='&Itemid='.$itemId;
-		$resourceRoute = JRoute::_($currUriresource);
+		$resourceRoute = JRoute::_($currUriresource.$fromsearchparam);
 	
 		$routeMerchant = "";
 		if($isportal){
 			$currUriMerchant = $uriMerchant. '&merchantId=' . $resource->MerchantId . ':' . BFCHelper::getSlug($resource->MerchantName);
 			if ($itemIdMerchant<>0)
 				$currUriMerchant.= '&Itemid='.$itemIdMerchant;
-			$routeMerchant = JRoute::_($currUriMerchant.'&fromsearch=1');
+			$routeMerchant = JRoute::_($currUriMerchant.$fromsearchparam);
 		}
 		$rating = 0;
 		$ratingMrc = 0;
@@ -290,6 +292,7 @@ function getlist(){
 	
 
 	jQuery.post(bfi_variable.bfi_urlCheck, query, function(data) {
+			var eecitems = [];
 
 				if(typeof callfilterloading === 'function'){
 					callfilterloading();
@@ -297,6 +300,13 @@ function getlist(){
 				}
 			jQuery.each(data || [], function(key, val) {
 				$html = '';
+				eecitems.push({
+					id: "" + val.Resource.ResourceId + " - Resource",
+					name: val.Resource.Name,
+					category: val.Merchant.MainCategoryName,
+					brand: val.Merchant.Name,
+					position: key
+				});
 	
 				var $indirizzo = "";
 				var $cap = "";
@@ -347,6 +357,9 @@ function getlist(){
 			position : { my: 'center bottom', at: 'center top-10' },
 			tooltipClass: 'bfi-tooltip bfi-tooltip-top '
 		}); 
+		<?php if($this->analyticsEnabled): ?>
+		callAnalyticsEEc("addImpression", eecitems, "list");
+		<?php endif; ?>
 		},'json');
 }
 
@@ -374,3 +387,4 @@ jQuery(document).ready(function() {
 </script>
 
 <?php } ?>
+</div>

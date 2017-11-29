@@ -25,6 +25,8 @@ $rating_text = array('merchants_reviews_text_value_0' => JTEXT::_('COM_BOOKINGFO
 						'merchants_reviews_text_value_10' => JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RATING_VALUATION_10'),                                 
 					);
 $currencyclass = bfi_get_currentCurrency();
+$listNameAnalytics = $this->listNameAnalytics;
+$fromsearchparam = "&fromsearch=1&lna=".$listNameAnalytics;
 
 $language = $this->language;
 $total = $this->pagination->total;
@@ -67,8 +69,9 @@ if($itemId == 0){
 $merchantImageUrl = Juri::root() . "components/com_bookingforconnector/assets/images/defaults/default-s6.jpeg";
 
 $onlystay = true ;
-if(isset($_SESSION['search.params']) && isset($_SESSION['search.params']['onlystay'])){
-		$onlystay =  ($_SESSION['search.params']['onlystay'] === 'false' || $_SESSION['search.params']['onlystay'] === 0)? false: true;
+$currParam = BFCHelper::getSearchParamsSession();
+if(isset($currParam) && isset($currParam['onlystay'])){
+		$onlystay =  ($currParam['onlystay'] === 'false' || $currParam['onlystay'] === 0)? false: true;
 }
 
 $url=JFactory::getURI()->toString();
@@ -82,7 +85,7 @@ $checkin = new JDate($checkin->format('Y-m-d'));
 $checkout = new JDate($checkout->format('Y-m-d')); 
 $checkinstr = $checkin->format("d") . " " . $checkin->format("M") . ' ' . $checkin->format("Y") ;
 $checkoutstr = $checkout->format("d") . " " . $checkout->format("M") . ' ' . $checkout->format("Y") ;
-$totPerson = $_SESSION['search.params']['paxes'];
+$totPerson = (isset($currParam)  && isset($currParam['paxes']))? $currParam['paxes']:0 ;
 
 ?>
 <div class="bfi-content">
@@ -128,11 +131,13 @@ $totPerson = $_SESSION['search.params']['paxes'];
 
 <div id="bfi-list" class="bfi-row bfi-list">
 <?php 
-foreach ($merchants as $merchant){ 
+foreach ($merchants as $currKey => $merchant){ 
 
 	$rating = $merchant->MrcRating;
 
 	$currName = BFCHelper::getLanguage($merchant->GrpName, $this->language, null, array('ln2br'=>'ln2br', 'striptags'=>'striptags')); 
+	$merchantName = $merchant->MrcName;
+
 	if ($rating>9 )
 	{
 		$rating = $rating/10;
@@ -144,10 +149,10 @@ foreach ($merchants as $merchant){
 	if ($itemId<>0)
 		$currUri.='&Itemid='.$itemId;
 
-	$currUri .= "&fromsearch=1";
+	$currUri .= $fromsearchparam;
 	$routeCondominium = JRoute::_($currUri);
 	
-	$currUriMerchant = $uriMerchant. '&merchantId=' . $merchant->MerchantId . ':' . BFCHelper::getSlug($merchant->MrcName);
+	$currUriMerchant = $uriMerchant. '&merchantId=' . $merchant->MerchantId . ':' . BFCHelper::getSlug($merchantName);
 	if ($itemIdMerchant<>0)
 		$currUriMerchant.='&Itemid='.$itemIdMerchant;
 	
@@ -179,7 +184,7 @@ foreach ($merchants as $merchant){
 	if ($itemIdresource<>0){
 		$currUriresource.='&Itemid='.$itemIdresource;
 	}
-	$currUriresource .= "&fromsearch=1";
+	$currUriresource .= $fromsearchparam;
 	if (!empty($merchant->RateplanId)){
 		$currUriresource .= "&pricetype=" . $merchant->RateplanId;
 	}
@@ -188,7 +193,7 @@ foreach ($merchants as $merchant){
 
 	$bookingType = $merchant->BookingType;
 	$IsBookable = $merchant->IsBookable;
-	$btnText = JText::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RESOURCE_BUTTON');
+	$btnText = JText::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RESOURCE_BUTTON_REQ');
 	$btnClass = "bfi-alternative";
 	if ($IsBookable){
 		$btnText = JText::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RESOURCE_BUTTON_HTTPS');
@@ -198,6 +203,7 @@ foreach ($merchants as $merchant){
 	if (($merchant->Price < $merchant->TotalPrice) || $merchant->IsOffer){
 		$classofferdisplay = "bfi-highlight";
 	}
+	
 	if(!$isCondominium){
 		$currName = $resourceName;
 		$routeCondominium = $resourceRoute;
@@ -206,18 +212,37 @@ foreach ($merchants as $merchant){
 		}
 	}
 
+	$ratingMrc = $merchant->MrcRating;
+	if ($ratingMrc>9 )
+	{
+		$ratingMrc = $ratingMrc/10;
+	}
+
+	$resourceDataTypeTrack =  ($isCondominium)?"Resource Group":"Resource";
+	$resourceNameTrack =  BFCHelper::string_sanitize($currName);
+	$merchantNameTrack =  BFCHelper::string_sanitize($merchantName);
+	$merchantCategoryNameTrack =  BFCHelper::string_sanitize($merchant->MrcCategoryName);
+
 ?>
 	<div class="bfi-col-sm-6 bfi-item">
 		<div class="bfi-row bfi-sameheight" >
 			<div class="bfi-col-sm-3 bfi-img-container">
-				<a href="<?php echo $routeCondominium ?>" style='background: url("<?php echo $merchantImageUrl; ?>") center 25%;background-size: cover;' target="_blank"><img src="<?php echo $merchantImageUrl; ?>" class="bfi-img-responsive" /></a> 
+				<a href="<?php echo $routeCondominium ?>" style='background: url("<?php echo $merchantImageUrl; ?>") center 25%;background-size: cover;' target="_blank" class="eectrack" data-type="<?php echo $resourceDataTypeTrack ?>" data-id="<?php echo $merchant->ResourceId?>" data-index="<?php echo $currKey?>" data-itemname="<?php echo $resourceNameTrack; ?>" data-category="<?php echo $merchantCategoryNameTrack; ?>" data-brand="<?php echo $merchantNameTrack; ?>"><img src="<?php echo $merchantImageUrl; ?>" class="bfi-img-responsive" /></a> 
 			</div>
 			<div class="bfi-col-sm-9 bfi-details-container">
 				<!-- merchant details -->
 				<div class="bfi-row" >
 					<div class="bfi-col-sm-12">
 						<div class="bfi-item-title">
-							<a href="<?php echo $routeCondominium ?>" id="nameAnchor<?php echo $merchant->CondominiumId?>" target="_blank"><?php echo  $currName ?></a> 
+							<a href="<?php echo $routeCondominium ?>" id="nameAnchor<?php echo $merchant->CondominiumId?>" target="_blank" class="eectrack" data-type="<?php echo $resourceDataTypeTrack ?>" data-id="<?php echo $merchant->ResourceId?>" data-index="<?php echo $currKey?>" data-itemname="<?php echo $resourceNameTrack; ?>" data-category="<?php echo $merchantCategoryNameTrack; ?>" data-brand="<?php echo $merchantNameTrack; ?>"><?php echo  $currName ?></a> 
+							<?php if($isportal) { ?>
+								- <a href="<?php echo $routeMerchant?>" class="bfi-subitem-title eectrack" target="_blank" data-type="Merchant" data-id="<?php echo $resource->MerchantId?>" data-index="<?php echo $currKey?>" data-itemname="<?php echo $merchantNameTrack; ?>" data-category="<?php echo $merchantCategoryNameTrack; ?>" data-brand="<?php echo $merchantNameTrack; ?>"><?php echo $merchantName; ?></a>
+								<span class="bfi-item-rating">
+									<?php for($i = 0; $i < $ratingMrc; $i++) { ?>
+										<i class="fa fa-star"></i>
+									<?php } ?>	             
+								</span>
+							<?php } ?>
 						</div>
 						<div class="bfi-item-address">
 							<?php if ($showMerchantMap){?>
@@ -234,8 +259,8 @@ foreach ($merchants as $merchant){
 										$totalInt = BFCHelper::convertTotal(number_format((float)$merchant->MrcAVG, 1, '.', ''));
 
 										?>
-										<a class="bfi-avg-value" href="<?php echo $routeRating ?>" target="_blank"><?php echo $rating_text['merchants_reviews_text_value_'.$totalInt] . " " . number_format((float)$merchant->MrcAVG, 1, '.', '') ?></a><br />
-										<a class="bfi-avg-count" href="<?php echo $routeRating ?>" target="_blank"><?php echo sprintf(JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_RATING_TOTAL'),$merchant->MrcAVGCount) ?></a>
+										<a class="bfi-avg-value eectrack" href="<?php echo $routeRating ?>" target="_blank" data-type="Resource" data-id="<?php echo $merchant->ResourceId?>" data-index="<?php echo $currKey?>" data-itemname="<?php echo $resourceNameTrack; ?>" data-category="<?php echo $merchantCategoryNameTrack; ?>" data-brand="<?php echo $merchantNameTrack; ?>"><?php echo $rating_text['merchants_reviews_text_value_'.$totalInt] . " " . number_format((float)$merchant->MrcAVG, 1, '.', '') ?></a><br />
+										<a class="bfi-avg-count eectrack" href="<?php echo $routeRating ?>" target="_blank" data-type="Resource" data-id="<?php echo $merchant->ResourceId?>" data-index="<?php echo $currKey?>" data-itemname="<?php echo $resourceNameTrack; ?>" data-category="<?php echo $merchantCategoryNameTrack; ?>" data-brand="<?php echo $merchantNameTrack; ?>"><?php echo sprintf(JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_RATING_TOTAL'),$merchant->MrcAVGCount) ?></a>
 									<?php } ?>
 									</div>
 							<?php } ?>
@@ -261,7 +286,7 @@ foreach ($merchants as $merchant){
 							</div>
 						<?php } ?>
 						<?php if($isCondominium) { ?>
-							<a href="<?php echo $resourceRoute?>" class="bfi-subitem-title" target="_blank"><?php echo $resourceName; ?></a>
+							<a href="<?php echo $resourceRoute?>" class="bfi-subitem-title eectrack" target="_blank" data-type="Resource" data-id="<?php echo $merchant->ResourceId?>" data-index="<?php echo $currKey?>" data-itemname="<?php echo $resourceNameTrack; ?>" data-category="<?php echo $merchantCategoryNameTrack; ?>" data-brand="<?php echo $merchantNameTrack; ?>"><?php echo $resourceName; ?></a>
 						<?php } ?>
 						
 					</div>
@@ -297,7 +322,7 @@ foreach ($merchants as $merchant){
 								}
 							}
 						} else {?>
-							<a href="<?php echo $resourceRoute ?>" class="bfi-btn <?php echo $btnClass ?>" target="_blank"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RESOURCE_BUTTON') ?></a>
+							<a href="<?php echo $resourceRoute ?>" class="bfi-btn eectrack <?php echo $btnClass ?>" target="_blank" data-type="Resource" data-id="<?php echo $merchant->ResourceId?>" data-index="<?php echo $currKey?>" data-itemname="<?php echo $resourceNameTrack; ?>" data-category="<?php echo $merchantCategoryNameTrack; ?>" data-brand="<?php echo $merchantNameTrack; ?>"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RESOURCE_BUTTON') ?></a>
 						<?php } ?>
 					</div>
 				</div>
@@ -360,9 +385,9 @@ foreach ($merchants as $merchant){
 					</div>
 					<div class="bfi-col-sm-3 bfi-text-right">
 						<?php if ($merchant->Price > 0){ ?>
-								<a href="<?php echo $resourceRoute ?>" class=" bfi-btn <?php echo $btnClass ?> " target="_blank"><?php echo $btnText ?></a>
+								<a href="<?php echo $routeCondominium ?>" class="bfi-btn eectrack <?php echo $btnClass ?>" target="_blank" data-type="Resource" data-id="<?php echo $merchant->ResourceId?>" data-index="<?php echo $currKey?>" data-itemname="<?php echo $resourceNameTrack; ?>" data-category="<?php echo $merchantCategoryNameTrack; ?>" data-brand="<?php echo $merchantNameTrack; ?>"><?php echo $btnText ?></a>
 						<?php }else{ ?>
-								<a href="<?php echo $resourceRoute ?>" class=" bfi-btn <?php echo $btnClass ?>" target="_blank"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RESOURCE_BUTTON') ?></a>
+								<a href="<?php echo $routeCondominium ?>" class="bfi-btn eectrack <?php echo $btnClass ?>" target="_blank" data-type="Resource" data-id="<?php echo $merchant->ResourceId?>" data-index="<?php echo $currKey?>" data-itemname="<?php echo $resourceNameTrack; ?>" data-category="<?php echo $merchantCategoryNameTrack; ?>" data-brand="<?php echo $merchantNameTrack; ?>"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RESOURCE_BUTTON') ?></a>
 						<?php } ?>
 					</div>
 				</div>

@@ -20,9 +20,6 @@ $sitename = $this->sitename;
 $language = $this->language;
 $offer = $this->items;
 
-$this->document->setDescription( BFCHelper::getLanguage($this->item->Description, $this->language));
-$this->document->setTitle(sprintf(JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEW_MERCHANTDETAILS_OFFERS_TITLE'),$merchant->Name,$sitename));
-
 $db   = JFactory::getDBO();
 $itemIdMerchant=0;
 $uriMerchant  = 'index.php?option=com_bookingforconnector&view=merchantdetails';
@@ -34,7 +31,45 @@ if ($itemIdMerchant<>0)
 	$uriMerchant.='&Itemid='.$itemIdMerchant;
 
 $routeMerchant  = JRoute::_($uriMerchant);
+$merchantName = BFCHelper::getLanguage($merchant->Name, $language, null, array('nobr'=>'nobr', 'striptags'=>'striptags')); 
+$indirizzo = isset($merchant->AddressData->Address)?$merchant->AddressData->Address:"";
+$cap = isset($merchant->AddressData->ZipCode)?$merchant->AddressData->ZipCode:""; 
+$comune = isset($merchant->AddressData->CityName)?$merchant->AddressData->CityName:"";
+$stato = isset($merchant->AddressData->StateName)?$merchant->AddressData->StateName:"";
+
+/*---------------IMPOSTAZIONI SEO----------------------*/
+	$merchantDescriptionSeo = BFCHelper::getLanguage($offer->Description, $language, null, array( 'nobr'=>'nobr', 'bbcode'=>'bbcode', 'striptags'=>'striptags')) ;
+	if (!empty($merchantDescriptionSeo) && strlen($merchantDescriptionSeo) > 170) {
+	    $merchantDescriptionSeo = substr($merchantDescriptionSeo,0,170);
+	}
+	$titleHead = "$merchantName: $offer->Name ($comune, $stato) - $merchant->MainCategoryName - " . JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_MERCHANTDETAILS_LAYOUT_OFFER') . " - $sitename";
+	$keywordsHead = "$offer->Name, $merchantName, $comune, $stato, $merchant->MainCategoryName, " . JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_MERCHANTDETAILS_LAYOUT_OFFER') ;
+	$routeSeo = ($isportal)? $routeMerchant: $base_url;
+
+	$this->document->setTitle($titleHead);
+	$this->document->setDescription($merchantDescriptionSeo);
+	$this->document->setMetadata('keywords', $keywordsHead);
+	$this->document->setMetadata('robots', "index,follow");
+	
+	$this->document->setMetadata('og:type', "Organization");
+	$this->document->setMetadata('og:title', $titleHead);
+	$this->document->setMetadata('og:description', $merchantDescriptionSeo);
+	$this->document->setMetadata('og:url', $routeSeo);
+
+	$payload["@type"] = "Organization";
+	$payload["@context"] = "http://schema.org";
+	$payload["name"] = $merchantName;
+	$payload["description"] = $merchantDescriptionSeo;
+	$payload["url"] = $routeSeo; 
+	if (!empty($merchant->LogoUrl)){
+		$payload["logo"] = "https:".BFCHelper::getImageUrlResized('merchant',$merchant->LogoUrl, 'logobig');
+	}
+/*--------------- FINE IMPOSTAZIONI SEO----------------------*/
+
 ?>
+<script type="application/ld+json">// <![CDATA[
+<?php echo json_encode($payload,JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE); ?>
+// ]]></script>
 
 <div class="bfi-content">
 	<?php if (!empty($offer)){ ?>
@@ -49,7 +84,7 @@ $routeMerchant  = JRoute::_($uriMerchant);
 			$offerName = BFCHelper::getLanguage($offer->Name, $language);
 				
 		?>
-		<div class="bfi-title-name"><?php echo  $offer->Name?> </div>
+		<div class="bfi-title-name"><h1><?php echo  $offer->Name?></h1> </div>
 		<div class="bfi-clearfix "></div>
 	
 		<ul class="bfi-menu-top">
@@ -74,7 +109,7 @@ $routeMerchant  = JRoute::_($uriMerchant);
 		<?php if (!empty($offer->Description)){?>
 		<div class="bfi-description-data bfi-row">
 			<div class="bfi-description-data bfi-col-md-12">
-				<?php echo $offer->Description ?>		
+				<?php echo BFCHelper::getLanguage($offer->Description, $language, null, array( 'striptags'=>'striptags', 'bbcode'=>'bbcode','ln2br'=>'ln2br')); ?>
 			</div>
 		</div>
 		<?php } ?>

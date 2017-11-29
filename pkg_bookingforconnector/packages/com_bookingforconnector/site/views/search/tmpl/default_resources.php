@@ -24,7 +24,8 @@ $rating_text = array('merchants_reviews_text_value_0' => JTEXT::_('COM_BOOKINGFO
 						'merchants_reviews_text_value_10' => JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RATING_VALUATION_10'),                                 
 					);
 $currencyclass = bfi_get_currentCurrency();
-$fromsearchparam = "&fromsearch=1";
+$listNameAnalytics = $this->listNameAnalytics;
+$fromsearchparam = "&fromsearch=1&lna=".$listNameAnalytics;
 $showSearchTitle = true;
 if($this->getLayout()=='tags') {
 	$fromsearchparam = "";
@@ -65,8 +66,9 @@ if($itemId == 0){
 }
 
 $onlystay = true ;
-if(isset($_SESSION['search.params']) && isset($_SESSION['search.params']['onlystay'])){
-		$onlystay =  ($_SESSION['search.params']['onlystay'] === 'false' || $_SESSION['search.params']['onlystay'] === 0)? false: true;
+$currParam = BFCHelper::getSearchParamsSession();
+if(isset($currParam) && isset($currParam['onlystay'])){
+		$onlystay =  ($currParam['onlystay'] === 'false' || $currParam['onlystay'] === 0)? false: true;
 }
 
 
@@ -83,7 +85,7 @@ $checkin = new JDate($checkin->format('Y-m-d'));
 $checkout = new JDate($checkout->format('Y-m-d')); 
 $checkinstr = $checkin->format("d") . " " . $checkin->format("M") . ' ' . $checkin->format("Y") ;
 $checkoutstr = $checkout->format("d") . " " . $checkout->format("M") . ' ' . $checkout->format("Y") ;
-$totPerson = (isset($_SESSION['search.params'])  && isset($_SESSION['search.params']['paxes']))? $_SESSION['search.params']['paxes']:0 ;
+$totPerson = (isset($currParam)  && isset($currParam['paxes']))? $currParam['paxes']:0 ;
 ?>
 
 <div class="bfi-content">
@@ -130,9 +132,10 @@ $totPerson = (isset($_SESSION['search.params'])  && isset($_SESSION['search.para
 	<div class="bfi-clearfix"></div>
 
 <div id="bfi-list" class="bfi-row bfi-list">
-	<?php foreach ($results as $resource){
+	<?php foreach ($results as $currKey=>$resource){
 
 		$resourceName = BFCHelper::getLanguage($resource->ResName, $this->language, null, array('ln2br'=>'ln2br', 'striptags'=>'striptags')); 
+		$merchantName = $resource->MrcName;
 
 		$resourceLat = $resource->ResLat;
 		$resourceLon = $resource->ResLng;
@@ -151,7 +154,7 @@ $totPerson = (isset($_SESSION['search.params'])  && isset($_SESSION['search.para
 
 		$routeMerchant = "";
 		if($isportal){
-			$currUriMerchant = $uriMerchant. '&merchantId=' . $resource->MerchantId . ':' . BFCHelper::getSlug($resource->MrcName);
+			$currUriMerchant = $uriMerchant. '&merchantId=' . $resource->MerchantId . ':' . BFCHelper::getSlug($merchantName);
 			if ($itemIdMerchant<>0)
 				$currUriMerchant.= '&Itemid='.$itemIdMerchant;
 			$routeMerchant = JRoute::_($currUriMerchant.$fromsearchparam);
@@ -165,7 +168,7 @@ $totPerson = (isset($_SESSION['search.params'])  && isset($_SESSION['search.para
 		$bookingType = $resource->BookingType;
 		$IsBookable = $resource->IsBookable;
 
-		$btnText = JText::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_OFFER_DETAILS');
+		$btnText = JText::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RESOURCE_BUTTON_REQ');
 		$btnClass = "bfi-alternative";
 		if ($IsBookable){
 			$btnText = JText::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RESOURCE_BUTTON_HTTPS');
@@ -199,25 +202,30 @@ $totPerson = (isset($_SESSION['search.params'])  && isset($_SESSION['search.para
 		{
 			$ratingMrc = $ratingMrc/10;
 		}
+
+		$resourceNameTrack =  BFCHelper::string_sanitize($resourceName);
+		$merchantNameTrack =  BFCHelper::string_sanitize($merchantName);
+		$merchantCategoryNameTrack =  BFCHelper::string_sanitize($resource->MrcCategoryName);
+
 	?>
 	<div class="bfi-col-sm-6 bfi-item">
 		<div class="bfi-row bfi-sameheight" >
 			<div class="bfi-col-sm-3 bfi-img-container">
-				<a href="<?php echo $resourceRoute ?>" style='background: url("<?php echo $resourceImageUrl; ?>") center 25%;background-size: cover;' target="_blank"><img src="<?php echo $resourceImageUrl; ?>" class="bfi-img-responsive" /></a> 
+				<a href="<?php echo $resourceRoute ?>" style='background: url("<?php echo $resourceImageUrl; ?>") center 25%;background-size: cover;' target="_blank" class="eectrack" data-type="Resource" data-id="<?php echo $resource->ResourceId?>" data-index="<?php echo $currKey?>" data-itemname="<?php echo $resourceNameTrack; ?>" data-category="<?php echo $merchantCategoryNameTrack; ?>" data-brand="<?php echo $merchantNameTrack; ?>"><img src="<?php echo $resourceImageUrl; ?>" class="bfi-img-responsive" /></a> 
 			</div>
 			<div class="bfi-col-sm-9 bfi-details-container">
 				<!-- merchant details -->
 				<div class="bfi-row" >
 					<div class="bfi-col-sm-10">
 						<div class="bfi-item-title">
-							<a href="<?php echo $resourceRoute ?>" id="nameAnchor<?php echo $resource->ResourceId?>" target="_blank"><?php echo  $resourceName ?></a> 
+							<a href="<?php echo $resourceRoute ?>" id="nameAnchor<?php echo $resource->ResourceId?>" target="_blank" class="eectrack" data-type="Resource" data-id="<?php echo $resource->ResourceId?>" data-index="<?php echo $currKey?>" data-itemname="<?php echo $resourceNameTrack; ?>" data-category="<?php echo $merchantCategoryNameTrack; ?>" data-brand="<?php echo $merchantNameTrack; ?>"><?php echo  $resourceName ?></a> 
 							<span class="bfi-item-rating">
 								<?php for($i = 0; $i < $rating; $i++) { ?>
 									<i class="fa fa-star"></i>
 								<?php } ?>	             
 							</span>
 							<?php if($isportal) { ?>
-								- <a href="<?php echo $routeMerchant?>" class="bfi-subitem-title" target="_blank"><?php echo $resource->MrcName; ?></a>
+								- <a href="<?php echo $routeMerchant?>" class="bfi-subitem-title eectrack" target="_blank" data-type="Merchant" data-id="<?php echo $resource->MerchantId?>" data-index="<?php echo $currKey?>" data-itemname="<?php echo $merchantNameTrack; ?>" data-category="<?php echo $merchantCategoryNameTrack; ?>" data-brand="<?php echo $merchantNameTrack; ?>"><?php echo $merchantName; ?></a>
 								<span class="bfi-item-rating">
 									<?php for($i = 0; $i < $ratingMrc; $i++) { ?>
 										<i class="fa fa-star"></i>
@@ -240,8 +248,8 @@ $totPerson = (isset($_SESSION['search.params'])  && isset($_SESSION['search.para
 									$totalInt = BFCHelper::convertTotal(number_format((float)$resource->ResAVG, 1, '.', ''));
 
 									?>
-									<a class="bfi-avg-value" href="<?php echo $resourceRoute ?>" target="_blank"><?php echo $rating_text['merchants_reviews_text_value_'.$totalInt] . " " . number_format((float)$resource->ResAVG, 1, '.', '') ?></a><br />
-									<a class="bfi-avg-count" href="<?php echo $resourceRoute ?>" target="_blank"><?php echo sprintf(JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_RATING_TOTAL') ,$resource->ResAVGCount) ?></a>
+									<a class="bfi-avg-value eectrack" href="<?php echo $resourceRoute ?>" target="_blank" data-type="Resource" data-id="<?php echo $resource->ResourceId?>" data-index="<?php echo $currKey?>" data-itemname="<?php echo $resourceNameTrack; ?>" data-category="<?php echo $merchantCategoryNameTrack; ?>" data-brand="<?php echo $merchantNameTrack; ?>"><?php echo $rating_text['merchants_reviews_text_value_'.$totalInt] . " " . number_format((float)$resource->ResAVG, 1, '.', '') ?></a><br />
+									<a class="bfi-avg-count eectrack" href="<?php echo $resourceRoute ?>" target="_blank" data-type="Resource" data-id="<?php echo $resource->ResourceId?>" data-index="<?php echo $currKey?>" data-itemname="<?php echo $resourceNameTrack; ?>" data-category="<?php echo $merchantCategoryNameTrack; ?>" data-brand="<?php echo $merchantNameTrack; ?>"><?php echo sprintf(JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_RATING_TOTAL') ,$resource->ResAVGCount) ?></a>
 								<?php } ?>
 								</div>
 						<?php } ?>
@@ -263,7 +271,7 @@ $totPerson = (isset($_SESSION['search.params'])  && isset($_SESSION['search.para
 								<?php }?>
 							</div>
 						<?php } ?>
-						<?php echo ($resource->AvailabilityType ==0 || $resource->AvailabilityType ==1) ? $resource->ResCategoryName: ""; ?>
+						<?php echo $resource->ResCategoryName; ?>
 					</div>
 					<div class="bfi-col-sm-3 ">
 						<?php if (!$resource->IsCatalog && $onlystay ){ ?>
@@ -297,7 +305,7 @@ $totPerson = (isset($_SESSION['search.params'])  && isset($_SESSION['search.para
 								}
 							}
 						} else {?>
-							<a href="<?php echo $resourceRoute ?>" class="bfi-btn <?php echo $btnClass ?>" target="_blank"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RESOURCE_BUTTON') ?></a>
+							<a href="<?php echo $resourceRoute ?>" class="bfi-btn eectrack <?php echo $btnClass ?>" target="_blank" data-type="Resource" data-id="<?php echo $resource->ResourceId?>" data-index="<?php echo $currKey?>" data-itemname="<?php echo $resourceNameTrack; ?>" data-category="<?php echo $merchantCategoryNameTrack; ?>" data-brand="<?php echo $merchantNameTrack; ?>"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RESOURCE_BUTTON') ?></a>
 						<?php } ?>
 					</div>
 				</div>
@@ -359,9 +367,9 @@ $totPerson = (isset($_SESSION['search.params'])  && isset($_SESSION['search.para
 					</div>
 					<div class="bfi-col-sm-3 bfi-text-right">
 						<?php if ($resource->Price > 0){ ?>
-								<a href="<?php echo $resourceRoute ?>" class=" bfi-btn <?php echo $btnClass ?> " target="_blank"><?php echo $btnText ?></a>
+								<a href="<?php echo $resourceRoute ?>" class="bfi-btn eectrack <?php echo $btnClass ?> " target="_blank" data-type="Resource" data-id="<?php echo $resource->ResourceId?>" data-index="<?php echo $currKey?>" data-itemname="<?php echo $resourceNameTrack; ?>" data-category="<?php echo $merchantCategoryNameTrack; ?>" data-brand="<?php echo $merchantNameTrack; ?>"><?php echo $btnText ?></a>
 						<?php }else{ ?>
-								<a href="<?php echo $resourceRoute ?>" class=" bfi-btn <?php echo $btnClass ?>" target="_blank"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RESOURCE_BUTTON') ?></a>
+								<a href="<?php echo $resourceRoute ?>" class="bfi-btn eectrack <?php echo $btnClass ?>" target="_blank" data-type="Resource" data-id="<?php echo $resource->ResourceId?>" data-index="<?php echo $currKey?>" data-itemname="<?php echo $resourceNameTrack; ?>" data-category="<?php echo $merchantCategoryNameTrack; ?>" data-brand="<?php echo $merchantNameTrack; ?>"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RESOURCE_BUTTON') ?></a>
 						<?php } ?>
 					</div>
 				</div>

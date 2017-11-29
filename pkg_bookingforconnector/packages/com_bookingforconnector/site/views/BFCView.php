@@ -30,7 +30,7 @@ class BFCView extends JViewLegacy
 		parent::display($tpl);
 	}
 	
-	public function checkAnalytics($listName) {
+	public function checkAnalytics($listName="") {
 		return BFCHelper::checkAnalytics($listName);
 	}
 }

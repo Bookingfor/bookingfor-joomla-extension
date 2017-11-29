@@ -11,11 +11,10 @@ defined('_JEXEC') or die('Restricted access');
 $sitename = $this->sitename;
 $language = $this->language;
 $merchant = $this->item;
-$merchantname = BFCHelper::getLanguage($merchant->Name, $this->language, null, array('ln2br'=>'ln2br', 'striptags'=>'striptags')); 
+$merchantName = BFCHelper::getLanguage($merchant->Name, $this->language, null, array('ln2br'=>'ln2br', 'striptags'=>'striptags')); 
 $isportal = COM_BOOKINGFORCONNECTOR_ISPORTAL;
 $showdata = COM_BOOKINGFORCONNECTOR_SHOWDATA;
 
-//$this->document->setTitle($this->item->Name);
 $this->document->setDescription( BFCHelper::getLanguage($this->item->Description, $this->language));
 $this->document->setTitle(sprintf(JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEW_MERCHANTDETAILS_REVIEWS_TITLE'),$merchant->Name,$sitename));
 
@@ -63,9 +62,47 @@ if ($rating>9 )
 }
 
 
+$merchantName = BFCHelper::getLanguage($merchant->Name, $language, null, array('nobr'=>'nobr', 'striptags'=>'striptags')); 
+$indirizzo = isset($merchant->AddressData->Address)?$merchant->AddressData->Address:"";
+$cap = isset($merchant->AddressData->ZipCode)?$merchant->AddressData->ZipCode:""; 
+$comune = isset($merchant->AddressData->CityName)?$merchant->AddressData->CityName:"";
+$stato = isset($merchant->AddressData->StateName)?$merchant->AddressData->StateName:"";
+
+/*---------------IMPOSTAZIONI SEO----------------------*/
+	$merchantDescriptionSeo = BFCHelper::getLanguage($merchant->Description, $language, null, array( 'nobr'=>'nobr', 'bbcode'=>'bbcode', 'striptags'=>'striptags')) ;
+	if (!empty($merchantDescriptionSeo) && strlen($merchantDescriptionSeo) > 170) {
+	    $merchantDescriptionSeo = substr($merchantDescriptionSeo,0,170);
+	}
+	$titleHead = "$merchantName ($comune, $stato) - " . JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_MERCHANTDETAILS_LAYOUT_RATINGS') . " - $sitename";
+	$keywordsHead = "$merchantName, $comune, $stato, $merchant->MainCategoryName, " . JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_MERCHANTDETAILS_LAYOUT_RATINGS') ;
+	$routeSeo = ($isportal)? $routeMerchant: $base_url;
+
+	$this->document->setTitle($titleHead);
+	$this->document->setDescription($merchantDescriptionSeo);
+	$this->document->setMetadata('keywords', $keywordsHead);
+	$this->document->setMetadata('robots', "index,follow");
+	
+	$this->document->setMetadata('og:type', "Organization");
+	$this->document->setMetadata('og:title', $titleHead);
+	$this->document->setMetadata('og:description', $merchantDescriptionSeo);
+	$this->document->setMetadata('og:url', $routeSeo);
+
+	$payload["@type"] = "Organization";
+	$payload["@context"] = "http://schema.org";
+	$payload["name"] = $merchantName;
+	$payload["description"] = $merchantDescriptionSeo;
+	$payload["url"] = $routeSeo; 
+	if (!empty($merchant->LogoUrl)){
+		$payload["logo"] = "https:".BFCHelper::getImageUrlResized('merchant',$merchant->LogoUrl, 'logobig');
+	}
+/*--------------- FINE IMPOSTAZIONI SEO----------------------*/
+
 ?>
+<script type="application/ld+json">// <![CDATA[
+<?php echo json_encode($payload,JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE); ?>
+// ]]></script>
 <div class="bfi-content">
-	<div class="bfi-title-name"><?php echo  $merchant->Name?> 
+	<div class="bfi-title-name"><h1><?php echo  $merchant->Name?></h1> 
 		<span class="bfi-item-rating">
 		  <?php for($i = 0; $i < $rating; $i++) { ?>
 		  <i class="fa fa-star"></i>
@@ -76,29 +113,11 @@ if ($rating>9 )
 	<div class="clear"></div>
 	<?php
 	$list = BFCHelper::parseArrayList(JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEW_CONSTANTS_RATING_TYPOLOGIESLIST'));
-	$listfiltered = isset($_SESSION['ratings']['filters']['typologyid']) ? $_SESSION['ratings']['filters']['typologyid'] : 0;
+	$listfiltered = BFCHelper::getSession('ratingsfilterstypologyid', 0 , 'com_bookingforconnector');
 	$genericlist = JHTML::_('select.genericlist', $list, 'filters[typologyid]',array('onchange' => 'this.form.submit();') , 'value', 'text', $listfiltered);
 
 	$summaryRatings = BFCHelper::getRatingByMerchantId($merchant->MerchantId);
 
-////$searchid =  $this->params['searchid'];
-//$filters = $this->params['filters'];
-////$listOrder	= $this->escape($this->state->get('list.ordering'));
-////$listDirn	= $this->escape($this->state->get('list.direction'));
-//
-//// preparo la lista per i filtri..
-//$list = BFCHelper::parseArrayList(JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEW_CONSTANTS_RATING_TYPOLOGIESLIST'));
-//$listfiltered =  $filters['typologyid'];
-////foreach( $list as $key=>$value) {
-////	$options1[] = JHTML::_( 'select.option', $key, $value );
-////}
-////$radiolist = JHTML::_('select.radiolist', $options1, 'filters[typologyid]',array('onchange' => 'this.form.submit();', 'class'=> 'rbfilter') , 'value', 'text', $listfiltered);
-//$genericlist = JHTML::_('select.genericlist', $list, 'filters[typologyid]',array('onchange' => 'this.form.submit();') , 'value', 'text', $listfiltered);
-//
-////echo ("<pre>");	
-////echo (print_r($list));	
-////echo ("</pre>");	
-//
 	$ratings = $this->items		;
 	$summaryRatings = $this->getModel()->getMerchantRatingAverageFromService();
 	if(isset($summaryRatings)) {
@@ -151,7 +170,7 @@ if ($rating>9 )
 		</div>
 	</div>
 	<div class="bfi-rating-container">
-			<?php $typologyId = isset($_SESSION['ratings']['filters']['typologyid']) ? $_SESSION['ratings']['filters']['typologyid'] : 0; ?>
+			<?php $typologyId = BFCHelper::getSession('ratingsfilterstypologyid', 0 , 'com_bookingforconnector'); ?>
 			<form action="<?php echo htmlspecialchars(JFactory::getURI()->toString()); ?>" method="post" name="adminForm" id="adminForm" class="bfi-rating-filter ratingformfilter">
 					<?php echo JText::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RATING_FILTER'); ?>
 					<?php echo $genericlist; ?>
@@ -274,7 +293,7 @@ if ($rating>9 )
 					<?php if (!empty($reply)) { ?>
 						<div class="bfi-rating-details bfi-arrow-box-top">
 							<div class="">
-							   <?php echo sprintf( JText::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RATING_MERCHANTREPLY'), $merchantname); ?>
+							   <?php echo sprintf( JText::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RATING_MERCHANTREPLY'), $merchantName); ?>
 								<span class="com_bookingforconnector_rating_date_small bfi-pull-right"><?php echo  $replydateLabel?></span>
 							</div>
 							<br />

@@ -11,7 +11,7 @@
 	<copyright>Copyright (c)2006-2017 Ipertrade s.r.l.</copyright>
      <license>http://www.gnu.org/copyleft/gpl.html GNU/GPL</license>
 	<!--  The version string is recorded in the components table -->
-	<version>3.1.0</version>
+	<version>3.1.4</version>
 	<!-- The description is optional and defaults to the name -->
 	<description>Simple module for BookingFor Search</description>
  

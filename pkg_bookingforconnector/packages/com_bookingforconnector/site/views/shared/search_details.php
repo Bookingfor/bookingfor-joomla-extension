@@ -9,8 +9,27 @@
 // No direct access to this file
 defined('_JEXEC') or die('Restricted access');
 
-$cartType = 1; //$merchant->CartType;
+//$CartMultimerchantEnabled = !BFCHelper::getCartMultimerchantEnabled(); 
 $currentCartConfiguration = null;
+$cartLocked = false;
+$resetCart = 0;
+//if(!$CartMultimerchantEnabled){
+//	$tmpUserId = BFCHelper::bfi_get_userId();
+//	$currentCartConfiguration = BFCHelper::GetCartByExternalUser($tmpUserId, $language, true);
+//	$cartEmpty=empty($currentCartConfiguration);
+//	$cartConfig = null;
+//	if(!$cartEmpty){
+//		$cartConfig = json_decode(($currentCartConfiguration->CartConfiguration));
+//		if(isset($cartConfig->Resources) && count($cartConfig->Resources)>0){
+//			foreach ($cartConfig->Resources as $keyRes=>$resource) {
+//				$resetCart = $resource->IsBookable == 0? 1:0;
+//				 break;
+//			}
+//		}
+//
+//	}
+//
+//}
 
 $ProductAvailabilityType = 1;
 $checkInDates = '';
@@ -21,6 +40,10 @@ $usessl = COM_BOOKINGFORCONNECTOR_USESSL;
 
 $document     = JFactory::getDocument();
 $language     = $document->getLanguage();
+
+$fromSearch =  BFCHelper::getVar('fromsearch','0');
+$listNameAnalytics =  BFCHelper::getVar('lna','0');
+$currLlistNameAnalytics = BFCHelper::$listNameAnalytics[$listNameAnalytics];
 
 $db   = JFactory::getDBO();
 $uri  = 'index.php?option=com_bookingforconnector&view=resource';
@@ -46,7 +69,7 @@ $uriMerchant = $uriMerchant. '&merchantId=' . $merchant->MerchantId . ':' . BFCH
 if ($itemIdMerchant<>0)
 	$uriMerchant.='&Itemid='.$itemIdMerchant;
 
-$currUriMerchant = $uriMerchant . "&fromsearch=1";
+$currUriMerchant = $uriMerchant . "&fromsearch=1&lna=".$listNameAnalytics;
 $routeMerchant = JRoute::_($currUriMerchant);
 
 //$merchantdetails_page = get_post( bfi_get_page_id( 'merchantdetails' ) );
@@ -125,49 +148,21 @@ if(!empty($resourceId)){
 
 if($usessl){
 	$formRouteBook = str_replace( 'http:', 'https:', $formRouteBook );
-}
-
-
-//$defaultCurrency = BFCHelper::getDefaultCurrency();
-//$currencyExchanges = BFCHelper::getCurrencyExchanges();
-//
-//echo "<pre>defaultCurrency";
-//echo $defaultCurrency;
-//echo "</pre>";
-//
-//echo "<pre>currencyExchanges";
-//echo print_r($currencyExchanges);
-//echo "</pre>";
-
-//echo "<pre>this->defaultcurrency";
-//echo bfi_get_currentCurrency();
-//echo "</pre>";
-
-//if($usessl){
-//	$formRouteBook = str_replace( 'http:', 'https:', $formRouteBook );
-//}
-
-//$formOrderRouteBook = $formRouteBook ;
-
-if($usessl){
 	$url_cart_page = str_replace( 'http:', 'https:', $url_cart_page );
 }
 
 $formOrderRouteBook = $url_cart_page;
 
-
-$_SESSION['search.params']['extras'] = '';
-
 $pars = BFCHelper::getSearchParamsSession();
+$pars['extras'] = '';
 /*--------------------------------------------*/
 
 $eecstays = array();
 
-$CartMultimerchantEnabled = BFCHelper::getCartMultimerchantEnabled(); 
 
 $productCategory = BFCHelper::GetProductCategoryForSearch($language,1,$merchant->MerchantId); 
 
-$refreshState = isset($_SESSION['search.params']['refreshcalc']);
+$refreshState = isset($pars['refreshcalc']);
 
 $checkoutspan = '+1 day';
 if ($ProductAvailabilityType== 0)
@@ -257,9 +252,9 @@ $checkin->setTime(0,0,0);
 if(!empty(BFCHelper::getVar('refreshcalc',''))){
 	BFCHelper::setSearchParamsSession($pars);
 }
-if ($checkin == $checkout){
-    $checkout->modify($checkoutspan); 
-}
+//if ($checkin == $checkout){
+//    $checkout->modify($checkoutspan); 
+//}
 if ($checkout < $checkin){
 	$checkout = clone $checkin;
     $checkout->modify($checkoutspan); 
@@ -305,7 +300,7 @@ if($countPaxes>0){
 	}
 }
 
-$duration = 1;
+$duration = 0;
 
 if ($ProductAvailabilityType == 2)
 {
@@ -315,7 +310,7 @@ if ($ProductAvailabilityType == 2)
 	{
 		$minuteStart = BFCHelper::ConvertIntTimeToMinutes($currAvailCalHour[0]->TimeMinStart);
 		$minuteEnd = BFCHelper::ConvertIntTimeToMinutes($currAvailCalHour[0]->TimeMinEnd);
-		$duration   = $minuteEnd - $minuteStart;
+//		$duration   = $minuteEnd - $minuteStart;
 		$checkin->modify('+'.$minuteStart.' minutes'); 
 	}
 	$checkout = clone $checkin;
@@ -328,10 +323,10 @@ if ($ProductAvailabilityType == 2)
 	$duration = $checkin->diff($checkout)->format('%a');
 }
 
-//if ($ProductAvailabilityType== 0)
-//{
-//	$duration +=1; 
-//}
+if ($ProductAvailabilityType== 0)
+{
+	$duration +=1; 
+}
 
 $dateStringCheckin =  $checkin->format('d/m/Y');
 $dateStringCheckout =  $checkout->format('d/m/Y');
@@ -358,7 +353,6 @@ if ($checkin > $alternativeDateToSearch)
 
 $defaultRatePlan = null;
 
-$fromSearch =  BFCHelper::getVar('fromsearch','0');
 
 $allRatePlans = array();
 if(!empty($fromSearch)){
@@ -414,15 +408,10 @@ $showChildrenagesmsg = isset($_REQUEST['showmsgchildage']) ? $_REQUEST['showmsgc
 $btnSearchclass=""; 
 
 $listDayTS = array();
+$currentCartsItems = BFCHelper::getSession('totalItems', 0, 'bfi-cart');
 
 ?>
 
-<?php 
-//echo "<pre>";
-//echo print_r($productCategory );
-//echo "</pre>";
-
-?>
 <div id="calculator" class="ajaxReload">
 
 <script type="text/javascript">
@@ -436,9 +425,8 @@ $listDayTS = array();
 <br />
 <!-- form fields -->
 <h4 class="bfi-titleform"><?php echo JText::_('COM_BOOKINGFORCONNECTOR_RESOURCE_VIEW_CALCULATOR_TITLE') ?>
-<?php if($CartMultimerchantEnabled) { ?>
-	<div class="bfi-pull-right"><a href="<?php echo $url_cart_page ?>" class="bfi-shopping-cart"><?php echo JText::_('COM_BOOKINGFORCONNECTOR_ORDERS_VIEW_CART') ?></a></div>
-	<div class="bfi-hide" id="bfimodalcart">
+	<div class="bfi-pull-right"><a href="<?php echo $url_cart_page ?>" class="bfi-shopping-cart"><i class="fa fa-shopping-cart "></i> <span class="bfibadge" style="<?php echo (COM_BOOKINGFORCONNECTOR_SHOWBADGE) ?"":"display:none"; ?>"><?php echo ($currentCartsItems>0) ?$currentCartsItems:"";?></span><?php echo JText::_('COM_BOOKINGFORCONNECTOR_ORDERS_VIEW_CART') ?></a></div>
+	<div class="bfi-hide bfimodalcart">
 		<div class="bfi-title"><?php echo JText::_('COM_BOOKINGFORCONNECTOR_ORDERS_VIEW_CART') ?></div>
 		<div class="bfi-body"></div>
 		<div class="bfi-footer">
@@ -446,7 +434,6 @@ $listDayTS = array();
 			<span onclick="javascript:window.location.assign('<?php echo $url_cart_page ?>')" class="bfi-btn">Checkout</span>
 		</div>
 	</div><!-- /.modal -->
-<?php } ?>
 <div class="bfi-clearfix"></div>
 </h4>
 <form id="bfi-calculatorForm" action="<?php echo $formRoute?>" method="POST" class="bfi_resource-calculatorForm bfi_resource-calculatorTable ">
@@ -466,7 +453,7 @@ $listDayTS = array();
 							<div class="bfi-datepicker">
 							<input type="hidden" name="checkout" value="<?php echo $checkout->format('d/m/Y'); ?>" id="<?php echo $checkoutId; ?>" readonly="readonly"/>
 							</div>
-							<div class="<?php echo ($ProductAvailabilityType == 3 || $ProductAvailabilityType == 2)? "bfi-hide " : " "  ?>">
+							<div class="<?php echo ($ProductAvailabilityType == 3 || $ProductAvailabilityType == 2 || empty($resourceId))? "bfi-hide " : " "  ?>">
 								&nbsp;(<span class="calendarnight" id="durationdays"><?php echo $duration ?></span> <span class="calendarnightlabel"><?php echo $ProductAvailabilityType == 1 ? JTEXT::_('MOD_BOOKINGFORSEARCH_NIGHT') : JTEXT::_('MOD_BOOKINGFORSEARCH_DAYS')   ?></span>)
 							</div>
 						</div>
@@ -590,6 +577,8 @@ $listDayTS = array();
 	<input name="extras[]" type="hidden" value="<?php echo $selectablePrices ?>" />
 	<input name="refreshcalc" type="hidden" value="1" />
 	<input name="fromsearch" type="hidden" value="1" />
+	<input name="lna" type="hidden" value="<?php echo $listNameAnalytics ?>" />
+
 	<input name="availabilitytype" id="productAvailabilityType" type="hidden" value="<?php echo $ProductAvailabilityType?>" />
 	<input type="hidden" value="0" name="showmsgchildage" id="showmsgchildagecalculator"/>
 	<div class="bfi-hide" id="bfi_childrenagesmsgcalculator">
@@ -701,9 +690,10 @@ $showResult= " bfi-hide";
 			<tr>
 				<td colspan="5" style="padding:0;border:none;"></td>
 				<td rowspan="400">
-					<?php if ($cartType == 1 && $currentCartConfiguration != null) //////// && ($currentCartConfiguration as List<CartOrder>).Any(t => t.Resources.Any(r => r.MerchantId != Model.MerchantId)))
+					<?php if ($cartLocked) //////// && ($currentCartConfiguration as List<CartOrder>).Any(t => t.Resources.Any(r => r.MerchantId != Model.MerchantId)))
 					{ ?>
 						<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_RESOURCE_VIEW_CALCULATOR_NO_ANOTHER_MERCHANT') ?>
+	<div><a href="<?php echo $url_cart_page ?>"><?php echo JText::_('COM_BOOKINGFORCONNECTOR_ORDERS_VIEW_CART') ?></a></div>
 					
 					<?php } else{ ?>
 							<div class="bfi-book-now">
@@ -714,7 +704,7 @@ $showResult= " bfi-hide";
 									<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RESOURCE_BUTTON_HTTPS') ?>
 								</div>
 								<div class="bfi-btn bfi-alternative bfi-request-now" onclick="ChangeVariation(this);">
-									<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RESOURCE_BUTTON') ?>
+									<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RESOURCE_BUTTON_REQ') ?>
 								</div>
 
 							</div>
@@ -727,13 +717,16 @@ $showResult= " bfi-hide";
 				if ($itemId<>0){
 					$currUriresourceJM.='&Itemid='.$itemId;
 				}
-				$currUriresourceJM .= "&fromsearch=1";
+				$currUriresourceJM .= "&fromsearch=1&lna=".$listNameAnalytics;
 				$currUriresource = JRoute::_($currUriresourceJM);
+				$resourceNameTrack =  BFCHelper::string_sanitize($resource->Name);
+				$merchantNameTrack =  BFCHelper::string_sanitize($merchant->Name);
+				$merchantCategoryNameTrack =  BFCHelper::string_sanitize($merchant->MainCategoryName);
 
 			?>
 			<tr>
 				<td class="bfi-firstcol bfi-firstcol-selected">
-					<a class="bfi-resname" onclick="bfiGoToTop()" href="<?php echo $currUriresource ?>"><?php echo $resource->Name; ?></a>
+					<a class="bfi-resname eectrack" onclick="bfiGoToTop()" href="<?php echo $currUriresource ?>" data-type="Resource" data-id="<?php echo $resource->ResourceId?>" data-index="0" data-itemname="<?php echo $resourceNameTrack; ?>" data-category="<?php echo $merchantCategoryNameTrack; ?>" data-brand="<?php echo $merchantNameTrack; ?>"><?php echo $resource->Name; ?></a>
 
 <?php 
 			if(!empty($resource->ImageUrl)){
@@ -769,7 +762,7 @@ $currTouristTaxValue = isset($resource->TouristTaxValue)?$resource->TouristTaxVa
 
 				</td>
 				<td>
-				<?php if ($resource->MaxCapacityPaxes>0):?>
+				<?php if (isset($resource->MaxCapacityPaxes) && $resource->MaxCapacityPaxes>0):?>
 					<div class="bfi-icon-paxes">
 						<i class="fa fa-user"></i> 
 						<?php if ($resource->MaxCapacityPaxes==2){?>
@@ -785,7 +778,7 @@ $currTouristTaxValue = isset($resource->TouristTaxValue)?$resource->TouristTaxVa
 					<div class="errorbooking" id="errorbooking">
 						<strong><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_RESOURCE_VIEW_CALCULATOR_NORESULT') ?></strong>
 						<!-- No disponibile -->
-						<?php if($resource->MaxCapacityPaxes > 0 && ( $totalPerson > $resource->MaxCapacityPaxes || $totalPerson < $resource->MinCapacityPaxes )) :?><!-- Errore persone-->
+						<?php if(isset($resource->MaxCapacityPaxes) && $resource->MaxCapacityPaxes > 0 && ( $totalPerson > $resource->MaxCapacityPaxes || $totalPerson < $resource->MinCapacityPaxes )) :?><!-- Errore persone-->
 							<br /><?php echo sprintf(JTEXT::_('COM_BOOKINGFORCONNECTOR_RESOURCE_VIEW_CALCULATOR_ERRORPAXS') , $resource->MinCapacityPaxes, $resource->MaxCapacityPaxes) ?>
 						<?php endif;?>
 					</div>
@@ -806,7 +799,10 @@ $reskey = -1;
 foreach($allResourceId as $resId) {
 
 	$reskey += 1;
-
+	$currKey = $reskey;
+	if(!empty($resourceId) && !in_array($resourceId,$allResourceId)) {
+		$currKey += 1;
+	}
 	$resRateplans =  array_filter($allRatePlans, function($p) use ($resId) {return $p->ResourceId == $resId ;}); // c#: allRatePlans.Where(p => p.ResourceId == resId);
 
 	usort($resRateplans, "BFCHelper::bfi_sortResourcesRatePlans");
@@ -830,42 +826,26 @@ foreach($allResourceId as $resId) {
 //	if(!empty($res->ImageUrl)){
 //		$resourceImageUrl = BFCHelper::getImageUrlResized('resources', $res->ImageUrl,'small');	
 //	}
-	$currUriresource = $uri.$res->ResourceId . '-' . BFCHelper::getSlug($res->ResName) . "?fromsearch=1";
+//	$currUriresource = $uri.$res->ResourceId . '-' . BFCHelper::getSlug($res->ResName) . "?fromsearch=1&lna=".$listNameAnalytics;
 	$currUriresourceJM = $uri.'&resourceId=' . $res->ResourceId  . ':' . BFCHelper::getSlug($res->ResName);
 	if ($itemId<>0){
 		$currUriresourceJM.='&Itemid='.$itemId;
 	}
-	$currUriresourceJM .= "&fromsearch=1";
+	$currUriresourceJM .= "&fromsearch=1&lna=".$listNameAnalytics;
 	$currUriresource = JRoute::_($currUriresourceJM);
 
 	$formRouteSingle = $currUriresource;
+	
+	$resourceNameTrack =  BFCHelper::string_sanitize($res->ResName);
+	$merchantNameTrack =  BFCHelper::string_sanitize($merchant->Name);
+	$merchantCategoryNameTrack =  BFCHelper::string_sanitize($merchant->MainCategoryName);
 
-//	$priceTypes = array();
-//	foreach($resRateplans as $p) {
-////		if ($p->ResourceId == $resId) {
-////			$res = $p;
-//
-//			$type = new stdClass;
-//			$type->Type = $p->RateplanId;
-//			$type->IsBase = $p->IsBase;
-//			$type->Name = $p->RatePlan->Name;
-//			$type->refid = $p->RatePlan->RefId;
-//			$type->SortOrder = $p->RatePlan->SortOrder;
-//			$priceTypes[] = $type;
-////			break;
-////		}
-//	}
-//
-////	usort($priceTypes, "BFCHelper::bfi_sortRatePlans");
-//
-//
-//	$classselect = (count($priceTypes) >1 && $res->AvailabilityType != 3)? '': 'bfi-hide';	
 
 	$eecstay = new stdClass;
 	$eecstay->id = "" . $res->ResourceId . " - Resource";
-	$eecstay->name = "" . $res->ResName;
-	$eecstay->category = $merchant->MainCategoryName;
-	$eecstay->brand = $merchant->Name;
+	$eecstay->name = "" . $resourceNameTrack;
+	$eecstay->category = $merchantCategoryNameTrack;
+	$eecstay->brand = $merchantCategoryNameTrack;
 //	$eecstay->variant = $showQuote ? strtoupper($selRateName) : "NS";
 	$eecstay->position = $reskey;
 	if($isResourceBlock) {
@@ -880,7 +860,7 @@ foreach($allResourceId as $resId) {
 //		$formRouteBook = JRoute::_('index.php?option=com_bookingforconnector&view=resource&layout=form&resourceId=' . $res->ResourceId . ':' . BFCHelper::getSlug($res->Name),true,1);
 //	}
 	
-	$btnText = JText::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RESOURCE_BUTTON');
+	$btnText = JText::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RESOURCE_BUTTON_REQ');
 	$btnClass = "bfi-alternative";
 	if ($IsBookable){
 		$btnText = JText::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RESOURCE_BUTTON_HTTPS');
@@ -891,7 +871,7 @@ foreach($allResourceId as $resId) {
 ?>
 			<tr >
 				<td rowspan="<?php echo $nRowSpan ?>" class="bfi-firstcol <?php echo ($resId == $resourceId)? '  bfi-firstcol-selected' :  '' ; ?>">
-					<a  class="bfi-resname" href="<?php echo $formRouteSingle ?>" <?php echo ($resId == $resourceId)? 'onclick="bfiGoToTop()"' :  'target="_blank"' ; ?> ><?php echo $res->ResName; ?></a>
+					<a  class="bfi-resname eectrack" href="<?php echo $formRouteSingle ?>" <?php echo ($resId == $resourceId)? 'onclick="bfiGoToTop()"' :  'target="_blank"' ; ?> data-type="Resource" data-id="<?php echo $res->ResourceId?>" data-index="<?php echo $currKey?>" data-itemname="<?php echo $resourceNameTrack; ?>" data-category="<?php echo $merchantCategoryNameTrack; ?>" data-brand="<?php echo $merchantNameTrack; ?>"><?php echo $res->ResName; ?></a>
 <?php 
 			if(!empty($res->ImageUrl)){
 				$resourceImageUrl = BFCHelper::getImageUrlResized('resources',$res->ImageUrl, 'small');
@@ -916,13 +896,10 @@ foreach($allResourceId as $resId) {
 										$currCheckOut =BFCHelper::parseJsonDateTime($res->RatePlan->CheckOut,'d/m/Y - H:i');
 										$currDiff = $currCheckOut->diff($currCheckIn);
 
-//										$currCheckIn = new JDate($currCheckIn->format('Y-m-d')); 
-//										$currCheckOut = new JDate($currCheckOut->format('Y-m-d')); 
-
 										$loadScriptTimePeriod = true;
 
-										$timeDuration = $currDiff->h + ($currDiff->i/60);
-																				
+										$timeDurationview = $currDiff->h + round(($currDiff->i/60), 2);
+										$timeDuration = abs((new DateTime())->setTimeStamp(0)->add($currDiff)->getTimeStamp() / 60); 										
 										$currCheckIn = new JDate($currCheckIn->format('Y-m-d\TH:i:s')); 
 										$currCheckOut = new JDate($currCheckOut->format('Y-m-d\TH:i:s')); 
 
@@ -951,7 +928,7 @@ foreach($allResourceId as $resId) {
 											<div class="bfi-row">
 												<div class="bfi-col-md-3 "><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_CARTDETAILS_TOTAL') ?>:
 												</div>	
-												<div class="bfi-col-md-9 bfi-text-right"><span class="bfi-total-duration"><?php echo $currDiff->format('%h') ?></span> <?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_RESOURCE_VIEW_HOURS') ?>
+												<div class="bfi-col-md-9 bfi-text-right"><span class="bfi-total-duration"><?php echo $timeDurationview ?></span> <?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_RESOURCE_VIEW_HOURS') ?>
 												</div>	
 											</div>	
 										</div>
@@ -1068,15 +1045,6 @@ $currTouristTaxValue = isset($res->TouristTaxValue)?$res->TouristTaxValue:0;
 				return true;
 			}
 		});
-
-
-//		echo "<pre>";
-//		echo print_r($currSelectablePricesExtraIds);
-//		echo "</pre>";
-//		echo "<pre>";
-//		echo print_r($currCalculatedPricesExtra);
-//		echo "</pre>";
-//		echo "<hr>";
 			
 		if(count($currSelectablePrices)>0){
 			$formRouteBook = "showSelectablePrices"; 
@@ -1084,30 +1052,11 @@ $currTouristTaxValue = isset($res->TouristTaxValue)?$res->TouristTaxValue:0;
 		$availability = array();
 		$startAvailability = 0;
 		$selectedtAvailability = 0;
-		if ($cartType == 0)
-		{
-			$startAvailability = 1;
-		}
 		for ($i = $startAvailability; $i <= min($res->Availability, COM_BOOKINGFORCONNECTOR_MAXQTSELECTABLE); $i++)
 		{
 			array_push($availability, $i);
 		}
-		if ($cartType == 0 && count($availability)>0)
-		{
-			$selectedtAvailability = $availability[0];
-		}else{
-//			if(empty($pricetype)){
-//				if ($res->ResourceId == $resourceId && count($availability) > 1 && $reskey==0 && $rpKey==0)
-//					{ 
-//						$selectedtAvailability = $availability[1];
-//					}
-//			}else{
-//				if ($res->ResourceId == $resourceId && count($availability) > 1 && $pricetype==$currRateplan->RatePlan->RatePlanId )
-//					{ 
-//						$selectedtAvailability = $availability[1];
-//					}
-//			}
-		} 
+
 		$IsBookable = $currRateplan->IsBookable;
 
 		$SimpleDiscountIds = "";
@@ -1175,6 +1124,7 @@ if($currRateplan->AvailabilityType==0 || $currRateplan->AvailabilityType==1){
 
 					}else{
 					?>
+						<?php if ($currRateplan->MaxPaxes>0){?>
 						<div class="bfi-icon-paxes">
 							<i class="fa fa-user"></i> 
 							<?php if ($currRateplan->MaxPaxes==2 && $currRateplan->MinPaxes==2){?>
@@ -1184,6 +1134,7 @@ if($currRateplan->AvailabilityType==0 || $currRateplan->AvailabilityType==1){
 								<?php echo ($currRateplan->MinPaxes != $currRateplan->MaxPaxes)? $currRateplan->MinPaxes . "-" : "" ?><?php echo  $currRateplan->MaxPaxes ?>
 							<?php }?>
 						</div>
+						<?php }?>
 					<?php } ?>
 				<?php } ?>
 				</td>
@@ -1349,6 +1300,9 @@ if(!empty( $currRateplan->RatePlan->MerchantBookingTypesString )){
 $allMeals = array();
 $cssclassMeals = "bfi-meals-base";
 $mealsHelp = "";
+if($currRateplan->ItemTypeId==1){
+	$currRateplan->RatePlan->IncludedMeals = -1;
+}
 if($currRateplan->RatePlan->IncludedMeals >-1){
 	$mealsHelp = JTEXT::_('COM_BOOKINGFORCONNECTOR_RESOURCE_MEALS_HELP_NO') ;
 	if ($currRateplan->RatePlan->IncludedMeals & bfi_Meal::Breakfast){
@@ -1376,6 +1330,7 @@ if($currRateplan->RatePlan->IncludedMeals >-1){
 		$mealsHelp = implode(" & ",$allMeals). " " . JTEXT::_('COM_BOOKINGFORCONNECTOR_RESOURCE_MEALS_INCLUDED') ;
 	}
 }
+
 ?>
 						
 <?php if(!empty($prepayment)) { ?>
@@ -1403,14 +1358,25 @@ if($currRateplan->RatePlan->IncludedMeals >-1){
 					</div>
 				</td>
 				<td>
+<?php
+				$currratePlanName =  BFCHelper::string_sanitize($currRateplan->RatePlan->Name);
+
+?>
 					<select class="ddlrooms ddlrooms-<?php echo $currRateplan->ResourceId ?> ddlrooms-indipendent" 
 					id="ddlrooms-<?php echo $currRateplan->ResourceId ?>-<?php echo $currRateplan->RatePlan->RatePlanId ?>" 
 					onclick="bookingfor.checkMaxSelect(this);" 
 					onchange="bookingfor.checkBookable(this);UpdateQuote();" 
 					data-resid="<?php echo $currRateplan->ResourceId ?>" 
+					data-name="<?php echo $resourceNameTrack ?>"
+					data-lna="<?php echo $currLlistNameAnalytics ?>"
+					data-brand="<?php echo $merchantNameTrack ?>"
+					data-category="<?php echo $merchantCategoryNameTrack ?>"
 					data-sourceid="<?php echo $currRateplan->ResourceId ?>"
 					data-ratePlanId="<?php echo $currRateplan->RatePlan->RatePlanId ?>"
+					data-ratePlanTypeId="<?php echo $currRateplan->RatePlan->RatePlanTypeId ?>"
+					data-ratePlanName="<?php echo $currratePlanName ?>"
 					data-policyId="<?php echo $policyId ?>"
+					data-policy=<?php echo json_encode($policy) ?>
 					data-price="<?php echo BFCHelper::priceFormat($currRateplan->Price,2,".","") ?>" 
 					data-totalprice="<?php echo BFCHelper::priceFormat($currRateplan->TotalPrice,2,".","") ?>" 
 					data-baseprice="<?php echo $currRateplan->Price ?>" 
@@ -1429,6 +1395,7 @@ if($currRateplan->RatePlan->IncludedMeals >-1){
 					data-vatvalue="<?php echo $currRateplan->VATValue ?>" 
 					data-minpaxes="<?php echo $currRateplan->MinPaxes ?>" 
 					data-maxpaxes="<?php echo $currRateplan->MaxPaxes ?>" 
+					data-resetCart="<?php echo $resetCart ?>" 
 					data-computedpaxes="<?php echo (!empty( $currRateplan->RatePlan->SuggestedStay ) && !empty( $currRateplan->RatePlan->SuggestedStay->ComputedPaxes ))?$currRateplan->RatePlan->SuggestedStay->ComputedPaxes:":::::::" ?>" 
 					>
 					<?php 
@@ -1505,13 +1472,21 @@ if($currRateplan->RatePlan->IncludedMeals >-1){
 			$SimpleDiscountIds = implode(',',array_unique(array_map(function ($i) { return $i->VariationPlanId; }, $allVar)));
 		}
 
-		$currUriresource = $uri.$currRateplan->ResourceId . '-' . BFCHelper::getSlug($currRateplan->ResName) . "?fromsearch=1";
+		$currUriresource = $uri.'&resourceId='.$currRateplan->ResourceId . '-' . BFCHelper::getSlug($currRateplan->ResName);
+				if ($itemId<>0){
+					$currUriresource.='&Itemid='.$itemId;
+				}
+				$currUriresource .= "&fromsearch=1&lna=".$listNameAnalytics;
+				$currUriresource = JRoute::_($currUriresource);
 
+				$merchantNameTrack =  BFCHelper::string_sanitize($merchant->Name);
+				$resourceNameTrack =  BFCHelper::string_sanitize($currRateplan->ResName);
+				$merchantCategoryNameTrack =  BFCHelper::string_sanitize($merchant->MainCategoryName);
 ?>
 					
 
 		<div id="services-room-1-<?php echo $currRateplan->ResourceId ?>-<?php echo $currRateplan->RatePlan->RatePlanId ?>" class="bfi-table-responsive" style="display:none;">
-		<div class="bfi-resname-extra"><a  class="bfi-resname" href="<?php echo $currUriresource ?>" target="_blank" ><?php echo $currRateplan->ResName; ?></a> <span class="bfi-meals bfi-meals-<?php echo $currRateplan->RatePlan->RefId ?>"><?php echo $currRateplan->RatePlan->Name ?></span></div>
+		<div class="bfi-resname-extra"><a  class="bfi-resname eectrack" href="<?php echo $currUriresource ?>" target="_blank" data-type="Resource" data-id="<?php echo $currRateplan->ResourceId?>" data-index="<?php echo $currKey?>" data-itemname="<?php echo $resourceNameTrack; ?>" data-category="<?php echo $merchantCategoryNameTrack; ?>" data-brand="<?php echo $merchantNameTrack; ?>"><?php echo $currRateplan->ResName; ?></a></div>
 		<?php  if(!empty($currRateplan->ImageUrl)){
 			$resourceImageUrl = BFCHelper::getImageUrlResized('resources',$currRateplan->ImageUrl, 'small');
 		?>
@@ -1547,37 +1522,50 @@ if($currRateplan->RatePlan->IncludedMeals >-1){
 
    
 										$loadScriptTimePeriod = true;
+
+										$timeDurationview = $currDiff->h + round(($currDiff->i/60), 2);
+										$timeDuration = abs((new DateTime())->setTimeStamp(0)->add($currDiff)->getTimeStamp() / 60); 										
+										$currCheckIn = new JDate($currCheckIn->format('Y-m-d\TH:i:s')); 
+										$currCheckOut = new JDate($currCheckOut->format('Y-m-d\TH:i:s')); 
+
 										array_push($allTimePeriodResourceId, $selPrice->RelatedProductId );
 //										$currCheckInString = date_i18n('D',$currCheckIn->getTimestamp()) ." " . $currCheckIn->format("d") ." " . date_i18n('M',$currCheckIn->getTimestamp()).' '.$currCheckIn->format("Y");
 //										$currCheckOutString = date_i18n('D',$currCheckOut->getTimestamp()) ." " . $currCheckOut->format("d") ." " . date_i18n('M',$currCheckOut->getTimestamp()).' '.$currCheckOut->format("Y");
 //										$currCheckInHour = $currCheckIn->format('H:i');
 //										$currCheckOutHour = $currCheckOut->format('H:i');
 //										$currDiffString = $currDiff->format('%h') ;
-
-$currCheckInString = JTEXT::_('COM_BOOKINGFORCONNECTOR_RESOURCE_SELECTPERIOD') ;
-$currCheckOutString = "";
-$currCheckInHour = "";
-$currCheckOutHour = "";
-$currDiffString = "-";
+//
+//$currCheckInString = JTEXT::_('COM_BOOKINGFORCONNECTOR_RESOURCE_SELECTPERIOD') ;
+//$currCheckOutString = "";
+//$currCheckInHour = "";
+//$currCheckOutHour = "";
+//$currDiffString = "-";
 
 									?>
-										<div class="bfi-timeperiod bfi-cursor" id="bfi-timeperiod-<?php echo $selPrice->RelatedProductId ?>" data-resid="<?php echo $selPrice->RelatedProductId ?>" data-checkin="<?php echo $currCheckIn->format('Ymd') ?>">
+										<div class="bfi-timeperiod bfi-cursor" id="bfi-timeperiod-<?php echo $selPrice->RelatedProductId ?>" 
+											data-resid="<?php echo $selPrice->RelatedProductId ?>" 
+											data-checkin="<?php echo $currCheckIn->format('Ymd') ?>"
+											data-checkintime="<?php echo $currCheckIn->format('YmdHis') ?>"
+											data-timeminstart="<?php echo $currCheckIn->format('His') ?>"
+											data-timeminend="<?php echo $currCheckOut->format('His') ?>"
+											data-duration="<?php echo $timeDuration ?>"
+										>
 											<div class="bfi-row ">
 												<div class="bfi-col-md-3 bfi-title"><?php echo JText::_('COM_BOOKINGFORCONNECTOR_RESOURCE_VIEW_CALCULATOR_CHECKIN') ?>
 												</div>	
-												<div class="bfi-col-md-9 bfi-time bfi-text-right"><span class="bfi-time-checkin"><?php echo $currCheckInString; ?></span> <span class="bfi-hide">-</span> <span class="bfi-time-checkin-hours bfi-hide"><?php echo $currCheckInHour; ?></span>
+												<div class="bfi-col-md-9 bfi-time bfi-text-right"><span class="bfi-time-checkin"><?php echo $currCheckIn->format("D") ?> <?php echo $currCheckIn->format("d") ?> <?php echo $currCheckIn->format("M").' '.$currCheckIn->format("Y") ?></span> - <span class="bfi-time-checkin-hours"><?php echo $currCheckIn->format('H:i') ?></span>
 												</div>	
 											</div>	
 											<div class="bfi-row ">
 												<div class="bfi-col-md-3 bfi-title"><?php echo JText::_('COM_BOOKINGFORCONNECTOR_RESOURCE_VIEW_CALCULATOR_CHECKOUT') ?>
 												</div>	
-												<div class="bfi-col-md-9 bfi-time bfi-text-right bfi-hide"><span class="bfi-time-checkout"><?php  echo $currCheckOutString; ?></span> - <span class="bfi-time-checkout-hours"><?php echo $currCheckOutHour; ?></span>
+												<div class="bfi-col-md-9 bfi-time bfi-text-right"><span class="bfi-time-checkout"><?php echo $currCheckOut->format("D") ?> <?php echo $currCheckOut->format("d") ?> <?php echo $currCheckOut->format("M").' '.$currCheckOut->format("Y") ?></span> <span class="bfi-time-checkout-hours"><?php echo $currCheckOut->format('H:i') ?></span>
 												</div>	
 											</div>	
 											<div class="bfi-row">
 												<div class="bfi-col-md-3 "><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_CARTDETAILS_TOTAL') ?>:
 												</div>	
-												<div class="bfi-col-md-9 bfi-text-right bfi-hide"><span class="bfi-total-duration"><?php echo $currDiffString; ?></span> <?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_RESOURCE_VIEW_HOURS') ?>
+												<div class="bfi-col-md-9 bfi-text-right"><span class="bfi-total-duration"><?php echo $timeDurationview ?></span> <?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_RESOURCE_VIEW_HOURS') ?>
 												</div>	
 											</div>	
 										</div>
@@ -1624,7 +1612,7 @@ $currDiffString = "-";
 										$res->Availability = $currDatesTimeSlot[0]->Availability ;
 
 									?>
-										<div class="bfi-timeslot bfi-cursor" data-sourceid="<?php echo $selPrice->RelatedProductId?>" data-resid="<?php echo $selPrice->RelatedProductId?>" data-checkin="<?php echo $currCheckIn->format('Ymd') ?>"
+										<div class="bfi-timeslot bfi-cursor" data-sourceid="services-room-1-<?php echo $currRateplan->ResourceId ?>-<?php echo $currRateplan->RatePlan->RatePlanId ?>" data-resid="<?php echo $selPrice->RelatedProductId?>" data-checkin="<?php echo $currCheckIn->format('Ymd') ?>"
 										data-timeslotid="<?php echo $currDatesTimeSlot[0]->ProductId ?>" data-timeslotstart="<?php echo $currDatesTimeSlot[0]->TimeSlotStart ?>" data-timeslotend="<?php echo $currDatesTimeSlot[0]->TimeSlotEnd ?>"
 										>
 											<div class="bfi-row ">
@@ -1653,7 +1641,28 @@ $currDiffString = "-";
 							?>
 
 					</td>
-					<td><!-- Min/Max -->
+					<td>
+						<!-- Min/Max -->
+						<?php if (isset($selPrice->CalculationType) && !empty($selPrice->CalculationType)){?>
+							<?php 
+								if ($nad>0) {
+									?>
+									<div class="bfi-icon-paxes">
+										<i class="fa fa-user"></i> x <b><?php echo $nad ?></b>
+									<?php 
+										if (($nse+$nch)>0) {
+											?>
+											+ <br />
+												<span class="bfi-redux"><i class="fa fa-user"></i></span> x <b><?php echo ($nse+$nch) ?></b>
+											<?php 
+											
+										}
+									?>
+									</div>
+									<?php 
+								}
+							?>
+						<?php } ?>
 					</td>
 					<td style="text-align:center;"><!-- price -->
 						<?php
@@ -1683,12 +1692,13 @@ $currDiffString = "-";
 			{
 				array_push($availability, $i);
 			}
-			if ($selPrice->AvailabilityType == 2){
-				$availability = array(0);
-				$clickFunction ="bfi_updateQuoteService();";
-			}
+//			if ($selPrice->AvailabilityType == 2){
+////				$availability = array(0);
+//				$clickFunction ="bfi_updateQuoteService();";
+//			}
 
-
+				$extraNameTrack =  BFCHelper::string_sanitize($selPrice->Name);
+				$currratePlanName =  BFCHelper::string_sanitize($currRateplan->RatePlan->Name);
 ?>
 
 						<script>
@@ -1698,9 +1708,16 @@ $currDiffString = "-";
 							onchange="<?php echo $clickFunction ?>" 
 							data-maxvalue="<?php echo $selPrice->MaxQt ?>" 
 							data-minvalue="<?php echo $selPrice->MinQt ?>" 
+							data-priceid="<?php echo $selPrice->PriceId ?>"
+							data-name="<?php echo $extraNameTrack ?>"
+							data-lna="<?php echo $currLlistNameAnalytics ?>"
+							data-brand="<?php echo $merchantNameTrack ?>"
+							data-category="<?php echo $merchantCategoryNameTrack ?>"
+							data-resourcename="<?php echo $resourceNameTrack ?>"
 							data-resid="<?php echo $selPrice->RelatedProductId ?>"
 							data-sourceid="<?php echo $selPrice->RelatedProductId ?>"
 							data-rateplanid="<?php echo $currRateplan->RatePlan->RatePlanId ?>" 
+							data-rateplanname="<?php echo $currratePlanName?>" 
 							data-availabilityType="<?php echo $selPrice->AvailabilityType ?>" 
 							data-bindingproductid="<?php echo $res->ResourceId ?>"
 							data-baseprice="<?php echo $selPrice->TotalDiscounted ?>" 
@@ -1741,7 +1758,7 @@ $countPrices+=1;
 						<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RESOURCE_BUTTON_HTTPS') ?>
 					</div>
 					<div class="bfi-btn bfi-alternative bfi-request-now" onclick="bookingfor.BookNow(this);">
-						<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RESOURCE_BUTTON') ?>
+						<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RESOURCE_BUTTON_REQ') ?>
 					</div>
 				</div>
 			</td>
@@ -1796,6 +1813,10 @@ var allStays = <?php echo json_encode($allRatePlans) ?>;
 			days += 1;
 			strSummaryDays ="(" +days+" <?php echo strtolower (JTEXT::_('MOD_BOOKINGFORSEARCH_DAYS')) ?>)";
 		}
+		<?php if(empty($resourceId)) { ?>
+			strSummaryDays = "";
+		<?php } ?>
+		
 		if (productAvailabilityType == 0 || productAvailabilityType == 1) {
 			strSummary += ' Check-out '+('0' + to.getDate()).slice(-2)+' '+ month2 +' '+d2[2]+' ' + strSummaryDays;
 		}
@@ -2127,7 +2148,9 @@ function checkDateBooking<?php echo $checkinId?>($, obj, selectedDate) {
 			}
 			break;
 		case 1:
+		<?php if(!empty($resourceId)) { ?>
 			offsetDate.setDate(offsetDate.getDate() + 1);
+		<?php } ?>
 			$("#<?php echo $checkoutId?>").datepicker("option", "minDate", offsetDate);
 			if ($("#<?php echo $checkoutId?>").datepicker("getDate") <= date) {
 				$("#<?php echo $checkoutId?>").datepicker("setDate", Date.UTC(offsetDate.getFullYear(), offsetDate.getMonth(), offsetDate.getDate()));
@@ -2376,7 +2399,7 @@ jQuery(function($) {
 	callAnalyticsEEc("addProduct", [<?php echo json_encode($eecmainstay); ?>], "item");
 	<?php endif; ?>
 	<?php if(count($eecstays) > 0 && $currentState != 'optionalPackages'): ?>
-	callAnalyticsEEc("addImpression", <?php echo json_encode($eecstays); ?>, "list", "Suggested Products");
+//	callAnalyticsEEc("addImpression", <?php echo json_encode($eecstays); ?>, "list", "Suggested Products");
 	<?php endif; ?>
 });
 <?php endif; ?>
@@ -2422,7 +2445,6 @@ window.criteo_q.push(
         var urlGetCompleteRatePlansStay = bfi_variable.bfi_urlCheck + ((bfi_variable.bfi_urlCheck.indexOf('?') > -1)? "&" :"?") + 'task=getCompleteRateplansStay';
         var urlGetListCheckInDayPerTimes = bfi_variable.bfi_urlCheck + ((bfi_variable.bfi_urlCheck.indexOf('?') > -1)? "&" :"?") + 'task=getListCheckInDayPerTimes';
 
-        var carttypeCorrector = <?php echo ($cartType == 0?1:0) ?>;
 		var dialogTimeperiod;
 		jQuery(document).ready(function() {
 			initDatepickerTimePeriod();
@@ -2503,6 +2525,7 @@ window.criteo_q.push(
 				close: function() {
 				}
 			});
+			bfi_currTRselected = null;
 			jQuery(".bfi-result-list").on("click", ".bfi-timeslot", function (e) {
 
 				var currSourceId = jQuery("#bfi-timeslot-select").attr("data-sourceid");
@@ -2512,7 +2535,9 @@ window.criteo_q.push(
 				var newResId = jQuery(this).attr("data-resid");
 				var newDate = jQuery(this).attr("data-checkin");
 				
-				if(currSourceId!=newSourceId ){
+//				if(currSourceId!=newSourceId ){
+				if (bfi_currTRselected != jQuery(this).closest("tr")){
+					bfi_currTRselected = jQuery(this).closest("tr");
 					jQuery("#bfi-timeslot-select").attr("data-sourceid", newSourceId);
 					jQuery("#bfi-timeslot-select").attr("data-resid", newResId);
 					jQuery("#selectpickerTimeSlotRange").attr("data-resid", newResId);
@@ -2534,7 +2559,6 @@ window.criteo_q.push(
 
 <script type="text/javascript">
 <!--
-var CartMultimerchantEnabled = <?php echo $CartMultimerchantEnabled  ? "true" : "false" ?>;
 var bfi_currMerchantId = <?php echo $merchant->MerchantId ?>;
 var bfi_currAdultsAge = <?php echo COM_BOOKINGFORCONNECTOR_ADULTSAGE ?>;
 var bfi_currSenioresAge = <?php echo COM_BOOKINGFORCONNECTOR_SENIORESAGE ?>;
@@ -2546,6 +2570,11 @@ var listServiceIds = "<?php echo implode(",", $allServiceIds) ?>";
 var bfisrvloaded=false;
 var resGrp = [];
 var loadedResGrp=false;
+var shortenOption = {
+		moreText: "<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_VIEW_READMORE')?>",
+		lessText: "<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_VIEW_READLESS')?>",
+		showChars: '150'
+};
 
 function getAjaxInformationsResGrp(){
 	if (!loadedResGrp)
@@ -2629,8 +2658,8 @@ function bfiUpdateInfo(){
 			});
 			jQuery(this).html(srvArr.join(", "));
 		}
-
 	});
+	jQuery(".bfisimpleservices").shorten(shortenOption);
 }
 
 jQuery(document).ready(function () {

@@ -18,9 +18,9 @@ $merchant = $this->item;
 $sitename = $this->sitename;
 $language = $this->language;
 $offers = $this->items;
-
-$this->document->setDescription( BFCHelper::getLanguage($this->item->Description, $this->language));
-$this->document->setTitle(sprintf(JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEW_MERCHANTDETAILS_OFFERS_TITLE'),$merchant->Name,$sitename));
+$analyticsListName = $this->analyticsListName;
+$listNameAnalytics = $this->listNameAnalytics;
+$fromsearchparam = "&lna=".$listNameAnalytics;
 
 $total = $this->pagination->total;
 
@@ -34,7 +34,7 @@ $uriMerchant.='&merchantId=' . $merchant->MerchantId . ':' . BFCHelper::getSlug(
 if ($itemIdMerchant<>0)
 	$uriMerchant.='&Itemid='.$itemIdMerchant;
 
-$routeMerchant  = JRoute::_($uriMerchant);
+$routeMerchant  = JRoute::_($uriMerchant.$fromsearchparam);
 
 $listsId = array();
 
@@ -44,10 +44,50 @@ if ($rating>9 )
 	$rating = $rating/10;
 }
 
+$merchantName = BFCHelper::getLanguage($merchant->Name, $language, null, array('nobr'=>'nobr', 'striptags'=>'striptags')); 
+$indirizzo = isset($merchant->AddressData->Address)?$merchant->AddressData->Address:"";
+$cap = isset($merchant->AddressData->ZipCode)?$merchant->AddressData->ZipCode:""; 
+$comune = isset($merchant->AddressData->CityName)?$merchant->AddressData->CityName:"";
+$stato = isset($merchant->AddressData->StateName)?$merchant->AddressData->StateName:"";
+
+/*---------------IMPOSTAZIONI SEO----------------------*/
+	$merchantDescriptionSeo = BFCHelper::getLanguage($merchant->Description, $language, null, array( 'nobr'=>'nobr', 'bbcode'=>'bbcode', 'striptags'=>'striptags')) ;
+	if (!empty($merchantDescriptionSeo) && strlen($merchantDescriptionSeo) > 170) {
+	    $merchantDescriptionSeo = substr($merchantDescriptionSeo,0,170);
+	}
+	$titleHead = "$merchantName ($comune, $stato) - " . JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_MERCHANTDETAILS_LAYOUT_OFFERS') . " - $sitename";
+	$keywordsHead = "$merchantName, $comune, $stato, $merchant->MainCategoryName, " . JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_MERCHANTDETAILS_LAYOUT_OFFERS') ;
+	$routeSeo = ($isportal)? $routeMerchant: $base_url;
+
+	$this->document->setTitle($titleHead);
+	$this->document->setDescription($merchantDescriptionSeo);
+	$this->document->setMetadata('keywords', $keywordsHead);
+	$this->document->setMetadata('robots', "index,follow");
+	
+	$this->document->setMetadata('og:type', "Organization");
+	$this->document->setMetadata('og:title', $titleHead);
+	$this->document->setMetadata('og:description', $merchantDescriptionSeo);
+	$this->document->setMetadata('og:url', $routeSeo);
+
+	$payload["@type"] = "Organization";
+	$payload["@context"] = "http://schema.org";
+	$payload["name"] = $merchantName;
+	$payload["description"] = $merchantDescriptionSeo;
+	$payload["url"] = $routeSeo; 
+	if (!empty($merchant->LogoUrl)){
+		$payload["logo"] = "https:".BFCHelper::getImageUrlResized('merchant',$merchant->LogoUrl, 'logobig');
+	}
+/*--------------- FINE IMPOSTAZIONI SEO----------------------*/
+	$merchantNameTrack =  BFCHelper::string_sanitize($merchantName);
+	$merchantCategoryNameTrack =  BFCHelper::string_sanitize($merchant->MainCategoryName);
+
 ?>
+<script type="application/ld+json">// <![CDATA[
+<?php echo json_encode($payload,JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE); ?>
+// ]]></script>
 <div class="bfi-content">
 <div class="bfi-row">
-	<div class="bfi-title-name bfi-hideonextra"><?php echo  $merchant->Name?>
+	<div class="bfi-title-name bfi-hideonextra"><h1><?php echo  $merchant->Name?></h1>
 		<span class="bfi-item-rating">
 			<?php for($i = 0; $i < $rating; $i++) { ?>
 			<i class="fa fa-star"></i>
@@ -70,28 +110,29 @@ if ($rating>9 )
 <div class="bfi-clearfix"></div>
 	<?php if ($offers != null){ ?>
 		<div id="bfi-list" class="bfi-row bfi-list">
-			<?php foreach($offers as $resource){ ?>
+			<?php foreach($offers as $currKey=>$resource){ ?>
 			<?php
 		$resourceImageUrl = Juri::root() . "components/com_bookingforconnector/assets/images/defaults/default-s6.jpeg";
 		$resourceName = BFCHelper::getLanguage($resource->Name, $language, null, array('ln2br'=>'ln2br', 'striptags'=>'striptags')); 
-		$resourceDescription = BFCHelper::getLanguage($resource->Description, $language, null, array('ln2br'=>'ln2br', 'striptags'=>'striptags')); 
-		$resourceRoute  = JRoute::_($uriMerchant.'&layout=offer&offerId=' . $resource->VariationPlanId . ':' . BFCHelper::getSlug($resourceName));
+		$resourceDescription = BFCHelper::getLanguage($resource->Description, $language, null, array('ln2br'=>'ln2br', 'bbcode'=>'bbcode', 'striptags'=>'striptags')); 
+		$resourceRoute  = JRoute::_($uriMerchant.'&layout=offer&offerId=' . $resource->VariationPlanId . ':' . BFCHelper::getSlug($resourceName).$fromsearchparam);
 		if(!empty($resource->DefaultImg)){
 			$resourceImageUrl = BFCHelper::getImageUrlResized('variationplans',$resource->DefaultImg, 'medium');
 		}
+		$resourceNameTrack =  BFCHelper::string_sanitize($resourceName);
 
 			?>
 				<div class="bfi-col-sm-6 bfi-item">
 					<div class="bfi-row bfi-sameheight" >
 						<div class="bfi-col-sm-3 bfi-img-container">
-							<a href="<?php echo $resourceRoute ?>" style='background: url("<?php echo $resourceImageUrl; ?>") center 25% / cover;'><img src="<?php echo $resourceImageUrl; ?>" class="bfi-img-responsive" /></a> 
+							<a href="<?php echo $resourceRoute ?>" style='background: url("<?php echo $resourceImageUrl; ?>") center 25% / cover;' target="_blank" class="eectrack" data-type="Offer" data-id="<?php echo $resource->VariationPlanId?>" data-index="<?php echo $currKey?>" data-itemname="<?php echo $resourceNameTrack; ?>" data-category="<?php echo $merchantCategoryNameTrack; ?>" data-brand="<?php echo $merchantNameTrack; ?>" data-list="<?php echo $analyticsListName; ?>"><img src="<?php echo $resourceImageUrl; ?>" class="bfi-img-responsive" /></a> 
 						</div>
 						<div class="bfi-col-sm-9 bfi-details-container">
 							<!-- merchant details -->
 							<div class="bfi-row" >
 								<div class="bfi-col-sm-10">
 									<div class="bfi-item-title">
-										<a href="<?php echo $resourceRoute ?>" id="nameAnchor<?php echo $resource->VariationPlanId?>" target="_blank"><?php echo  $resource->Name ?></a> 
+										<a href="<?php echo $resourceRoute ?>" id="nameAnchor<?php echo $resource->VariationPlanId?>" target="_blank" class="eectrack" data-type="Offer" data-id="<?php echo $resource->VariationPlanId?>" data-index="<?php echo $currKey?>" data-itemname="<?php echo $resourceNameTrack; ?>" data-category="<?php echo $merchantCategoryNameTrack; ?>" data-brand="<?php echo $merchantNameTrack; ?>" data-list="<?php echo $analyticsListName; ?>"><?php echo  $resource->Name ?></a> 
 									</div>
 									<div class="bfi-description"><?php echo $resourceDescription ?></div>
 								</div>
@@ -104,7 +145,7 @@ if ($rating>9 )
 								
 								</div>
 								<div class="bfi-col-sm-4 bfi-text-right">
-										<a href="<?php echo $resourceRoute ?>" class="bfi-btn" target="_blank"><?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_MERCHANTDETAILS_VIEWOFFER') ?></a>
+										<a href="<?php echo $resourceRoute ?>" class="bfi-btn eectrack" target="_blank" data-type="Offer" data-id="<?php echo $resource->VariationPlanId?>" data-index="<?php echo $currKey?>" data-itemname="<?php echo $resourceNameTrack; ?>" data-category="<?php echo $merchantCategoryNameTrack; ?>" data-brand="<?php echo $merchantNameTrack; ?>" data-list="<?php echo $analyticsListName; ?>"><?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_MERCHANTDETAILS_VIEWOFFER') ?></a>
 								</div>
 							</div>
 							<!-- end resource details -->

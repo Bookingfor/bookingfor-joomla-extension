@@ -44,11 +44,34 @@ class BookingForConnectorViewOffers extends BFCView
 //		$pagination->setAdditionalUrlParam("filter_order", $sortColumn);
 //		$pagination->setAdditionalUrlParam("filter_order_Dir", $sortDirection);
 		
+		$listNameAnalytics =6;
+		$listName = BFCHelper::$listNameAnalytics[$listNameAnalytics];// "Resources Search List";
+		$analyticsEnabled = count($items) > 0 && $this->checkAnalytics($listName) && COM_BOOKINGFORCONNECTOR_EECENABLED == 1;
+		if ($analyticsEnabled) {
+						$listName = "Offers List";
+						$type = "Offer";
+						$itemType = 1;
+						$allobjects = array();
+
+						foreach ($items as $key => $value) {
+							$obj = new stdClass;
+							$obj->id = "" . $value->VariationPlanId . " - " . $type;
+							$obj->name = $value->Name;
+							$obj->brand = $value->MrcName;
+							$obj->position = $key;
+							$allobjects[] = $obj;
+						}
+						$document->addScriptDeclaration('callAnalyticsEEc("addImpression", ' . json_encode($allobjects) . ', "list");');					
+		    
+		}
+
+
 		$this->state = $state;
 		$this->language = $language;
 		$this->params = $params;
 		$this->items = $items;
 		$this->pagination = $pagination;
+		$this->listNameAnalytics = $listNameAnalytics;
 		
 		// Display the view
 		parent::display($tpl);

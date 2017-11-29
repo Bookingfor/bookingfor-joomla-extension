@@ -17,7 +17,7 @@ jimport('joomla.utilities.date');
 	<?php
 	// preparo la lista per i filtri..
 	$list = BFCHelper::parseArrayList(JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEW_CONSTANTS_RATING_TYPOLOGIESLIST'));
-	$listfiltered = isset($_SESSION['ratings']['filters']['typologyid']) ? $_SESSION['ratings']['filters']['typologyid'] : 0;
+	$listfiltered = BFCHelper::getSession('ratingsfilterstypologyid', 0 , 'com_bookingforconnector');
 	$genericlist = JHTML::_('select.genericlist', $list, 'filters[typologyid]',array('onchange' => 'this.form.submit();') , 'value', 'text', $listfiltered);
 
 	if(isset($summaryRatings)) {
@@ -73,7 +73,7 @@ jimport('joomla.utilities.date');
 		</div>
 	</div>
 	<div class="bfi-rating-container">
-			<?php $typologyId = isset($_SESSION['ratings']['filters']['typologyid']) ? $_SESSION['ratings']['filters']['typologyid'] : 0; ?>
+			<?php $typologyId = BFCHelper::getSession('ratingsfilterstypologyid', 0 , 'com_bookingforconnector'); ?>
 			<form action="<?php echo $routeMerchant; ?>" method="post" name="adminForm" id="adminForm" class="bfi-rating-filter ratingformfilter">
 					<?php echo JText::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RATING_FILTER'); ?>
 					<?php echo $genericlist; ?>
@@ -81,9 +81,9 @@ jimport('joomla.utilities.date');
 					<input type="hidden" name="filter_order_Dir" value="">
 					<input type="hidden" name="searchid" value="-1">
 					<input type="hidden" name="limitstart" value="0">
-					<?php if (($merchant->RatingsContext === 2 || $merchant->RatingsContext === 3 ) && ($merchant->RatingsType==0 || $merchant->RatingsType==2)) :?>
+					<?php if (($merchant->RatingsContext === 2 || $merchant->RatingsContext === 3 ) && ($merchant->RatingsType==0 || $merchant->RatingsType==2)) {?>
 						<a href="<?php echo $routeRating; ?>" class="bfi-btn bfi-alternative bfi-pull-right"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_RESOURCE_VIEW_WRITEREVIEW') ?></a>
-					<?php endif; ?>
+					<?php } ?>
 			</form>
 		<?php if ($ratings != null){ ?>
 		<div class="bfi-merchantdetails-ratings">

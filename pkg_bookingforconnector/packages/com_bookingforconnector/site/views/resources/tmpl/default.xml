@@ -12,8 +12,8 @@
 				name="categories"
 				type="mastertypologies"
 				multiple="multiple"
-				label="COM_BOOKINGFORCONNECTOR_MERCHANTS_FIELD_CATEGORY_LABEL"
-				description="COM_BOOKINGFORCONNECTOR_MERCHANTS_FIELD_CATEGORY_DESC"
+				label="COM_BOOKINGFORCONNECTOR_RESOURCES_FIELD_CATEGORY_LABEL"
+				description="COM_BOOKINGFORCONNECTOR_RESOURCES_FIELD_CATEGORY_DESC"
 			>	
 			</field>
 			<field name="parentProductId" type="text" default="" label="Filter by condominiumid" description=""  />

@@ -40,7 +40,7 @@ class BookingForConnectorViewOnSellUnit extends BFCView
 		$resource = $this->item;
 		$merchant = $resource->Merchant;
 
-		if($this->checkAnalytics("Sales Resources Page") && COM_BOOKINGFORCONNECTOR_EECENABLED == 1) {
+		if($this->checkAnalytics() && COM_BOOKINGFORCONNECTOR_EECENABLED == 1) {
 			$obj = new stdClass;
 			$obj->id = "" . $item->ResourceId . " - Sales Resource";
 			$obj->name = $item->Name;

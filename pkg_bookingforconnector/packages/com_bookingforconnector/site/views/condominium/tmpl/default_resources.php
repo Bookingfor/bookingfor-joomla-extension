@@ -20,6 +20,8 @@ $language = $this->language;
 $resources = $this->items;
 $currResource = $this->item;
 $merchant = $currResource->Merchant;
+$listNameAnalytics = $this->listNameAnalytics;
+$fromsearchparam = "&lna=".$listNameAnalytics;
 
 $total = $this->pagination->total;
 
@@ -38,7 +40,7 @@ $uriMerchant.='&merchantId=' . $merchant->MerchantId . ':' . BFCHelper::getSlug(
 if ($itemIdMerchant<>0)
 	$uriMerchant.='&Itemid='.$itemIdMerchant;
 
-$routeMerchant  = JRoute::_($uriMerchant);
+$routeMerchant  = JRoute::_($uriMerchant.$fromsearchparam);
 
 $listsId = array();
 
@@ -78,12 +80,13 @@ if ($rating>9 )
 <div class="bfi-clearfix"></div>
 
 <div id="bfi-list" class="bfi-row bfi-list">
-	<?php foreach ($resources as $resource){?>
+	<?php foreach ($resources as $currKey=>$resource){?>
 	<?php 
 		$resourceImageUrl = Juri::root() . "components/com_bookingforconnector/assets/images/defaults/default-s6.jpeg";
 
 		$resourceName = BFCHelper::getLanguage($resource->Name, $language, null, array('ln2br'=>'ln2br', 'striptags'=>'striptags')); 
 		$resourceDescription = BFCHelper::getLanguage($resource->Description, $language, null, array('ln2br'=>'ln2br', 'striptags'=>'striptags')); 
+		$merchantName = $resource->MerchantName;
 
 		$resourceLat = $resource->XPos;
 		$resourceLon = $resource->YPos;
@@ -96,7 +99,7 @@ if ($rating>9 )
 		$currUriresource = $uri.'&resourceId=' . $resource->ResourceId . ':' . BFCHelper::getSlug($resourceName);
 		if ($itemId<>0)
 			$currUriresource.='&Itemid='.$itemId;
-		$resourceRoute = JRoute::_($currUriresource);
+		$resourceRoute = JRoute::_($currUriresource.$fromsearchparam);
 	
 		$rating = 0;
 		$ratingMrc = 0;
@@ -113,25 +116,28 @@ if ($rating>9 )
 		if(!empty($resource->DefaultImg)){
 			$resourceImageUrl = BFCHelper::getImageUrlResized('resources',$resource->DefaultImg, 'medium');
 		}
+		$resourceNameTrack =  BFCHelper::string_sanitize($resourceName);
+		$merchantNameTrack =  BFCHelper::string_sanitize($merchantName);
+		$merchantCategoryNameTrack = "";// BFCHelper::string_sanitize($resource->MrcCategoryName);
 	?>
 	<div class="bfi-col-sm-6 bfi-item">
 		<div class="bfi-row bfi-sameheight" >
 			<div class="bfi-col-sm-3 bfi-img-container">
-				<a href="<?php echo $resourceRoute ?>" style='background: url("<?php echo $resourceImageUrl; ?>") center 25% / cover;'><img src="<?php echo $resourceImageUrl; ?>" class="bfi-img-responsive" /></a> 
+				<a href="<?php echo $resourceRoute ?>" style='background: url("<?php echo $resourceImageUrl; ?>") center 25% / cover;' target="_blank" class="eectrack" data-type="Resource" data-id="<?php echo $resource->ResourceId?>" data-index="<?php echo $currKey?>" data-itemname="<?php echo $resourceNameTrack; ?>" data-category="<?php echo $merchantCategoryNameTrack; ?>" data-brand="<?php echo $merchantNameTrack; ?>"><img src="<?php echo $resourceImageUrl; ?>" class="bfi-img-responsive" /></a> 
 			</div>
 			<div class="bfi-col-sm-9 bfi-details-container">
 				<!-- merchant details -->
 				<div class="bfi-row" >
 					<div class="bfi-col-sm-12">
 						<div class="bfi-item-title">
-							<a href="<?php echo $resourceRoute ?>" id="nameAnchor<?php echo $resource->ResourceId?>" target="_blank"><?php echo  $resource->Name ?></a> 
+							<a href="<?php echo $resourceRoute ?>" id="nameAnchor<?php echo $resource->ResourceId?>" target="_blank" class="eectrack" data-type="Resource" data-id="<?php echo $resource->ResourceId?>" data-index="<?php echo $currKey?>" data-itemname="<?php echo $resourceNameTrack; ?>" data-category="<?php echo $merchantCategoryNameTrack; ?>" data-brand="<?php echo $merchantNameTrack; ?>"><?php echo  $resource->Name ?></a> 
 							<span class="bfi-item-rating">
 								<?php for($i = 0; $i < $rating; $i++) { ?>
 									<i class="fa fa-star"></i>
 								<?php } ?>	             
 							</span>
 							<?php if($isportal){ ?>
-							- <a href="<?php echo $routeMerchant?>" class="bfi-subitem-title"><?php echo $resource->MerchantName; ?></a>
+							- <a href="<?php echo $routeMerchant?>" class="bfi-subitem-title" class="eectrack" data-type="Merchant" data-id="<?php echo $resource->MerchantId?>" data-index="<?php echo $currKey?>" data-itemname="<?php echo $merchantNameTrack; ?>" data-category="<?php echo $merchantCategoryNameTrack; ?>" data-brand="<?php echo $merchantNameTrack; ?>"><?php echo $merchantName; ?></a>
 							<?php } ?>
 							<span class="bfi-item-rating">
 								<?php for($i = 0; $i < $ratingMrc; $i++) { ?>
@@ -167,7 +173,7 @@ if ($rating>9 )
 					
 					</div>
 					<div class="bfi-col-sm-4 bfi-text-right">
-						<a href="<?php echo $resourceRoute ?>" class="bfi-btn" target="_blank"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RESOURCE_BUTTON') ?></a>
+						<a href="<?php echo $resourceRoute ?>" class="bfi-btn eectrack" target="_blank" data-type="Resource" data-id="<?php echo $resource->ResourceId?>" data-index="<?php echo $currKey?>" data-itemname="<?php echo $resourceNameTrack; ?>" data-category="<?php echo $merchantCategoryNameTrack; ?>" data-brand="<?php echo $merchantNameTrack; ?>"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RESOURCE_BUTTON') ?></a>
 					</div>
 				</div>
 				<!-- end resource details -->

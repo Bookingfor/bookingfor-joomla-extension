@@ -33,6 +33,20 @@
 				<option value="0">JNo</option>
 				<option value="1">JYes</option>
 			</field>
+			<field name="bfi_showbadge_key" type="radio" default="0"
+				label="CONFIG_SHOWBADGE_LABEL"
+				description="CONFIG_SHOWBADGE_DESC"
+				class="btn-group btn-group-yesno">
+				<option value="0">JNo</option>
+				<option value="1">JYes</option>
+			</field>
+			<field name="bfi_enablecoupon_key" type="radio" default="0"
+				label="CONFIG_ENABLECOUPON_LABEL"
+				description="CONFIG_ENABLECOUPON_DESC"
+				class="btn-group btn-group-yesno">
+				<option value="0">JNo</option>
+				<option value="1">JYes</option>
+			</field>
 			<field name="formlabel" type="text" default="mysite.com" size="50" required="true" 
 				label="CONFIG_FORMLABEL_LABEL"
 				description="CONFIG_FORMLABEL_DESC"

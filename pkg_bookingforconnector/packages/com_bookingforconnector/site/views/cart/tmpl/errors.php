@@ -7,6 +7,9 @@
 
 // No direct access to this file
 defined('_JEXEC') or die('Restricted access');
+$language 	= $this->language;
+$tmpUserId = BFCHelper::bfi_get_userId();
+$currCart = BFCHelper::GetCartByExternalUser($tmpUserId, $language, true);
 
 $errorCode = BFCHelper::getVar('errorCode',"0");
 

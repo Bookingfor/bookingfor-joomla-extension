@@ -25,6 +25,15 @@
 			>	
 			</field>
 			<field
+				name="tagId"
+				type="tags"
+				multiple="multiple"
+				label="COM_BOOKINGFORCONNECTOR_TAG_FIELD_ID_LABEL"
+				description="COM_BOOKINGFORCONNECTOR_TAG_FIELD_ID_DESC"
+			>	
+				<option value="-1">COM_BOOKINGFORCONNECTOR_MERCHANTS_FIELD_TAGS_OPTION_NONE</option>
+			</field>
+			<field
 				name="rating"
 				type="list"
 				label="COM_BOOKINGFORCONNECTOR_MERCHANTS_FIELD_RATING_LABEL"

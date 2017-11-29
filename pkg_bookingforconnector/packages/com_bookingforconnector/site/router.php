@@ -82,6 +82,17 @@ function BookingForConnectorBuildRoute(&$query)
 			$segments[] = $query['view'];
 			unset( $query['view'] );
 		};
+		if(isset($query['layout']))
+		{
+			$segments[] = $query['layout'];
+			unset( $query['layout'] );
+		};
+
+		if(isset($query['orderid']))
+		{
+			$segments[] = $query['orderid'];
+			unset( $query['orderid'] );
+		};
 	}
 	
 	if ($view=='MERCHANTS') {
@@ -231,6 +242,11 @@ function BookingForConnectorParseRoute($segments)
 						break;
 				}
 			}
+			if ($count>2) {
+				$orderId = $segments[2];
+				$vars['orderid'] = $orderId;
+			}
+
 			break;
 		case 'tag':
 		case JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_TAG'):

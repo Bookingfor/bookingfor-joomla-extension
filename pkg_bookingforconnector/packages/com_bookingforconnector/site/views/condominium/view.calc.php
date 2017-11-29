@@ -34,7 +34,6 @@ class BookingForConnectorViewCondominium extends BFCView
 		
 		$resource = $this->item;
 		$merchant = $resource->Merchant;
-		$cartType = 1; //$merchant->CartType;
 		$currencyclass = bfi_get_currentCurrency();
 		$resourceId = 0;
 		$condominiumId = resource->condominiumId;
@@ -49,9 +48,7 @@ class BookingForConnectorViewCondominium extends BFCView
 			$criteoConfig = BFCHelper::getCriteoConfiguration(2, $merchants);
 		}
 	
-		
-//		$_SESSION['search.params']['resourceId'] = $resourceId;
-		
+				
 		$analyticsEnabled = $this->checkAnalytics("") && COM_BOOKINGFORCONNECTOR_EECENABLED == 1;
 		$this->assignRef('analyticsEnabled', $analyticsEnabled);
 		$this->assignRef('criteoConfig', $criteoConfig);			

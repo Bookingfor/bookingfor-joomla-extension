@@ -7,10 +7,13 @@
 
 // No direct access to this file
 defined('_JEXEC') or die('Restricted access');
+$language 	= $this->language;
+$tmpUserId = BFCHelper::bfi_get_userId();
+$currCart = BFCHelper::GetCartByExternalUser($tmpUserId, $language, true);
 ?>
 <div class="bfi-content">
 <br />
-	<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_THANKS')?>
+	<h2><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_THANKS')?></h2>
 <br />
 <br />
 </div>

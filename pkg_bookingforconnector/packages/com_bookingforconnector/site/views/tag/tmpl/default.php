@@ -26,7 +26,6 @@ if(isset($this->pagination)){
 if($total<1){
 	$showmap = false;
 }
-
 ?>   
 <!-- {emailcloak=off} -->
 <div class="bfi-content">
@@ -52,7 +51,7 @@ if($total<1){
 	<!-- RESOURCES -->
 	<?php if ($category == 4 && $total > 0){ 
 		?>
-			<div class="com_bookingforconnector-items-container">
+			<div>
 				<?php 
 					$this->addTemplatePath( JPATH_COMPONENT . '/views/search/tmpl/' );
 					$this->setLayout('tags');

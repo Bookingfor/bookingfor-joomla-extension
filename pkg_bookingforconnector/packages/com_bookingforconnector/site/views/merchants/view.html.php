@@ -54,11 +54,17 @@ class BookingForConnectorViewMerchants extends BFCView
 			);');
 		}
 		
-		$analyticsEnabled = count($items) > 0 && $this->checkAnalytics("Merchants List") && COM_BOOKINGFORCONNECTOR_EECENABLED == 1;
+//		$analyticsEnabled = count($items) > 0 && $this->checkAnalytics("Merchants List") && COM_BOOKINGFORCONNECTOR_EECENABLED == 1;
+		$listNameAnalytics =4;
+		$listName = BFCHelper::$listNameAnalytics[$listNameAnalytics];// "Resources Search List";
+
+		$analyticsEnabled = $this->checkAnalytics($listName) && COM_BOOKINGFORCONNECTOR_EECENABLED == 1;
+		$altsearch = BFCHelper::getVar('altsearch','0');
 		$pagination->setAdditionalUrlParam("filter_order", $sortColumn);
 		$pagination->setAdditionalUrlParam("filter_order_Dir", $sortDirection);
 		$pagination->setAdditionalUrlParam("startswith", $startswith);
 		$pagination->setAdditionalUrlParam("searchseed", $searchseed);
+		$pagination->setAdditionalUrlParam("newsearch", 0);
 		
 		$this->state = $state;
 		$this->language = $language;
@@ -67,6 +73,8 @@ class BookingForConnectorViewMerchants extends BFCView
 		$this->pagination = $pagination;
 		$this->analyticsEnabled = $analyticsEnabled;
 		$this->startswith = $startswith;
+		$this->altsearch = $altsearch;
+		$this->listNameAnalytics = $listNameAnalytics;
 
 		// Display the view
 		parent::display($tpl);

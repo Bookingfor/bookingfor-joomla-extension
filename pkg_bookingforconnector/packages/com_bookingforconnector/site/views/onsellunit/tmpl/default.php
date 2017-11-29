@@ -27,7 +27,7 @@ $googlemapsapykey = COM_BOOKINGFORCONNECTOR_GOOGLE_GOOGLEMAPSKEY;
 
 $resourceName = BFCHelper::getLanguage($resource->Name, $language, null, array('ln2br'=>'ln2br', 'striptags'=>'striptags')); 
 $merchantName = BFCHelper::getLanguage($merchant->Name, $language, null, array('ln2br'=>'ln2br', 'striptags'=>'striptags')); 
-$resourceDescription = BFCHelper::getLanguage($resource->Description, $language, null, array('ln2br'=>'ln2br', 'striptags'=>'striptags'));
+$resourceDescription = BFCHelper::getLanguage($resource->Description, $language, null, array('ln2br'=>'ln2br', 'bbcode'=>'bbcode', 'striptags'=>'striptags'));
 $route = JRoute::_('index.php?option=com_bookingforconnector&view=onsellunit&resourceId=' . $resource->ResourceId . ':' . BFCHelper::getSlug($resourceName));
 
 
@@ -59,14 +59,10 @@ if ($isMapMarkerVisible){
 	$htmlmarkerpoint = "&markers=color:blue%7C" . $resourceLat . "," . $resourceLon;
 }
 
-$indirizzo = "";
-$cap = "";
-$comune = "";
-$provincia = "";
-$indirizzo = $resource->Address;
-$cap = $resource->ZipCode;
-$comune = $resource->CityName;
-$provincia = $resource->RegionName;
+$indirizzo = isset($resource->Address)?$resource->Address:"";
+$cap = isset($resource->ZipCode)?$resource->ZipCode:""; 
+$comune = isset($resource->CityName)?$resource->CityName:"";
+$provincia = isset($resource->RegionName)?$resource->RegionName:"";
 $stato = isset($resource->StateName)?$resource->StateName:"";
 
 $deltapricePerCent = 20;
@@ -77,25 +73,6 @@ if($resource->Price>0){
 $contractTypeId = $resource->ContractType;
 
 $contractType = ($resource->ContractType) ? JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_ONSELLUNIT_CONTRACTTYPE1')  : JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_ONSELLUNIT_CONTRACTTYPE');
-
-
-/*---------------IMPOSTAZIONI SEO----------------------*/
-	$titleHead = sprintf(JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_ONSELLUNIT_HEAD_TITLE'), $resourceName, $zone, $location, $typeName, $contractType, $location);
-	$keywordsHead = sprintf(JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_ONSELLUNIT_HEAD_KEYWORDS'), $typeName, $location, $typeName, $contractType, $location, $contractType, $location);
-	$descriptionHead = sprintf(JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_ONSELLUNIT_HEAD_DESCRIPTION'), $resourceName, $typeName, $contractType, $location);
-	if ($location != $zone) 
-		$descriptionHead .= sprintf(JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_ONSELLUNIT_HEAD_DESCRIPTION1'), $zone);
-	if ($resource->Price != null && $resource->Price > 0 && isset($resource->IsReservedPrice) && $resource->IsReservedPrice!=1 ) 
-		$descriptionHead .= sprintf(JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_ONSELLUNIT_HEAD_DESCRIPTION2'),  number_format($resource->Price,0, ',', '.'));
-
-	$this->document->setTitle($titleHead);
-	$this->document->setMetadata('og:title', $titleHead);
-	$this->document->setDescription($descriptionHead);
-	$this->document->setMetadata('og:description', $resourceDescription);
-	$this->document->setMetadata('keywords', $keywordsHead);
-	$this->document->setMetadata('og:url', $route);
-/*--------------- FINE IMPOSTAZIONI SEO----------------------*/
-
 
 $dateUpdate =  BFCHelper::parseJsonDate($resource->AddedOn); 
 if($resource->UpdatedOn!=''){
@@ -141,37 +118,70 @@ if ($itemIdMerchant<>0)
 else
 	$uriMerchant.='&merchantId=' . $merchant->MerchantId . ':' . BFCHelper::getSlug($merchant->Name);
 
-$routeMerchant = JRoute::_($uriMerchant);
+$routeMerchant = JRoute::_($uriMerchant,true, -1);
 
-$payloadresource["@type"] = "Product";
-$payloadresource["@context"] = "http://schema.org";
-$payloadresource["name"] = $resourceName;
-$payloadresource["description"] = $resourceDescription;
-$payloadresource["url"] = $resourceRoute; 
-if (!empty($resource->ImageUrl)){
-	$payloadresource["image"] = "https:".BFCHelper::getImageUrlResized('onsellunits',$resource->ImageUrl, 'logobig');
-}
+/*---------------IMPOSTAZIONI SEO----------------------*/
+	$merchantDescriptionSeo = BFCHelper::getLanguage($merchant->Description, $language, null, array( 'nobr'=>'nobr', 'bbcode'=>'bbcode', 'striptags'=>'striptags')) ;
+	$resourceDescriptionSeo = BFCHelper::getLanguage($resource->Description, $language, null, array( 'nobr'=>'nobr', 'bbcode'=>'bbcode', 'striptags'=>'striptags')) ;
+	if (!empty($merchantDescriptionSeo) && strlen($merchantDescriptionSeo) > 170) {
+	    $merchantDescriptionSeo = substr($merchantDescriptionSeo,0,170);
+	}
+	if (!empty($resourceDescriptionSeo) && strlen($resourceDescriptionSeo) > 170) {
+	    $resourceDescriptionSeo = substr($resourceDescriptionSeo,0,170);
+	}
+
+//	$titleHead = "$resourceName ($comune, $stato) - $sitename";
+//	$keywordsHead = "$resourceName, $comune, $stato, $merchant->MainCategoryName";
+	$titleHead = sprintf(JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_ONSELLUNIT_HEAD_TITLE'), $resourceName, $zone, $location, $typeName, $contractType, $location);
+	$keywordsHead = sprintf(JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_ONSELLUNIT_HEAD_KEYWORDS'), $typeName, $location, $typeName, $contractType, $location, $contractType, $location);
+	$descriptionHead = sprintf(JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_ONSELLUNIT_HEAD_DESCRIPTION'), $resourceName, $typeName, $contractType, $location);
+	if ($location != $zone) 
+		$descriptionHead .= sprintf(JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_ONSELLUNIT_HEAD_DESCRIPTION1'), $zone);
+	if ($resource->Price != null && $resource->Price > 0 && isset($resource->IsReservedPrice) && $resource->IsReservedPrice!=1 ) 
+		$descriptionHead .= sprintf(JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_ONSELLUNIT_HEAD_DESCRIPTION2'),  number_format($resource->Price,0, ',', '.'));
+
+	$routeSeo = ($isportal)? $routeMerchant: $base_url;
+	$resourceRouteSeo = JRoute::_($currUriresource,true, -1);
+
+	$this->document->setTitle($titleHead);
+	$this->document->setDescription($descriptionHead);
+	$this->document->setMetadata('keywords', $keywordsHead);
+	$this->document->setMetadata('robots', "index,follow");
+	$this->document->setMetadata('og:title', $titleHead);
+	$this->document->setMetadata('og:description', $descriptionHead);
+	$this->document->setMetadata('og:url', $resourceRouteSeo);
+
+	$payload["@type"] = "Organization";
+	$payload["@context"] = "http://schema.org";
+	$payload["name"] = $merchantName;
+	$payload["description"] = $merchantDescriptionSeo;
+	$payload["url"] = $routeSeo; 
+	if (!empty($merchant->LogoUrl)){
+		$payload["logo"] = "https:".BFCHelper::getImageUrlResized('merchant',$merchant->LogoUrl, 'logobig');
+	}
+
+	$payloadresource["@type"] = "Product";
+	$payloadresource["@context"] = "http://schema.org";
+	$payloadresource["name"] = $resourceName;
+	$payloadresource["description"] = $resourceDescriptionSeo;
+	$payloadresource["url"] = $resourceRouteSeo; 
+	if (!empty($resource->ImageUrl)){
+		$payloadresource["image"] = "https:".BFCHelper::getImageUrlResized('onsellunits',$resource->ImageUrl, 'logobig');
+	}
+/*--------------- FINE IMPOSTAZIONI SEO----------------------*/
+
+
 ?>
 <script type="application/ld+json">// <![CDATA[
-<?php echo json_encode($payloadresource); ?>
+<?php echo json_encode($payloadresource,JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE); ?>
 // ]]></script>
-<?php 
-$payload["@type"] = "Organization";
-$payload["@context"] = "http://schema.org";
-$payload["name"] = $merchant->Name;
-$payload["description"] = BFCHelper::getLanguage($merchant->Description, $language, null, array( 'striptags'=>'striptags', 'bbcode'=>'bbcode','ln2br'=>'ln2br'));
-$payload["url"] = ($isportal)? $routeMerchant: $base_url; 
-if (!empty($merchant->LogoUrl)){
-	$payload["logo"] = "https:".BFCHelper::getImageUrlResized('merchant',$merchant->LogoUrl, 'logobig');
-}
-?>
 <script type="application/ld+json">// <![CDATA[
-<?php echo json_encode($payload); ?>
+<?php echo json_encode($payload,JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE); ?>
 // ]]></script>
 
 <div class="bfi-content">	
 
-	<div class="bfi-title-name"><?php echo  $resourceName?> - <span class="bfi-cursor"><?php echo  $merchantName?></span></div>
+	<div class="bfi-title-name"><h1><?php echo  $resourceName?></h1> - <h2 class="bfi-cursor"><?php echo  $merchantName?></h2></div>
 <?php if ($resource->IsAddressVisible) { ?>
 	<div class="bfi-address">
 				<i class="fa fa-map-marker fa-1"></i> <?php if (($showResourceMap)) {?><a class="bfi-map-link" rel="#resource_map"><?php } ?><span class="street-address"><?php echo $indirizzo ?></span>, <span class="postal-code "><?php echo  $cap ?></span> <span class="locality"><?php echo $comune ?></span>, <span class="region"><?php echo  $stato ?></span>
@@ -426,6 +436,10 @@ jQuery(function($) {
 	});
 	jQuery('#bfi-avgreview').click(function() {
 		jQuery('html, body').animate({ scrollTop: jQuery(".bfi-ratingslist").offset().top }, 2000);
+	});
+
+	jQuery('.bfi-title-name h2').click(function() {
+		jQuery('html, body').animate({ scrollTop: jQuery(".bfi-merchant-simple").offset().top }, 2000);
 	});
 
 	var shortenOption = {

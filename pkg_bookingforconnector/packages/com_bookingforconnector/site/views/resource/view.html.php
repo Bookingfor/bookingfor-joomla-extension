@@ -41,7 +41,6 @@ class BookingForConnectorViewResource extends BFCView
 		
 		$resource = $this->item;
 		$merchant = $resource->Merchant;
-		$cartType = 1; //$merchant->CartType;
 
 		$items=null;
 		$pagination=null;
@@ -49,8 +48,9 @@ class BookingForConnectorViewResource extends BFCView
 			bfi_setSessionFromSubmittedData();
 		}
 		if(isset($_REQUEST['state'])){
-			$_SESSION['search.params']['state'] = $_REQUEST['state'];
-
+			$currParam = BFCHelper::getSearchParamsSession();
+			$currParam['state'] = $_REQUEST['state'];
+			BFCHelper::setSearchParamsSession($currParam);
 		}
 
 
@@ -59,13 +59,16 @@ class BookingForConnectorViewResource extends BFCView
 		$document->addScript('components/com_bookingforconnector/assets/js/bf_appTimePeriod.js');
 		$document->addScript('components/com_bookingforconnector/assets/js/bf_appTimeSlot.js');
 
+		$sendAnalytics = true;
 		if ($this->getLayout() == 'rating') {
 			$document->addScript('components/com_bookingforconnector/assets/js/jquery.rating.pack.js');
+			$sendAnalytics =false;
 		}
 
 		if ($this->getLayout() == 'ratings') {
 			$items = $this->get('ItemsRating');
 			$pagination	= $this->get('PaginationRatings');
+			$sendAnalytics =false;
 		}
 
 		$this->items = $items;
@@ -73,7 +76,7 @@ class BookingForConnectorViewResource extends BFCView
 
 		$merchants = array();
 		$merchants[] = $item->MerchantId;
-		$analyticsEnabled = $this->checkAnalytics("Merchant Resources Search List");
+		$analyticsEnabled = $this->checkAnalytics();
 		$criteoConfig = null;
 		if(BFCHelper::getString('layout', "default") == "default") {
 			$criteoConfig = BFCHelper::getCriteoConfiguration(2, $merchants);
@@ -91,13 +94,13 @@ class BookingForConnectorViewResource extends BFCView
 				);');
 			}
 		}
-			if($item->IsCatalog && $analyticsEnabled && COM_BOOKINGFORCONNECTOR_EECENABLED == 1) {
+			if($sendAnalytics &&  $analyticsEnabled && COM_BOOKINGFORCONNECTOR_EECENABLED == 1) {
 				$obj = new stdClass;
 				$obj->id = "" . $item->ResourceId . " - Resource";
 				$obj->name = $item->Name;
 				$obj->category = $item->MerchantCategoryName;
 				$obj->brand = $item->MerchantName;
-				$obj->variant = 'CATALOG';
+				$obj->variant = $item->IsCatalog ? 'CATALOG' : 'NS';
 				$document->addScriptDeclaration('callAnalyticsEEc("addProduct", [' . json_encode($obj) . '], "item");');
 			}
 		}

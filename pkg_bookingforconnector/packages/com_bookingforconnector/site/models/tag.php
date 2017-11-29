@@ -538,6 +538,10 @@ class BookingForConnectorModelTag extends JModelList
 		if (isset($limit) && $limit > 0) {
 			$options['data']['top'] = $limit;
 		}	
+		$searchid = isset($params['searchid']) ? $params['searchid'] : '';
+		if (isset($searchid) && $searchid !='') {
+			$options['data']['searchid'] = '\'' . $searchid. '\'';
+		}
 								
 		$url = $this->helper->getQuery($options);
 				
@@ -571,21 +575,26 @@ class BookingForConnectorModelTag extends JModelList
 		$searchid = "resources".$tagId ;
 		$params['groupresulttype'] = $params['show_grouped'];
 		$merchantResults = $params['show_grouped'];
-		if(isset($_SESSION['search.params']) ){
-			$_SESSION['search.params']['onlystay'] == false;
+		
+		$currParamInSession = BFCHelper::getSearchParamsSession();
+				
+		if(isset($currParamInSession) && $currParamInSession != null ){
+			$currParamInSession['onlystay'] == false;
+			$searchid = isset($currParamInSession['searchid']) ? $currParamInSession['searchid'] :  uniqid('', true);
 		}else{
-			$_SESSION['search.params'] = null;
-			$_SESSION['search.params']['onlystay'] == false;
+			$currParamInSession = null;
+			$currParamInSession['onlystay'] == false;
+			$searchid =  uniqid('', true);
 		}
+		$currParamInSession['searchid'] = $searchid;
+
+		BFCHelper::setSearchParamsSession($currParamInSession);
 		
 //		$condominiumsResults = $params['condominiumsResults'];
 		
 		$sessionkey = 'tags.' . $searchid . '.results';
 
 //		$session = JFactory::getSession();
-		$results = null;
-								
-		
 		$options = array(
 			'path' => $this->urlResources,
 			'data' => array(
@@ -606,6 +615,9 @@ class BookingForConnectorModelTag extends JModelList
 //				}
 			}
 
+		if (isset($searchid) && $searchid !='') {
+			$options['data']['searchid'] = '\'' . $searchid. '\'';
+		}
 
 		$url = $this->helper->getQuery($options);
 

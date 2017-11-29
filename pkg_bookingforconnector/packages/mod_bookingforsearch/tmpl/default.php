@@ -1034,16 +1034,18 @@ function insertNight<?php echo $currModID ?>(){
 		days  = Math.ceil(diff/1000/60/60/24);
 
 		var resbynight = jQuery(jQuery('#<?php echo $checkinId; ?>')).closest("form").find(".resbynighthd").first();
-		var resbynight_str = resbynight.val().split(",");
-		if(resbynight_str.indexOf("0") !== -1 || resbynight_str.indexOf("1") !== -1 ){
-			jQuery("#divcalendarnightsearch<?php echo $currModID ?>").show();
-			var strSummaryDays = "" +days+" <?php echo strtolower (JTEXT::_('MOD_BOOKINGFORSEARCH_NIGHT')) ?>";
-			if (jQuery(resbynight).val() == 0) {
-				days += 1;
-				strSummaryDays ="" +days+" <?php echo strtolower (JTEXT::_('MOD_BOOKINGFORSEARCH_DAYS')) ?>";
+		if(resbynight.length){
+			var resbynight_str = resbynight.val().split(",");
+			if(resbynight_str.indexOf("0") !== -1 || resbynight_str.indexOf("1") !== -1 ){
+				jQuery("#divcalendarnightsearch<?php echo $currModID ?>").show();
+				var strSummaryDays = "" +days+" <?php echo strtolower (JTEXT::_('MOD_BOOKINGFORSEARCH_NIGHT')) ?>";
+				if (jQuery(resbynight).val() == 0) {
+					days += 1;
+					strSummaryDays ="" +days+" <?php echo strtolower (JTEXT::_('MOD_BOOKINGFORSEARCH_DAYS')) ?>";
+				}
+				if(days<1){strSummaryDays ="";}
+				jQuery('#calendarnight<?php echo $durationId ?>').html(strSummaryDays);
 			}
-			if(days<1){strSummaryDays ="";}
-			jQuery('#calendarnight<?php echo $durationId ?>').html(strSummaryDays);
 		}
 
 
@@ -1262,19 +1264,6 @@ jQuery(function() {
 	var index = jQuery('#bfisearch<?php echo $currModID ?> li[data-searchtypeid="<?php echo $searchtypetab ?>"] a').parent().index();
 	jQuery("#bfisearch<?php echo $currModID ?>").tabs("option", "active", index);
 
-//	jQuery("#bfisearch<?php echo $currModID ?>").tabs({
-//		collapsible: true,
-//		active: false,
-//		beforeLoad: function(event, ui) {
-//			ui.jqXHR.abort();
-//		}
-//
-//		});
-//	var ancRef = jQuery('#bfisearch<?php echo $currModID ?> li[data-searchtypeid="<?php echo $searchtypetab ?>"] a');
-//	var index = ancRef.parent().index();
-//	jQuery("#bfisearch<?php echo $currModID ?>").tabs("option", "active", index);	
-//	jQuery(ancRef.attr("href")).removeClass("fade").addClass("active");	
-
 	jQuery('#BtnResource<?php echo $currModID ?>').click(function(e) {
 		e.preventDefault();
 		jQuery("#searchform<?php echo $currModID ?>").submit(); 
@@ -1455,6 +1444,15 @@ jQuery(function() {
 		});
 		 jQuery("#filtersServicesSearch<?php echo $currModID ?>").val(jQuery.unique(active_keys.toArray()).join(","));
 	});
+
+	//disable choosen
+
+	try
+	{
+	jQuery("#bfisearch<?php echo $currModID ?>").find("select").chosen("destroy") ;
+	}
+	catch (e) {
+	}
 });
 
 function countPersone<?php echo $currModID ?>() {
@@ -1629,7 +1627,7 @@ function showhideCategories<?php echo $currModID ?>() {
 			jQuery("#merchantCategoryId<?php echo $currModID ?>").closest("div").hide();
 			currMerchantCategory.find('option:eq(0)').val(0);
 		}
-		if(unitCategoriesSelectedActivities.length>1){
+		if(unitCategoriesSelectedActivities.length>0){
 			jQuery("#masterTypeId<?php echo $currModID ?>").closest("div").show();
             for (var i = 0; i < unitCategoriesSelectedActivities.length; i++) {
 				var currUC = unitCategoriesResource[unitCategoriesSelectedActivities[i]];
@@ -1650,9 +1648,11 @@ function showhideCategories<?php echo $currModID ?>() {
 	
 <?php if($showDateRange){ ?>	
 	jQuery("#divcalendarnightsearch<?php echo $currModID ?>").hide();
-	var resbynight_str = resbynight.val().split(",");
-	if(resbynight_str.indexOf("0") !== -1 || resbynight_str.indexOf("1") !== -1 ){
-		jQuery("#divcalendarnightsearch<?php echo $currModID ?>").show();
+	if(resbynight.length){
+		var resbynight_str = resbynight.val().split(",");
+		if(resbynight_str.indexOf("0") !== -1 || resbynight_str.indexOf("1") !== -1 ){
+			jQuery("#divcalendarnightsearch<?php echo $currModID ?>").show();
+		}
 	}
 <?php } ?>
 

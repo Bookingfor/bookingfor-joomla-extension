@@ -38,8 +38,15 @@ class BookingForConnectorViewSearch extends BFCView
 			header ("Location: ". JURI::root()); 
 			$app->close();
 		}
-		$items		= $this->get('Items');
-		$pagination	= $this->get('Pagination');
+		$altsearch = BFCHelper::getVar('altsearch','0');
+		$items		= null;
+		$pagination	= new JPagination(0, $state->get('list.start'), $state->get('list.limit') );
+
+		if (empty($altsearch)) {
+			$items		= $this->get('Items');
+			$pagination	= $this->get('Pagination');
+		    
+		}
 		$sortColumn 	= $state->get('list.ordering');
 		$sortDirection 	= $state->get('list.direction');
 	
@@ -48,9 +55,10 @@ class BookingForConnectorViewSearch extends BFCView
 			BFCHelper::raiseWarning(500, implode("\n", $errors));
 			return false;
 		}
-		$merchantResults = $_SESSION['search.params']['merchantResults'];
-		$condominiumsResults = $_SESSION['search.params']['condominiumsResults'];
-		$totPerson = $_SESSION['search.params']['paxes'];
+		$currParam = BFCHelper::getSearchParamsSession();
+		$merchantResults = $currParam['merchantResults'];
+		$condominiumsResults = $currParam['condominiumsResults'];
+		$totPerson = $currParam['paxes'];
 
 		/*-- criteo --*/
 		$criteoConfig = null;
@@ -75,13 +83,15 @@ class BookingForConnectorViewSearch extends BFCView
 	
 		$totalItems = array();
 		$listName = "";
+		$listNameAnalytics = 0;
 		$sendData = true;
 		
 		
 		if(!empty($items)) {
 			if($merchantResults) {
 //				$resIndex = 0;
-				$listName = "Resources Group List";
+				$listNameAnalytics = 1;
+				$listName = BFCHelper::$listNameAnalytics[$listNameAnalytics];//"Merchants Group List";
 				foreach($items as $itemkey => $itemValue) {
 //					$obj = new stdClass();
 //					$obj->Id = $itemValue->MerchantId . " - Merchant";
@@ -101,9 +111,10 @@ class BookingForConnectorViewSearch extends BFCView
 					$totalItems[] = $objRes;
 				}
 			} else if ($condominiumsResults) {
-				$sendData = false;
+//				$sendData = false;
 				$resIndex = 0;
-				$listName = "Resources Group List";
+				$listNameAnalytics = 2;
+				$listName = BFCHelper::$listNameAnalytics[$listNameAnalytics];// "Resources Group List";
 				foreach($items as $itemkey => $itemValue) {
 //					$obj = new stdClass();
 //					$obj->Id = $mrcValue->CondominiumId . " - Resource Group";
@@ -124,7 +135,8 @@ class BookingForConnectorViewSearch extends BFCView
 					$totalItems[] = $objRes;
 				}
 			} else {
-				$listName = "Resources Search List";
+				$listNameAnalytics = 3;
+				$listName = BFCHelper::$listNameAnalytics[$listNameAnalytics];// "Resources Search List";
 				foreach($items as $mrckey => $mrcValue) {
 					$obj = new stdClass();
 					$obj->Id = $mrcValue->ResourceId . " - Resource";
@@ -139,7 +151,9 @@ class BookingForConnectorViewSearch extends BFCView
 		}
 
 		$analyticsEnabled = $this->checkAnalytics($listName) && COM_BOOKINGFORCONNECTOR_EECENABLED == 1;
-		if(count($totalItems) > 0 && COM_BOOKINGFORCONNECTOR_GAENABLED == 1 && !empty(COM_BOOKINGFORCONNECTOR_GAACCOUNT) && COM_BOOKINGFORCONNECTOR_EECENABLED == 1) {
+		
+		if(count($totalItems) > 0 && $analyticsEnabled) {
+
 			$allobjects = array();
 			$initobjects = array();
 			foreach ($totalItems as $key => $value) {
@@ -165,11 +179,13 @@ class BookingForConnectorViewSearch extends BFCView
 		}
 		
 		//event tracking
-		
-		$pagination->setAdditionalUrlParam("filter_order", $sortColumn);
-		$pagination->setAdditionalUrlParam("filter_order_Dir", $sortDirection);
-		$pagination->setAdditionalUrlParam("searchid", $params['searchid']);
-		$pagination->setAdditionalUrlParam("newsearch", 0);
+		if ($pagination!=null) {
+			$pagination->setAdditionalUrlParam("filter_order", $sortColumn);
+			$pagination->setAdditionalUrlParam("filter_order_Dir", $sortDirection);
+			$pagination->setAdditionalUrlParam("searchid", $params['searchid']);
+			$pagination->setAdditionalUrlParam("newsearch", 0);
+		    
+		}
 		
 		$this->state = $state;
 		$this->params = $params;
@@ -180,6 +196,7 @@ class BookingForConnectorViewSearch extends BFCView
 		$this->config = $config;
 		$this->hidesort = true;
 		$this->analyticsEnabled = $analyticsEnabled;
+		$this->listNameAnalytics = $listNameAnalytics;
 		
 		// Display the view
 		parent::display($tpl);

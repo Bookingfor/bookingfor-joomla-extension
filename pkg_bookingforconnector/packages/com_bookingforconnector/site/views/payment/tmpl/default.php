@@ -26,8 +26,8 @@ if ($itemIdCart<>0)
 	$uriCart.='&Itemid='.$itemIdCart;
 $url_cart_page = JRoute::_($uriCart);
 
-$redirect = JRoute::_($uriCart.'&layout=thanks', true, -1);
-$redirecterror = JRoute::_($uriCart.'&layout=errors', true, -1);
+$redirect = JRoute::_($uriCart.'&layout=thanks&orderid='.$orderid, true, -1);
+$redirecterror = JRoute::_($uriCart.'&layout=errors&orderid='.$orderid, true, -1);
 
 if(!empty( $orderid )){
 	$lastPayment = BFCHelper::GetLastOrderPayment($orderid);
@@ -38,12 +38,14 @@ if (empty($lastPayment) || $lastPayment->PaymentType!=3 || ($lastPayment->Status
 	$errorCode ="1";
 
 }
-if($lastPayment->Status==1 ||$lastPayment->Status==3 || $lastPayment->Status==7 ){
-	$invalidate=1;
-}
-if ($lastPayment->Status==5 ) {
-    $errorPayment= true;
-	$errorCode ="2";
+if (!empty($lastPayment)){
+	if($lastPayment->Status==1 ||$lastPayment->Status==3 || $lastPayment->Status==7 ){
+		$invalidate=1;
+	}
+	if ($lastPayment->Status==5 ) {
+		$errorPayment= true;
+		$errorCode ="2";
+	}
 }
 
 		
@@ -58,7 +60,7 @@ if ($lastPayment->Status==5 ) {
 	}
 		
 ?>
-Se non verrà rediretto alla pagina del pagamento entro pochi secondi, clicchi il pulsante seguente:<br />
+<?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_PAYMENT_VIEW_WAITREDIRECT') ?><br />
 <form action="<?php echo $paymentUrl?>" method="post" id="bfi_paymentform">
 	<input id="urlok" name="urlok" type="<?php echo $typeMode ?>" title="urlok" value="<?php echo $redirect?>" />
 	<input id="urlko" name="urlko" type="<?php echo $typeMode ?>" title="urlko"  value="<?php echo $redirecterror ?>" />

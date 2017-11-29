@@ -23,11 +23,15 @@ $lang = JFactory::getLanguage();
 $lang->load('com_bookingforconnector', $pathbase, 'en-EN', true);
 $lang->load('com_bookingforconnector', $pathbase, $lang->getTag(), true);
 
+$showcurrencyswitcher = $params->get('showcurrencyswitcher');
+$showcart = $params->get('showcart');
+
 $defaultCurrency = bfi_get_defaultCurrency();
 $currentCurrency = bfi_get_currentCurrency();
 $currencyExchanges = bfi_get_currencyExchanges();
-if(empty($currencyExchanges) || count($currencyExchanges)<2){
-	return; //no more currency than default
+
+if($showcurrencyswitcher && !$showcart && (empty($currencyExchanges) || count($currencyExchanges)<2)){
+		return; //no more currency than default
 }
 
 bfi_load_scripts();

@@ -71,7 +71,7 @@ class plgSearchBookingforconnector extends JPlugin
 
 			//search exact
 			case 'exact':
-				/*$text		= $db->Quote( '%'.$db->getEscaped( $text, true ).'%', false );
+				/*$text		= $db->Quote( '%'.$db->escape( $text, true ).'%', false );
 				$where 		= '(' . implode( ') OR (', $wheres2 ) . ')';*/
 				break;
 
@@ -86,7 +86,7 @@ class plgSearchBookingforconnector extends JPlugin
 				 $wheres = array();
 				 foreach ($words as $word)
 				 {
-				 $word		= $db->Quote( '%'.$db->getEscaped( $word, true ).'%', false );
+				 $word		= $db->Quote( '%'.$db->escape( $word, true ).'%', false );
 				 $wheres2 	= array();
 				 $wheres2[] 	= 'LOWER(a.name) LIKE '.$word;
 				 $wheres[] 	= implode( ' OR ', $wheres2 );

@@ -14,6 +14,8 @@ $listOrder	= $this->escape($this->state->get('list.ordering'));
 $listDirn	= $this->escape($this->state->get('list.direction'));
 $language = $this->language;
 $offers = $this->items;
+$listNameAnalytics = $this->listNameAnalytics;
+$fromsearchparam = "&lna=".$listNameAnalytics;
 
 $db   = JFactory::getDBO();
 $itemIdMerchant=0;
@@ -50,7 +52,7 @@ $total = $this->pagination->total;
 		$currUriMerchant = $uriMerchant. '&merchantId=' . $resource->MerchantId . ':' . BFCHelper::getSlug($resource->MrcName);
 		if ($itemIdMerchant<>0)
 			$currUriMerchant.='&Itemid='.$itemIdMerchant;
-		$resourceRoute  = JRoute::_($currUriMerchant.'&layout=offer&offerId=' . $resource->VariationPlanId . ':' . BFCHelper::getSlug($resourceName));
+		$resourceRoute  = JRoute::_($currUriMerchant.'&layout=offer&offerId=' . $resource->VariationPlanId . ':' . BFCHelper::getSlug($resourceName).$fromsearchparam);
 		
 		if(!empty($resource->DefaultImg)){
 			$resourceImageUrl = BFCHelper::getImageUrlResized('variationplans',$resource->DefaultImg, 'medium');

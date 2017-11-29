@@ -20,7 +20,7 @@ defined('_JEXEC') or die('Restricted access');
  * @subpackage  com_bookingforconnector
  *
  * @copyright   Copyright (c)2006-2017 Ipertrade s.r.l. All rights reserved.
- * @license     GNU General Public License version 2 or later; see LICENSE.txt
+ * @license   GNU General Public License version 3, or later
  */
 class pkg_bookingforconnectorInstallerScript
 {

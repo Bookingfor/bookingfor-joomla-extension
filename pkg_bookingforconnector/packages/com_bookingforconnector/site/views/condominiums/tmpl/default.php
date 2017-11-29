@@ -12,12 +12,21 @@ $activeMenu = JFactory::getApplication()->getMenu()->getActive();
 $config = $this->config;
 $isportal = $config->get('isportal', 1);
 $showdata = $config->get('showdata', 1);
+$posx = COM_BOOKINGFORCONNECTOR_GOOGLE_POSX;
+$posy = COM_BOOKINGFORCONNECTOR_GOOGLE_POSY;
+$startzoom = COM_BOOKINGFORCONNECTOR_GOOGLE_STARTZOOM;
+$googlemapsapykey = COM_BOOKINGFORCONNECTOR_GOOGLE_GOOGLEMAPSKEY;
 $searchid = -1;
 $onlystay=false;
 
 $listOrder	= $this->escape($this->state->get('list.ordering'));
 $listDirn	= $this->escape($this->state->get('list.direction'));
 $language = $this->language;
+
+$listNameAnalytics = $this->listNameAnalytics;
+$fromsearchparam = "&lna=".$listNameAnalytics;
+
+$currSorting=$listOrder . "|" . $listDirn;
 
 //-------------------pagina per il redirect di tutte le risorse 
 
@@ -27,22 +36,14 @@ $db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uri ) .' A
 //$itemId = ($db->getErrorNum())? 0 : intval($db->loadResult());
 $itemId = intval($db->loadResult());
 //------------------- pagina per i l redirect di tutte le risorse 
-$resourceImageUrl = Juri::root() . "media/com_bookingfor/images/default.png";
-$merchantImageUrl = Juri::root() . "media/com_bookingfor/images/DefaultLogoList.jpg";
 
-$resourceLogoPath = BFCHelper::getImageUrlResized('condominium',"[img]", 'onsellunit_list_default');
-$resourceLogoPathError = BFCHelper::getImageUrl('condominium',"[img]", 'onsellunit_list_default');
-
-$merchantLogoPath = BFCHelper::getImageUrlResized('merchant',"[img]", 'resource_list_merchant_logo');
-$merchantLogoPathError = BFCHelper::getImageUrl('merchant',"[img]", 'resource_list_merchant_logo');
-
-$resourceImageUrl = Juri::root() . "components/com_bookingforconnector/assets/images/defaults/default-s6.jpeg";
-$merchantLogoUrl = Juri::root() . "components/com_bookingforconnector/assets/images/defaults/default-s1.jpeg";
-
-$results = $this->items;
+$merchantImageUrl = Juri::root() . "components/com_bookingforconnector/assets/images/defaults/default-s6.jpeg";
 
 $merchantImagePath = BFCHelper::getImageUrlResized('condominium', "[img]",'medium');
 $merchantImagePathError = BFCHelper::getImageUrl('condominium', "[img]",'medium');
+
+$merchants = $this->items;
+$total = $this->pagination->total;
 
 $itemIdMerchant=0;
 $uriMerchant  = 'index.php?option=com_bookingforconnector&view=merchantdetails';
@@ -54,310 +55,179 @@ $counter = 0;
 if($itemId == 0){
 	$itemId = $itemIdMerchant;
 }
+$url=JFactory::getURI()->toString();
+$formAction=$url;
 
-if(!empty($results) && count($results) > 0) {
 ?>
-<div id="com_bookingforconnector-items-container-wrapper">
-<h1><?php echo $activeMenu->title?></h1>
-	  <div class="com_bookingforconnector-items-container" >
-<div class="com_bookingforconnector-search-menu">
-	<form action="<?php echo htmlspecialchars(JFactory::getURI()->toString()); ?>" method="post" name="bookingforsearchForm" id="bookingforsearchFilterForm">
-	<fieldset class="filters">
-		<input type="hidden" class="filterOrder" name="filter_order" value="<?php echo $listOrder ?>" />
-		<input type="hidden" class="filterOrderDirection" name="filter_order_Dir" value="<?php echo $listDirn ?>" />
-		<input type="hidden" name="searchid" value="<?php echo $searchid?>" />
-		<input type="hidden" name="limitstart" value="0" />
-	</fieldset>
-	</form>
-	<div class="com_bookingforconnector-results-sort" style="display:none;">
-		<span class="com_bookingforconnector-sort-help"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_SEARCH_VIEW_ORDERBY_LABEL')?>:</span>
-		<span class="com_bookingforconnector-sort-item" rel="stay|asc"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_SEARCH_VIEW_ORDERBY_PRICE'); ?></span>
-		<span class="com_bookingforconnector-sort-item" rel="rating|desc" ><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_SEARCH_VIEW_ORDERBY_GUEST_RATING'); ?></span>
-		<span class="com_bookingforconnector-sort-item" rel="offer|desc" ><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_SEARCH_VIEW_ORDERBY_OFFERS'); ?></span>
+<?php if (count($merchants)>0) { ?>
+<div class="bfi-content">
+<?php if(!empty(COM_BOOKINGFORCONNECTOR_GOOGLE_GOOGLEMAPSKEY)){ ?>
+	<div class="bfi-text-right ">
+		<div class="bfi-search-view-maps ">
+		<span><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_SEARCH_VIEW_MAPVIEW') ?></span>
+		</div>	
 	</div>
-	<div class="com_bookingforconnector-view-changer">
-		<div id="list-view" class="com_bookingforconnector-view-changer-list active"><i class="fa fa-list"></i> <?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_TAB_LIST') ?></div>
-		<div id="grid-view" class="com_bookingforconnector-view-changer-grid"><i class="fa fa-th-large"></i> <?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_TAB_GRID') ?></div>
+<?php } ?>
+<div class="bfi-search-menu">
+	<div class="bfi-view-changer">
+		<div class="bfi-view-changer-selected"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_TAB_LIST') ?></div>
+		<div class="bfi-view-changer-content">
+			<div id="list-view"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_TAB_LIST') ?></div>
+			<div id="grid-view" class="bfi-view-changer-grid"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_TAB_GRID') ?></div>
+		</div>
 	</div>
 </div>
-<div class="clearfix"></div>
-<div class="com_bookingforconnector-search-merchants com_bookingforconnector-items <?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_ROW ?> com_bookingforconnector-list">
+
+<div class="bfi-clearfix"></div>
+<div id="bfi-list" class="bfi-row bfi-list">
 <?php 
-$listResourceIds = array(); 
-$listResourceIdsByMerchant = array();
+$listsId = array(); 
+$isCondominium = true;
 ?>  
+	<?php foreach ($merchants as  $currKey => $merchant){ ?>
+		<?php 
+			$currName = BFCHelper::getLanguage($merchant->Name, $this->language, null, array('ln2br'=>'ln2br', 'striptags'=>'striptags')); 
+			$merchantName = $merchant->MerchantName;
+			
+			$rating = $merchant->Rating;
+			if ($rating>9 )
+			{
+				$rating = $rating/10;
+			} 
+			
+			$currUriMerchant = $uriMerchant. '&merchantId=' . $merchant->MerchantId . ':' . BFCHelper::getSlug($merchantName);
+			$currUri = $uri. '&resourceId=' . $merchant->CondominiumId. ':' . BFCHelper::getSlug($merchant->Name);
+			$merchantDescription = ""; // BFCHelper::getLanguage($resource->Description, $language, null, array('ln2br'=>'ln2br', 'striptags'=>'striptags')); 
+			
+			if ($itemId<>0)
+				$currUri.='&Itemid='.$itemId;
+
+			$currUri .= $fromsearchparam;
+			$routeCondominium = JRoute::_($currUri);
+
+			if ($itemIdMerchant<>0)
+				$currUriMerchant.='&Itemid='.$itemIdMerchant;
+			
+			$routeMerchant = JRoute::_($currUriMerchant);
+			$routeRating = JRoute::_($currUriMerchant.'&layout=ratings');				
+			$routeInfoRequest = JRoute::_($currUriMerchant.'&layout=contactspopup&tmpl=component');			
+			
+			$counter = 0;
+			$merchantLat = $merchant->XGooglePos;
+			$merchantLon = $merchant->XGooglePos;
+			$showMerchantMap = (($merchantLat != null) && ($merchantLon !=null));
+//			$showMerchantMap = false;
+			$merchantImageUrl = Juri::root() . "components/com_bookingforconnector/assets/images/defaults/default-s6.jpeg";
+			
+			if(!empty($merchant->DefaultImg)){
+				$merchantImageUrl = BFCHelper::getImageUrlResized('condominium',$merchant->DefaultImg, 'medium');
+			}
+			
+			$merchantDescription = BFCHelper::getLanguage($merchant->Description, $language, null, array('ln2br'=>'ln2br', 'striptags'=>'striptags')); 
+
+			$merchantNameTrack =  BFCHelper::string_sanitize($merchantName);
+			$merchantCategoryNameTrack = ""; // BFCHelper::string_sanitize($merchant->MainCategoryName);
+
+			if(isset($merchant->XGooglePos) && !empty($merchant->XGooglePos)  ){
+				$val= new StdClass;
+				$val->Id = $merchant->CondominiumId ;
+				$val->X = $merchant->XGooglePos;
+				$val->Y = $merchant->YGooglePos;
+				$listResourceMaps[] = $val;
+			}
+			$resourceDataTypeTrack =  ($isCondominium)?"Resource Group":"Resource";
+			$resourceNameTrack =  BFCHelper::string_sanitize($currName);
+			$merchantNameTrack =  BFCHelper::string_sanitize($merchantName);
+			$merchantCategoryNameTrack =  BFCHelper::string_sanitize($merchant->MrcCategoryName);
+
+		?>
 
 
-<?php 
-foreach ($results as $mrcKey => $condominium):
-	$resourceName = "";// BFCHelper::getLanguage($condominium->Name, $this->language);
-	//$route = JRoute::_('index.php?option=com_bookingforconnector&view=condominium&ResourceId=' . $condominium->CondominiumId . ':' . BFCHelper::getSlug($resourceName));
-	$currUri = $uri. '&resourceId=' . $condominium->CondominiumId. ':' . BFCHelper::getSlug($resourceName);
-
-	if ($itemId<>0)
-		$currUri.='&Itemid='.$itemId;
-	$route = JRoute::_($currUri);
-	
-	$merchantLat = $condominium->XGooglePos;
-	$merchantLon = $condominium->YGooglePos;
-	$showMerchantMap = (($merchantLat != null) && ($merchantLon !=null));
-	
-	$merchantImageUrl = Juri::root() . "components/com_bookingforconnector/assets/images/defaults/default-s6.jpeg";
-		
-//	$routeInfoRequest = JRoute::_('index.php?option=com_bookingforconnector&view=merchantdetails&layout=contactspopup&tmpl=component&merchantId=' . $condominium->MerchantId . ':' . BFCHelper::getSlug($condominium->MerchantName));
-	$routeInfoRequest = JRoute::_('index.php?option=com_bookingforconnector&view=merchantdetails&layout=contactspopup&tmpl=component&merchantId=' . $condominium->MerchantId . ':' );
-
-	
-	$currUriMerchant = $uriMerchant. '&merchantId=' . $condominium->MerchantId . ':' . BFCHelper::getSlug($condominium->MerchantName);
-
-	if ($itemIdMerchant<>0)
-		$currUriMerchant.='&Itemid='.$itemIdMerchant;
-	
-	$routeMerchant = JRoute::_($currUriMerchant);
-
-$condominium->Resources = array();
-	?>
-			<div class="<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>12 com_bookingforconnector-item-col" >
-				<div class="com_bookingforconnector-search-merchant com_bookingforconnector-item  <?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_ROW ?>" >
-					<div class="mrcgroup" id="bfcmerchantgroup<?php echo $condominium->CondominiumId; ?>"><span class="bfcmerchantgroup"></span></div>
-					<div class="com_bookingforconnector-item-details  <?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_ROW ?>" >
-						<div class="com_bookingforconnector-search-merchant-carousel com_bookingforconnector-item-carousel <?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>4">
-							<div id="com_bookingforconnector-search-merchant-carousel<?php echo $condominium->CondominiumId; ?>" class="carousel" data-ride="carousel" data-interval="false">
-								<div class="carousel-inner" role="listbox">
-									<div class="item active"><img src="<?php echo $merchantImageUrl; ?>"></div>
-								</div>
-								<a class="left carousel-control hide" href="#com_bookingforconnector-search-merchant-carousel<?php echo $condominium->CondominiumId; ?>" role="button" data-slide="prev">
-									<i class="fa fa-chevron-circle-left"></i>
-								</a>
-								<a class="right carousel-control hide" href="#com_bookingforconnector-search-merchant-carousel<?php echo $condominium->CondominiumId; ?>" role="button" data-slide="next">
-									<i class="fa fa-chevron-circle-right"></i>
-								</a>
-							</div>
+	<div class="bfi-col-sm-6 bfi-item">
+		<div class="bfi-row bfi-sameheight" >
+			<div class="bfi-col-sm-3 bfi-img-container">
+				<a href="<?php echo $routeCondominium ?>" style='background: url("<?php echo $merchantImageUrl; ?>") center 25% / cover;' target="_blank" class="eectrack" data-type="<?php echo $resourceDataTypeTrack ?>" data-id="<?php echo $merchant->CondominiumId?>" data-index="<?php echo $currKey?>" data-itemname="<?php echo $resourceNameTrack; ?>" data-category="<?php echo $merchantCategoryNameTrack; ?>" data-brand="<?php echo $merchantNameTrack; ?>"><img src="<?php echo $merchantImageUrl; ?>" class="bfi-img-responsive" /></a> 
+			</div>
+			<div class="bfi-col-sm-9 bfi-details-container">
+				<!-- merchant details -->
+				<div class="bfi-row" >
+					<div class="bfi-col-sm-12">
+						<div class="bfi-item-title">
+							<a href="<?php echo $routeCondominium ?>" id="nameAnchor<?php echo $merchant->CondominiumId?>" target="_blank" class="eectrack" data-type="<?php echo $resourceDataTypeTrack ?>" data-id="<?php echo $merchant->CondominiumId?>" data-index="<?php echo $currKey?>" data-itemname="<?php echo $resourceNameTrack; ?>" data-category="<?php echo $merchantCategoryNameTrack; ?>" data-brand="<?php echo $merchantNameTrack; ?>"><?php echo  $currName ?></a> 
+							<span class="bfi-item-rating">
+								<?php for($i = 0; $i < $rating; $i++) { ?>
+									<i class="fa fa-star"></i>
+								<?php } ?>	             
+							</span>
 						</div>
-						<div class="com_bookingforconnector-search-merchant-details com_bookingforconnector-item-primary <?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>6">
-							<div class="com_bookingforconnector-search-merchant-name com_bookingforconnector-item-primary-name">
-								<a class="com_bookingforconnector-search-merchant-name-anchor com_bookingforconnector-item-primary-name-anchor namelist eectrack" href="<?php echo $route ?>" data-type="Resource Group" id="nameAnchor<?php echo $condominium->CondominiumId?>" data-id="<?php echo $condominium->CondominiumId?>" data-index="<?php echo $mrcKey?>" data-itemname="<?php echo $condominium->Name; ?>" data-category="<?php echo $condominium->MrcCategoryName; ?>" data-brand="<?php echo $condominium->MerchantName; ?>"><?php echo  $condominium->Name ?></a> 
-							</div>
-							<a class="com_bookingforconnector-search-merchant-name-anchor com_bookingforconnector-item-primary-name-anchor namegrid eectrack" href="<?php echo $route ?>" data-type="Resource Group" id="nameAnchor<?php echo $condominium->CondominiumId?>" data-id="<?php echo $condominium->CondominiumId?>" data-category="<?php echo $condominium->MrcCategoryName; ?>" data-index="<?php echo $mrcKey?>" data-itemname="<?php echo $condominium->Name; ?>" data-brand="<?php echo $condominium->MerchantName; ?>"><?php echo  $condominium->Name ?></a> 
-							<div class="com_bookingforconnector-search-merchant-address com_bookingforconnector-item-primary-address">
-								<?php if ($showMerchantMap):?>
-								<a href="javascript:void(0);" onclick="showMarker(<?php echo $condominium->CondominiumId?>)"><span id="address<?php echo $condominium->CondominiumId?>"></span></a>
-								<?php endif; ?>
-							</div>
-							<?php if($showdata): ?>
-								<div class="com_bookingforconnector-merchant-description" id="descr<?php echo $condominium->CondominiumId?>"></div>
-							<?php endif; ?>
-							<?php if($isportal): ?>
-							<div class="com_bookingforconnector-search-merchant-address com_bookingforconnector-item-primary-phone-inforequest"> 
-								<span class="com_bookingforconnector_phone">
-								<a  href="javascript:void(0);" 
-									onclick="getData(bfi_variable.bfi_urlCheck,'merchantid=<?php echo $condominium->CondominiumId?>&task=GetPhoneByMerchantId&language=' + bfi_variable.bfi_cultureCode,this,'<?php echo  addslashes( $condominium->MerchantName) ?>','PhoneView' )"  id="phone<?php echo $condominium->CondominiumId?>"><?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_SHOWPHONE') ?></a>
-								</span> - 					
-								<a class="boxedpopup com_bookingforconnector_email" href="<?php echo $routeInfoRequest?>" rel="{handler:'iframe'}" ><?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RESOURCE_EMAIL') ?></a>
-							</div>
-							<?php endif; ?>
-						</div>
-
-						<?php if($isportal): ?>
-							<div class="com_bookingforconnector-item-secondary-logo <?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>2">
-								<a class="com_bookingforconnector-search-merchant-logo com_bookingforconnector-logo-list eectrack" href="<?php echo $routeMerchant ?>" data-type="Merchant" data-id="<?php echo $condominium->MerchantId?>" data-index="<?php echo $mrcKey?>" data-itemname="<?php echo $condominium->MerchantName; ?>" data-category="<?php echo $condominium->MrcCategoryName; ?>" data-brand="<?php echo $condominium->MerchantName; ?>"><img class="com_bookingforconnector-logo" src="<?php echo $merchantLogo; ?>" id="com_bookingforconnector-logo-list-<?php echo $condominium->MerchantId?>" /></a>
-							</div>
-						<?php endif; ?>
-					</div>
-			<!-- resource list -->
-				<?php 
-				  $count = 0; 
-				  $discount = 0;
-				  $maxviewExceeded = FALSE;
-					$listResourceIdsByMerchant = array();
-
-				?>  
-				<?php foreach($condominium->Resources as $resource) : ?>  
-				<?php
-					$resource->SimpleDiscountIds = "";
-					$resource->DiscountIds = json_decode($resource->DiscountIds);
-					if(is_array($resource->DiscountIds) && count($resource->DiscountIds)>0){
-//						$tmpDiscountIds = array_unique(array_map(function ($i) { return $i->VariationPlanId; }, $resource->DiscountIds ));
-						$resource->SimpleDiscountIds  = implode(',',$resource->DiscountIds);
-					}		
-
-				  if($count < $maxItemsView){
-					  $listResourceIds[]= $resource->ResourceId; 
-				  }else{
-					  $listResourceIdsByMerchant[]= $resource->ResourceId; 
-				  }
-				?>
-				<?php if($count == $maxItemsView):?>
-				<?php $maxviewExceeded = TRUE; ?>	
-					<div id="showallresource<?php echo $condominium->CondominiumId?>" style="display:none;" class="<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>12">
-				<?php endif; ?>
-					<div class="com_bookingforconnector-search-resource-details com_bookingforconnector-item-secondary <?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_ROW ?>" style="padding-top: 10px !important;padding-bottom: 10px !important;">
-					<?php 
-						$resourceName = BFCHelper::getLanguage($resource->ResName, $this->language, null, array('ln2br'=>'ln2br', 'striptags'=>'striptags')); 
-						$currUriresource = $uriresource.'&resourceId=' . $resource->ResourceId . ':' . BFCHelper::getSlug($resourceName);
-						if ($itemIdresource<>0){
-							$currUriresource.='&Itemid='.$itemIdresource;
-						}
-						$resourceRoute = JRoute::_($currUriresource);
-						$bookingType = $resource->BookingType;
-							$IsBookable = $resource->IsBookable;
-							
-							$btnText = JText::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RESOURCE_BUTTON');
-							$btnClass = "";
-							if ($IsBookable){
-								$btnText = JText::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RESOURCE_BUTTON_HTTPS');
-								$btnClass = "com_bookingforconnector-bookable";
-							}
-
-						$classofferdisplay = "";
-						if (($resource->Price < $resource->TotalPrice) || $resource->IsOffer){
-							$classofferdisplay = "com_bookingforconnector_highlight";
-						}
-						if (!empty($resource->RateplanId)){
-							$resourceRoute .= "?pricetype=" . $resource->RateplanId;
-						}
-					 ?>
-						<div class="com_bookingforconnector-search-resource-details-name com_bookingforconnector-item-secondary-name" style="padding-left:10px;">
-							<a href="<?php echo $resourceRoute?>" class="eectrack" data-id="<?php echo $resource->ResourceId?>" data-type="Resource" data-index="<?php echo $counter?>" data-itemname="<?php echo  $resourceName; ?>" data-brand="<?php echo $resource->MrcName; ?>" data-category="<?php echo $condominium->MrcCategoryName; ?>"><?php echo $resourceName; ?></a>
-							<?php if ($resource->PercentVariation<0): ?><div class="specialoffer variationlabel" rel="<?php echo  $resource->SimpleDiscountIds ?>"  rel1="<?php echo  $resource->ResourceId ?>" ><?php echo $resource->PercentVariation ?>% <?php echo JTEXT::_('MOD_BOOKINGFORSEARCHFILTER_OFFERS') ?> <i class="fa fa-angle-down" aria-hidden="true"></i></div><?php endif; ?>
-						</div>
-						<div class="<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>12 divoffers" id="divoffers<?php echo  $resource->ResourceId ?>" style="display:none ;">
-								<i class="fa fa-spinner fa-spin fa-fw margin-bottom"></i>
-								<span class="sr-only">Loading...</span>
-						</div>
-						<div class="clearfix"></div>
-					<div class="<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_ROW ?> secondarysection" >
-								<div class="<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>5 com_bookingforconnector-item-secondary-section-1 secondarysectionitem">	 
-									<div class="com_bookingforconnector-search-resource-paxes com_bookingforconnector-item-secondary-paxes">
-										<i class="fa fa-user"></i>
-										<?php if ($resource->MinPaxes == $resource->MaxPaxes):?>
-											<?php echo  $resource->MaxPaxes ?>
-										<?php else: ?>
-											<?php echo  $resource->MinPaxes ?>-<?php echo  $resource->MaxPaxes ?>
-										<?php endif; ?>
+						<div class="bfi-item-address">
+							<?php if ($showMerchantMap){?>
+							<a href="javascript:void(0);" onclick="showMarker(<?php echo $merchant->CondominiumId?>)"><?php }?><span id="address<?php echo $merchant->CondominiumId?>"></span><?php if ($showMerchantMap){?></a>
+							<div class="bfi-hide" id="markerInfo<?php echo $merchant->CondominiumId?>">
+									<div class="bfi-item-title">
+										<a href="<?php echo $routeCondominium ?>" target="_blank" class="eectrack" data-type="<?php echo $resourceDataTypeTrack ?>" data-id="<?php echo $merchant->CondominiumId?>" data-index="<?php echo $currKey?>" data-itemname="<?php echo $resourceNameTrack; ?>" data-category="<?php echo $merchantCategoryNameTrack; ?>" data-brand="<?php echo $merchantNameTrack; ?>"><?php echo  $currName ?></a> 
+										<span class="bfi-item-rating">
+											<?php for($i = 0; $i < $rating; $i++) { ?>
+												<i class="fa fa-star"></i>
+											<?php } ?>	             
+										</span>
 									</div>
-									<?php if (!$resource->IsCatalog && $onlystay ): ?>
-										<div class="com_bookingforconnector-search-resource-details-availability com_bookingforconnector-item-secondary-availability">
-										<?php if ($resource->Availability < 4): ?>
-										  <span class="com_bookingforconnector-item-secondary-availability-low"><?php echo sprintf(JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RESOURCE_LESSAVAIL'),$resource->Availability) ?></span>
-										<?php else: ?>
-										  <?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RESOURCE_AVAILABLE')?>
-										<?php endif; ?>
-										</div>
-
-										<?php if (!$resource->IsBase): ?>
-											<div class="com_bookingforconnector_res_rateplanname">
-												<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_RESOURCE_VIEW_CALCULATOR_TREATMENT')?>:<br />
-												<span><?php echo $resource->RateplanName ?></span>
-											</div>
-										<?php endif; ?>
-
-									<?php endif; ?>
-								</div>
-								<div class="<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>5 com_bookingforconnector-item-secondary-section-2 secondarysectionitem">
-									<?php if (!$resource->IsCatalog && $resource->Price > 0): ?>
-										<div class="com_bookingforconnector-search-grouped-resource-details-price com_bookingforconnector-item-secondary-price">
-											<span class="com_bookingforconnector-gray-highlight"><?php echo sprintf(JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RESOURCE_TOTALDAYS'),$resource->Days) ?></span>
-											 <div class="com_bookingforconnector-search-resource-details-stay-price com_bookingforconnector-item-secondary-stay-price">
-												<?php if ($resource->Price < $resource->TotalPrice): ?>
-												<?php 
-												  $current_discount = $resource->PercentVariation;
-												  $discount = $current_discount < $discount ? $current_discount : $discount;
-												?>
-												<span class="com_bookingforconnector_strikethrough"><span class="com_bookingforconnector-search-resource-details-stay-discount com_bookingforconnector-item-secondary-stay-discount">&euro; <?php echo number_format($resource->TotalPrice,2, ',', '.')  ?></span></span>
-												<?php endif; ?>
-												<span class="com_bookingforconnector-search-resource-details-stay-total com_bookingforconnector-item-secondary-stay-total"><?php echo number_format($resource->Price,2, ',', '.') ?></span>
-											</div>
-										</div>
-									<?php else: ?>
-										<!-- <div class="com_bookingforconnector-search-resource-details-price com_bookingforconnector-item-secondary-price">
-											<span class="com_bookingforconnector-gray-highlight" id="totaldays<?php echo $resource->ResourceId?>"></span>
-											<div class="com_bookingforconnector-search-resource-details-stay-price com_bookingforconnector-item-secondary-stay-price">
-												<span id="resourcestaytotal<?php echo $resource->ResourceId?>" class="com_bookingforconnector-search-resource-details-stay-total com_bookingforconnector-item-secondary-stay-total"><i class="fa fa-spinner fa-spin"></i></span>
-												<span class="com_bookingforconnector_strikethrough"><span id="resourcestaydiscount<?php echo $resource->ResourceId?>"  class="com_bookingforconnector-search-resource-details-stay-discount com_bookingforconnector-item-secondary-stay-discount"></span></span>
-											</div>
-										</div> -->
-									<?php endif; ?>
-								</div>
-								<div class="<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>2 com_bookingforconnector-item-secondary-section-3 secondarysectionitem">
-									<?php if ($resource->Price > 0): ?>
-											<a href="<?php echo $resourceRoute ?>" class=" com_bookingforconnector-item-secondary-more eectrack <?php echo $btnClass ?>" data-type="Resource" data-id="<?php echo $resource->ResourceId?>" data-index="<?php echo $counter?>" data-itemname="<?php echo  $resourceName; ?>" data-category="<?php echo $resource->MrcCategoryName; ?>" data-brand="<?php echo $resource->MrcName; ?>"><?php echo $btnText ?></a>
-									<?php else: ?>
-											<a href="<?php echo $resourceRoute ?>" class=" com_bookingforconnector-item-secondary-more eectrack" data-type="Resource" data-id="<?php echo $resource->ResourceId?>" data-index="<?php echo $counter?>" data-itemname="<?php echo  $resourceName; ?>" data-category="<?php echo $resource->MrcCategoryName; ?>" data-brand="<?php echo $resource->MrcName; ?>"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RESOURCE_BUTTON')?></a>
-									<?php endif; ?>
-								</div>
+									<span id="mapaddress<?php echo $merchant->CondominiumId?>"></span>
+							</div>
+							<?php } ?>
 						</div>
-
-
-
+						<div class="bfi-mrcgroup" id="bfitags<?php echo $merchant->CondominiumId; ?>"></div>
+						<div class="bfi-description" id="bfidescription<?php echo $merchant->CondominiumId; ?>"><?php echo $merchantDescription ?></div>
 					</div>
-					<?php 
-						$count++;
-						$counter++;
-						?>
-				<?php endforeach; ?>
-				<?php if($maxviewExceeded == TRUE) : ?>
-					</div>
-					<div class="com_bookingforconnector-search-resource-details-showmax <?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>12"><a onclick="showallresource('#showallresource<?php echo $condominium->CondominiumId?>',this,'<?php echo implode(',',$listResourceIdsByMerchant) ?>')" style="padding-left:10px;"> <i class="icon-plus "></i><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_VIEW_SHOWALL') ?></a></div>
-				<?php endif; ?>	
-
-					<div class="discount-box" style="display:<?php if($discount < 0) { ?>block<?php }else{ ?>none<?php } ?>;">
-						<?php echo sprintf(JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_DISCOUNT_BOX_TEXT'), number_format($discount, 1)); ?>
-					</div>
-	
 				</div>
-				<div class="clearfix"><br /></div>
+				<div class="bfi-clearfix bfi-hr-separ"></div>
+				<!-- end merchant details -->
+					<div class=" bfi-text-right">
+							<a href="<?php echo $routeCondominium ?>" class="bfi-btn eectrack" target="_blank" data-type="<?php echo $resourceDataTypeTrack ?>" data-id="<?php echo $merchant->CondominiumId?>" data-index="<?php echo $currKey?>" data-itemname="<?php echo $resourceNameTrack; ?>" data-category="<?php echo $merchantCategoryNameTrack; ?>" data-brand="<?php echo $merchantNameTrack; ?>"><?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RESOURCE_BUTTON') ?></a>
+					</div>
+				<div class="bfi-clearfix"></div>
 			</div>
-	<?php 
-	if(!empty($condominium->CondominiumId)){
-		$listsId[]= $condominium->CondominiumId;
-	}
-	?>
-  <?php endforeach; ?>
-</div>
-		<?php if ($this->pagination->get('pages.total') > 1) : ?>
-			<div class="text-center">
-				<div class="pagination">
-					<?php echo $this->pagination->getPagesLinks(); ?>
-				</div>
-			</div>
-		<?php endif; ?>
+		</div>
+	</div>
+		<?php $listsId[]= $merchant->CondominiumId; ?>
+	<?php } ?>
 </div>
 </div>
-
-<?php } 
-echo  $this->loadTemplate('googlemap'); ?>
+<?php if ($this->pagination->get('pages.total') > 1) : ?>
+	<div class="text-center">
+		<div class="pagination">
+			<?php echo $this->pagination->getPagesLinks(); ?>
+		</div>
+	</div>
+<?php endif; ?>
 
 <script type="text/javascript">
 <!--
 
+if(typeof jQuery.fn.button.noConflict !== 'undefined'){
+	var btn = jQuery.fn.button.noConflict(); // reverts $.fn.button to jqueryui btn
+	jQuery.fn.btn = btn; // assigns bootstrap button functionality to $.fn.btn
+}
+
 jQuery('#list-view').click(function() {
-	jQuery('.com_bookingforconnector-view-changer div').removeClass('active');
-	jQuery(this).addClass('active');
-	jQuery('.com_bookingforconnector-items').removeClass('com_bookingforconnector-grid');
-	jQuery('.com_bookingforconnector-items').addClass('com_bookingforconnector-list');
-	jQuery('.com_bookingforconnector-items > div').removeClass('<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>6').addClass('<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>12');
-	jQuery('.com_bookingforconnector-item-carousel').addClass('<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>4');
-	jQuery('.com_bookingforconnector-item-primary').addClass('<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>6');
-	jQuery('.com_bookingforconnector-item-secondary-section-1').removeClass('<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>4').addClass('<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>5');
-	jQuery('.com_bookingforconnector-item-secondary-section-2').removeClass('<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>4').addClass('<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>5');
-	jQuery('.com_bookingforconnector-item-secondary-section-3').removeClass('<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>4').addClass('<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>2');
+	jQuery('.bfi-view-changer-selected').html(jQuery(this).html());
+	jQuery('#bfi-list').removeClass('bfi-grid-group')
+	jQuery('#bfi-list .bfi-item').addClass('bfi-list-group-item')
+	jQuery('#bfi-list .bfi-img-container').addClass('bfi-col-sm-3')
+	jQuery('#bfi-list .bfi-details-container').addClass('bfi-col-sm-9')
+
 	localStorage.setItem('display', 'list');
 });
 
 jQuery('#grid-view').click(function() {
-	jQuery('.com_bookingforconnector-view-changer div').removeClass('active');
-	jQuery(this).addClass('active');
-	jQuery('.com_bookingforconnector-items').removeClass('com_bookingforconnector-list');
-	jQuery('.com_bookingforconnector-items').addClass('com_bookingforconnector-grid');
-	jQuery('.com_bookingforconnector-items > div').removeClass('<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>12').addClass('<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>6');
-	jQuery('.com_bookingforconnector-item-carousel').removeClass('<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>4');
-	jQuery('.com_bookingforconnector-item-primary').removeClass('<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>6');
-	jQuery('.com_bookingforconnector-item-secondary-section-1').removeClass('<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>5').addClass('<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>4');
-	jQuery('.com_bookingforconnector-item-secondary-section-2').removeClass('<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>5').addClass('<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>4');
-	jQuery('.com_bookingforconnector-item-secondary-section-3').removeClass('<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>2').addClass('<?php echo COM_BOOKINGFORCONNECTOR_BOOTSTRAP_COL ?>4');
+	jQuery('.bfi-view-changer-selected').html(jQuery(this).html());
+	jQuery('#bfi-list').addClass('bfi-grid-group')
+	jQuery('#bfi-list .bfi-item').removeClass('bfi-list-group-item')
+	jQuery('#bfi-list .bfi-img-container').removeClass('bfi-col-sm-3')
+	jQuery('#bfi-list .bfi-details-container').removeClass('bfi-col-sm-9')
 	localStorage.setItem('display', 'grid');
 });
+	jQuery('#bfi-list .bfi-item').addClass('bfi-grid-group-item')
 
 if (localStorage.getItem('display')) {
 	if (localStorage.getItem('display') == 'list') {
@@ -366,10 +236,10 @@ if (localStorage.getItem('display')) {
 		jQuery('#grid-view').trigger('click');
 	}
 } else {
-	 if(typeof bfc_display === 'undefined') {
+	 if(typeof bfi_variable === 'undefined' || bfi_variable.bfi_defaultdisplay === 'undefined') {
 		jQuery('#list-view').trigger('click');
 	 } else {
-		if (bfc_display == '1') {
+		if (bfi_variable.bfi_defaultdisplay == '1') {
 			jQuery('#grid-view').trigger('click');
 		} else { 
 			jQuery('#list-view').trigger('click');
@@ -378,11 +248,9 @@ if (localStorage.getItem('display')) {
 }
 
 var listToCheck = "<?php echo implode(",", $listsId) ?>";
-
-var imgPath = "<?php echo $merchantImagePath ?>";
-var imgPathError = "<?php echo $merchantImagePathError ?>";
-
 var strAddress = "[indirizzo] - [cap] - [comune] ([provincia])";
+var imgPathMG = "<?php echo BFCHelper::getImageUrlResized('tag','[img]', 'merchant_merchantgroup') ?>";
+var imgPathMGError = "<?php echo BFCHelper::getImageUrl('tag','[img]', 'merchant_merchantgroup') ?>";
 
 var shortenOption = {
 		moreText: "<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_VIEW_READMORE')?>",
@@ -390,202 +258,272 @@ var shortenOption = {
 		showChars: '250'
 };
 
+
+var mg = [];
+
+var loaded=false;
 function getAjaxInformations(){
-	var query = "condominiumsId=" + listToCheck + "&language=<?php echo $language ?>&task=GetCondominiumsByIds";
+	if (!loaded)
+	{
+		loaded=true;
+		var queryMG = "task=getResourceGroups";
+		jQuery.post(bfi_variable.bfi_urlCheck, queryMG, function(data) {
+				if(data!=null){
+					jQuery.each(JSON.parse(data) || [], function(key, val) {
+						if (val.ImageUrl!= null && val.ImageUrl!= '') {
+							var $imageurl = imgPathMG.replace("[img]", val.ImageUrl );		
+							var $imageurlError = imgPathMGError.replace("[img]", val.ImageUrl );		
+							/*--------getName----*/
+							var $name = bookingfor.getXmlLanguage(val.Name,bfi_variable.bfi_cultureCode, bfi_variable.bfi_defaultcultureCode);
+							/*--------getName----*/
+							mg[val.TagId] = '<img src="' + $imageurl + '" onerror="this.onerror=null;this.src=\'' + $imageurlError + '\';" alt="' + $name + '" data-toggle="tooltip" title="' + $name + '" />';
+						} else {
+							if (val.IconSrc != null && val.IconSrc != '') {
+								mg[val.TagId] = '<i class="fa ' + val.IconSrc + '" data-toggle="tooltip" title="' + val.Name + '"> </i> ';
+							}
+						}
+					});	
+				}
+				getlist();
+		},'json');
+	}
+}
 
-	var imgPathresized =  imgPath.substring(0,imgPath.lastIndexOf("/")).match(/([^\/]*)\/*$/)[1] + "/";
-	imgPath = imgPath.replace(imgPathresized , "" );
+function getlist(){
+	var query = "ids=" + listToCheck + "&language=<?php echo $language ?>&task=GetCondominiumsByIds";
+	if(listToCheck!='')
+	
 
-//	var urlgetCondominiums = updateQueryStringParameter(urlCheck,"condominiumsId",listToCheck);
-//	urlgetCondominiums = updateQueryStringParameter(urlgetCondominiums,"language","<?php echo $language ?>");
-//	urlgetCondominiums = updateQueryStringParameter(urlgetCondominiums,"task","GetCondominiumsByIds");
-
-//	jQuery.getJSON(urlgetCondominiums, function(data) {
 	jQuery.post(bfi_variable.bfi_urlCheck, query, function(data) {
-		var eecitems = [];
+			var eecitems = [];
+
 				if(typeof callfilterloading === 'function'){
 					callfilterloading();
 					callfilterloading = null;
 				}
-		jQuery.each(data || [], function(key, val) {
-			eecitems.push({
-				id: "" + val.CondominiumId + " - Resource Group",
-				name: val.Name,
-				category: val.MrcCategoryName,
-				brand: val.MerchantName,
-				position: key
-			});
+			jQuery.each(data || [], function(key, val) {
 				$html = '';
-				jQuery("#descr"+val.CondominiumId).removeClass("com_bookingforconnector_loading");
-				var name = bookingfor.getXmlLanguage(val.Name,bfi_variable.bfi_cultureCode, bfi_variable.bfi_defaultcultureCode);
-
-				var imgPath = "<?php echo $merchantImagePath ?>";
-				var imgPathError = "<?php echo $merchantImagePathError ?>";
-
-            if (val.ImagesData!= null && val.ImagesData!= '') {
-					var imgSliderData = '';
-					var ImageData = val.ImagesData.split(',');
-					var start = 0;
-                jQuery.each(ImageData,function(index){
-                  // new system with preresized images
-					  imgLogo = imgPath.replace("[img]", jQuery.trim(ImageData[index]));
-
-					  // old system with resized images on the fly
-					  imgLogoError = imgPathError.replace("[img]", ImageData[index]);
-					  if(start == 0) {
-					    imgSliderData = imgSliderData + '<div class="item active"><img src="'+imgLogo+'"></div>';					  
-					  }
-					  else {
-					    imgSliderData = imgSliderData + '<div class="item"><img src="'+imgLogo+'"></div>';
-				     }
-				     start++;
-                });
-                jQuery('#com_bookingforconnector-search-merchant-carousel'+val.CondominiumId).carousel("pause").removeData();
-                jQuery('#com_bookingforconnector-search-merchant-carousel'+val.CondominiumId+' .carousel-inner').html(imgSliderData);
-                jQuery('#com_bookingforconnector-search-merchant-carousel'+val.CondominiumId).carousel('pause');
-				}
-
-				 if (val.LogoUrl!= null && val.LogoUrl != '') {
-					merchantLogo = logoPath.replace("[img]", jQuery.trim(val.LogoUrl));
-					merchantLogoError = logoPathError.replace("[img]", val.LogoUrl );	
-					
-					jQuery("#logo"+val.CondominiumId).attr('src',imgLogo);
-					jQuery("#logo"+val.CondominiumId).attr('onerror',"this.onerror=null;this.src='" + imgLogoError + "';");
-
-					jQuery("#com_bookingforconnector-logo-list-"+val.CondominiumId).attr('src',merchantLogo);
-					jQuery("#com_bookingforconnector-logo-list-"+val.CondominiumId).attr('onerror',"this.onerror=null;this.src='" + merchantLogoError + "';");
-					
-					jQuery("#com_bookingforconnector-logo-grid-"+val.CondominiumId).attr('src',merchantLogo);
-					jQuery("#com_bookingforconnector-logo-grid-"+val.CondominiumId).attr('onerror',"this.onerror=null;this.src='" + merchantLogoError + "';");
-				}
-				if ( val.Address!= null && val.Address != '') {
-					var merchAddress = "";
-					var $indirizzo = "";
-					var $cap = "";
-					var $comune = "";
-					var $provincia = "";
-					
-//					xmlDoc = jQuery.parseXML(val.AddressData);
-//					if(xmlDoc!=null){
-//						$xml = jQuery(xmlDoc);
-//						$indirizzo = $xml.find("indirizzo:first").text();
-//						$cap = $xml.find("cap:first").text();
-//						$comune = $xml.find("comune:first").text();
-//						$provincia = $xml.find("provincia:first").text();
-//					}else{
-						$indirizzo = val.Address;
-						//$cap = val.ZipCode;
-						$comune = val.CityName;
-						$provincia = val.RegionName;
-//					}
-					merchAddress = strAddress.replace("[indirizzo]",$indirizzo);
-					merchAddress = merchAddress.replace("[cap]",$cap);
-					merchAddress = merchAddress.replace("[comune]",$comune);
-					merchAddress = merchAddress.replace("[provincia]",$provincia);
-					jQuery("#address"+val.CondominiumId).append(merchAddress);
-				}
-
-				var tmpHref = jQuery("#nameAnchor"+val.CondominiumId).attr("href");
-				if (!tmpHref.endsWith("-"))
-				{
-					tmpHref += "-";
-				}
-
-				jQuery("#nameAnchor"+val.CondominiumId).attr("href", tmpHref + make_slug(name));
-				jQuery("#imgAnchor"+val.CondominiumId).attr("href", tmpHref + make_slug(name));
-
-				jQuery("#nameAnchor"+val.CondominiumId).html(name);
-//				jQuery("#descr"+val.CondominiumId).append(descr);
-//				jQuery("#descr"+val.CondominiumId).removeClass("com_bookingforconnector_loading");
-
-//				if (val.TagsIdList!= null && val.TagsIdList != '')
-//				{
-//					var mglist = val.TagsIdList.split(',');
-//					$htmlmg = '<span class="bfcmerchantgroup">';
-//					jQuery.each(mglist, function(key, mgid) {
-//						if(typeof mg[mgid] !== 'undefined' ){
-//							$htmlmg += mg[mgid];
-//						}
-//					});
-//					$htmlmg += '</span>';
-//					jQuery("#bfcmerchantgroup"+val.CondominiumId).html($htmlmg);
-//				}
-				jQuery("#container"+val.CondominiumId).click(function(e) {
-					var $target = jQuery(e.target);
-					if ( $target.is("div")|| $target.is("p")) {
-						document.location = jQuery( "#nameAnchor"+val.CondominiumId ).attr("href");
-					}
+				eecitems.push({
+					id: "" + val.CondominiumId+ " - Resource Group",
+					name: val.Name,
+					category: val.MrcCategoryName,
+					brand: val.MerchantName,
+					position: key
 				});
+	
+				var $indirizzo = "";
+				var $cap = "";
+				var $comune = "";
+				var $provincia = "";
+				
+				$indirizzo = val.Address;
+				$cap = val.ZipCode;
+				$comune = val.CityName;
+				$provincia = val.RegionName;
+
+				addressData = strAddress.replace("[indirizzo]",$indirizzo);
+				addressData = addressData.replace("[cap]",$cap);
+				addressData = addressData.replace("[comune]",$comune);
+				addressData = addressData.replace("[provincia]",$provincia);
+				jQuery("#address"+val.CondominiumId).html(addressData);
+				jQuery("#mapaddress"+val.CondominiumId).append(addressData);
 
 <?php if($showdata): ?>
 				if (val.Description!= null && val.Description != ''){
-					$html += nl2br(jQuery("<p>" + val.Description + "</p>").text());
+					$html += bookingfor.nl2br(jQuery("<p>" + val.Description + "</p>").text());
 				}
-
 				jQuery("#descr"+val.CondominiumId).data('jquery.shorten', false);
 				jQuery("#descr"+val.CondominiumId).html($html);
 				
 				jQuery("#descr"+val.CondominiumId).removeClass("com_bookingforconnector_loading");
 				jQuery("#descr"+val.CondominiumId).shorten(shortenOption);
 <?php endif; ?>
-			
-			});	
-			jQuery('span[id^="resourcestaytotal"]:visible:has(i)').html("&nbsp; ");
-			jQuery('[data-toggle="tooltip"]').tooltip(); 
 
+				if (val.TagsIdList!= null && val.TagsIdList != '')
+				{
+					var mglist = val.TagsIdList.split(',');
+					$htmlmg = '';
+					jQuery.each(mglist, function(key, mgid) {
+						if(typeof mg[mgid] !== 'undefined' ){
+							$htmlmg += mg[mgid];
+						}
+					});
+					jQuery("#bfitags"+val.CondominiumId).html($htmlmg);
+				}			
+
+				jQuery(".container"+val.CondominiumId).click(function(e) {
+					var $target = jQuery(e.target);
+					if ( $target.is("div")|| $target.is("p")) {
+						document.location = jQuery( ".nameAnchor"+val.CondominiumId).attr("href");
+					}
+				});
+		});	
+		jQuery('[data-toggle="tooltip"]').tooltip({
+			position : { my: 'center bottom', at: 'center top-10' },
+			tooltipClass: 'bfi-tooltip bfi-tooltip-top '
+		}); 
 		<?php if($this->analyticsEnabled): ?>
 		callAnalyticsEEc("addImpression", eecitems, "list");
 		<?php endif; ?>
 		},'json');
-};
+}
 
+		var mapSearch;
+		var myLatlngsearch;
+		var oms;
+		var markersLoading = false;
+		var infowindow = null;
+		var markersLoaded = false;
 
+		// make map
+		function handleApiReadySearch() {
+			myLatlngsearch = new google.maps.LatLng(<?php echo $posy ?>, <?php echo $posx ?>);
+			var myOptions = {
+					zoom: <?php echo $startzoom ?>,
+					center: myLatlngsearch,
+					mapTypeId: google.maps.MapTypeId.ROADMAP
+				}
+			mapSearch = new google.maps.Map(document.getElementById("bfi-maps-popup"), myOptions);
+			loadMarkers();
+		}
+		
+		function openGoogleMapSearch() {
+
+			if (typeof google !== 'object' || typeof google.maps !== 'object'){
+				var script = document.createElement("script");
+				script.type = "text/javascript";
+				script.src = "https://maps.google.com/maps/api/js?key=<?php echo $googlemapsapykey ?>&libraries=drawing,places&callback=handleApiReadySearch";
+				document.body.appendChild(script);
+			}else{
+				if (typeof mapSearch !== 'object' ){
+					handleApiReadySearch();
+				}
+			}
+		}
+
+	var bfiCurrMarkerId = 0;
+
+	function loadMarkers() {
+		var isVisible = jQuery('#bfi-maps-popup').is(":visible");
+		 bookingfor.waitSimpleBlock(jQuery('#bfi-maps-popup'));
+		if (mapSearch != null && !markersLoaded && isVisible) {
+			if (typeof oms !== 'object'){
+				jQuery.getScript("<?php echo JURI::root()?>components/com_bookingforconnector/assets/js/oms.js", function(data, textStatus, jqxhr) {
+					var bounds = new google.maps.LatLngBounds();
+					oms = new OverlappingMarkerSpiderfier(mapSearch, {
+							keepSpiderfied : true,
+							nearbyDistance : 1,
+							markersWontHide : true,
+							markersWontMove : true 
+						});
+
+					oms.addListener('click', function(marker) {
+						showMarkerInfo(marker);
+					});
+					if (!markersLoading) {
+						var data = <?php echo json_encode($listResourceMaps) ?>; 
+						createMarkers(data, oms, bounds, mapSearch);
+						if (oms.getMarkers().length > 0) {
+							mapSearch.fitBounds(bounds);
+						}
+						markersLoaded = true;
+						jQuery(jQuery('#bfi-maps-popup')).unblock();
+						if(bfiCurrMarkerId>0){
+							setTimeout(function() {
+								showMarker(bfiCurrMarkerId);
+								bfiCurrMarkerId = 0;
+								},10);
+						}						
+						
+					}
+					markersLoading = true;
+
+				});
+			}
+		}
+	}
+
+	function createMarkers(data, oms, bounds, currentMap) {
+		jQuery.each(data, function(key, val) {
+			if (val.X == '' || val.Y == '' || val.X == null || val.Y == null)
+				return true;
+			var marker = new google.maps.Marker({
+				position: new google.maps.LatLng(val.X, val.Y),
+				map: currentMap
+			});
+			marker.extId = val.Id;
+			oms.addMarker(marker,true);
+			bounds.extend(marker.position);
+		});
+	}
+
+	function showMarker(extId) {
+		if(jQuery( "#bfi-maps-popup").length ){
+			if(jQuery( "#bfi-maps-popup").hasClass("ui-dialog-content") && jQuery( "#bfi-maps-popup" ).dialog("isOpen" )){
+						jQuery(oms.getMarkers()).each(function() {
+							if (this.extId != extId) return true; 
+							showMarkerInfo(this);
+							return false;
+						});		
+			
+			}else{
+				jQuery( "#bfi-maps-popup" ).dialog({
+					open: function( event, ui ) {
+						if(!markersLoaded) {
+							bfiCurrMarkerId = extId;
+						}
+						openGoogleMapSearch();
+						if(!markersLoaded) {
+							return;
+						}
+						jQuery(oms.getMarkers()).each(function() {
+							if (this.extId != extId) return true; 
+							showMarkerInfo(this);
+							return false;
+						});		
+					},
+					height: 500,
+					width: 800,
+					dialogClass: 'bfi-dialog bfi-dialog-map'
+				});
+			}
+		}
+	}
+
+	function showMarkerInfo(marker) {
+		if (infowindow) infowindow.close();
+			var data = jQuery("#markerInfo"+marker.extId).html();
+//			mapSearch.setZoom(17);
+			mapSearch.setCenter(marker.position);
+			infowindow = new google.maps.InfoWindow({ content: data });
+			infowindow.open(mapSearch, marker);
+	}
+
+	
 jQuery(document).ready(function() {
 	getAjaxInformations();
-	jQuery('.mod_bookingformaps-static').click(function() {
-     jQuery( "#mod_bookingformaps-popup" ).dialog({
-       open: function( event, ui ) {
-       openGoogleMapSearch();
-    },
-    height: 500,
-    width: 800,
-    });
-  });
-	jQuery('.com_bookingforconnector-sort-item').click(function() {
-	  var rel = jQuery(this).attr('rel');
-	  var vals = rel.split("|"); 
-	  jQuery('#bookingforsearchFilterForm .filterOrder').val(vals[0]);
-	  jQuery('#bookingforsearchFilterForm .filterOrderDirection').val(vals[1]);
-//	  jQuery('#bookingforsearchFilterForm').submit();
-	  jQuery('#searchformfilter').submit();
-	});
-});
-function getResourceslist(listResourceIdsToCheck,loadMerchantlist){
-	var query = "resourcesId=" + listResourceIdsToCheck + "&language=<?php echo $language ?>";
-		query +="&task=GetResourcesByIds";
-
-	if(listResourceIdsToCheck!=''){
-				if(loadMerchantlist){
-					getlist();
-				}
-//		jQuery.getJSON(urlCheck + "?" + query, function(data) {
-		jQuery.post(bfi_variable.bfi_urlCheck, query, function(data) {
-				jQuery.each(data || [], function(key, val) {
-					//price
-					jQuery("#resourcestaytotal"+val.Resource.ResourceId).html("&nbsp; ");
-
-			});	
-		},'json');
-
+	if(jQuery( "#bfi-maps-popup").length == 0) {
+		jQuery("body").append("<div id='bfi-maps-popup'></div>");
 	}
-}
+	jQuery('.bfi-maps-static,.bfi-search-view-maps').click(function() {
+		jQuery( "#bfi-maps-popup" ).dialog({
+			open: function( event, ui ) {
+				openGoogleMapSearch();
+			},
+			height: 500,
+			width: 800,
+			dialogClass: 'bfi-dialog bfi-dialog-map'
+		});
+	});
 
-function showallresource(who,elm,listid){
-	getResourceslist(listid,false);
-	jQuery(who).show();
-	jQuery(elm).hide();
+	jQuery(".bfi-description").shorten(shortenOption);
 
-}
+});
+
 
 //-->
 </script>
+
+
+
+<?php } 

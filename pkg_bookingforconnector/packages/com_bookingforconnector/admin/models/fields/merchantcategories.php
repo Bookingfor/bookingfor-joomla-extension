@@ -33,7 +33,7 @@ class JFormFieldMerchantCategories extends JFormFieldList
 
 		$document 	= JFactory::getDocument();
 		$language 	= $document->getLanguage();
-		$merchantCategories = BFCHelper::getMerchantCategories();
+		$merchantCategories = BFCHelper::getMerchantCategories($language);
 		$options = array();
 		if ($merchantCategories)
 		{

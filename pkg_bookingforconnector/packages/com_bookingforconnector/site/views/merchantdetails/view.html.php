@@ -33,7 +33,6 @@ class BookingForConnectorViewMerchantDetails extends BFCView
 		$sitename = $app->get('sitename');
 		$config = JComponentHelper::getParams('com_bookingforconnector');
 		$orderid = 0;
-		$cartType = 1; //$merchant->CartType;
 		
 		$items=null;
 		$pagination=null;
@@ -63,18 +62,6 @@ class BookingForConnectorViewMerchantDetails extends BFCView
 			}
 		}
 		
-//		if ($layout == 'packages') {
-//			$items = $this->get('ItemsPackages');
-//			$checkAnalytics = true;
-//			$pagination	= $this->get('PaginationPackages');
-//		}
-//
-//		if ($layout == 'package') {
-//			$items = $this->get('Package');
-//			$checkAnalytics = true;
-//			BFCHelper::setState($items, 'packages', 'merchant');
-//		}
-//
 		if ($layout == 'offers') {
 			$items = $this->get('ItemsOffer');
 			$checkAnalytics = true;
@@ -84,7 +71,6 @@ class BookingForConnectorViewMerchantDetails extends BFCView
 		if ($layout == 'offer') {
 			$items = $this->get('Offer');
 			$checkAnalytics = true;
-//			BFCHelper::setState($items, 'offers', 'merchant');
 		}
 
 		if ($layout == 'onsellunits') {
@@ -96,19 +82,12 @@ class BookingForConnectorViewMerchantDetails extends BFCView
 		if ($layout == 'onsellunit') {
 			$items = array($this->get('OnSellUnit'));
 			$checkAnalytics = true;
-//			BFCHelper::setState($items, 'onsellunits', 'merchant');
 		}
 		
 		if ($layout == 'ratings') {
 			$items = $this->get('ItemsRating');
 			$pagination	= $this->get('PaginationRatings');
 		}
-		if (BFCHelper::getString('layout', 'default') == 'default') {
-			$checkAnalytics = true;
-		}
-		if (BFCHelper::getString('layout', 'default') == 'thanks') {
-			$checkAnalytics = true;
-		}								
 		if ($layout == 'rating') {
 			// load scripts
 			$document->addScript('components/com_bookingforconnector/assets/js/jquery.rating.pack.js');
@@ -117,11 +96,14 @@ class BookingForConnectorViewMerchantDetails extends BFCView
 		$itemType = 0;
 		$totalItems = array();
 		$type = "";
+		$listNameAnalytics =  BFCHelper::getVar('lna','0');
+
 		if($checkAnalytics && !empty($items)) {
-			$checkAnalytics = false;
-			switch(BFCHelper::getString('layout', 'default')) {
+			//$checkAnalytics = false;
+			switch($layout) {
 				case "resources":
-					$listName = "Resources List";
+					$listNameAnalytics =  5;
+//					$listName = "Resources List";
 					$type = "Resource";
 					$itemType = 1;
 					foreach ($items as $key => $value) {
@@ -131,19 +113,9 @@ class BookingForConnectorViewMerchantDetails extends BFCView
 						$totalItems[] = $obj;
 					}
 					break;
-				case "packages":
-					$listName = "Packages List";
-					$type = "Package";
-					$itemType = 1;
-					foreach ($items as $key => $value) {
-						$obj = new stdClass;
-						$obj->Id = $value->PackageId;
-						$obj->Name = $value->Name;
-						$totalItems[] = $obj;
-					}
-					break;
 				case "offers":
-					$listName = "Offers List";
+					$listNameAnalytics =  6;
+					//$listName = "Offers List";
 					$type = "Offer";
 					$itemType = 1;
 					foreach ($items as $key => $value) {
@@ -154,7 +126,8 @@ class BookingForConnectorViewMerchantDetails extends BFCView
 					}
 					break;
 				case "onsellunits":
-					$listName = "Sales Resources Merchant List";
+					$listNameAnalytics =  7;
+//					$listName = "Sales Resources Merchant List";
 					$type = "Sales Resource";
 					$itemType = 1;
 					foreach ($items as $key => $value) {
@@ -164,17 +137,8 @@ class BookingForConnectorViewMerchantDetails extends BFCView
 						$totalItems[] = $obj;
 					}
 					break;
-				case "package":
-					$listName = "Packages Page";
-					$type = "Package";
-					$itemType = 0;
-					$obj = new stdClass;
-					$obj->Id = $items->PackageId;
-					$obj->Name = $items->Name;
-					$totalItems[] = $obj;
-					break;
 				case "offer":
-					$listName = "Offers Page";
+//					$listName = "Offers Page";
 					$type = "Offer";
 					$itemType = 0;
 					$obj = new stdClass;
@@ -182,20 +146,8 @@ class BookingForConnectorViewMerchantDetails extends BFCView
 					$obj->Name = $items->Name;
 					$totalItems[] = $obj;
 					break;
-				case "onsellunit":
-					$listName = "Sales Resources Merchant Page";
-					$type = "Sales Resource";
-					$itemType = 0;
-					$obj = new stdClass;
-					$obj->Id = $items->ResourceId;
-					$obj->Name = $items->Name;
-					$totalItems[] = $obj;
-					break;
-				case "thanks":
-					$itemType = 2;
-					break;
 				case "default":
-					$listName = "Merchants Page";
+//					$listName = "Merchants Page";
 					$type = "Merchant";
 					$itemType = 0;
 					$obj = new stdClass;
@@ -204,96 +156,112 @@ class BookingForConnectorViewMerchantDetails extends BFCView
 					$totalItems[] = $obj;
 					break;
 			}
-			}else{
+		}else{
 			$checkAnalytics = false;
-			}
-
-			if($checkAnalytics && $this->checkAnalytics($listName) && COM_BOOKINGFORCONNECTOR_EECENABLED == 1) {
+			if ($layout == 'default') {
 				$checkAnalytics = true;
-				switch($itemType) {
-					case 0:
-						$value = $totalItems[0];
+//				$listName = "Merchants Page";
+				$type = "Merchant";
+				$itemType = 0;
+				$obj = new stdClass;
+				$obj->Id = $item->MerchantId;
+				$obj->Name = $item->Name;
+				$totalItems[] = $obj;
+			}
+			if ($layout == 'thanks') {
+				$checkAnalytics = true;
+				$itemType = 2;
+			}								
+		}
+
+		$listName = BFCHelper::$listNameAnalytics[$listNameAnalytics];
+
+		if($checkAnalytics && $this->checkAnalytics($listName) && COM_BOOKINGFORCONNECTOR_EECENABLED == 1) {
+			$checkAnalytics = true;
+			switch($itemType) {
+				case 0:
+					$value = $totalItems[0];
+					$obj = new stdClass;
+					$obj->id = "" . $value->Id . " - " . $type;
+					$obj->name = $value->Name;
+					$obj->category = $item->MainCategoryName;
+					$obj->brand = $item->Name;
+					$obj->variant = 'NS';
+					$document->addScriptDeclaration('callAnalyticsEEc("addProduct", [' . json_encode($obj) . '], "item");');
+					break;
+				case 1:
+					$allobjects = array();
+					foreach ($totalItems as $key => $value) {
 						$obj = new stdClass;
 						$obj->id = "" . $value->Id . " - " . $type;
 						$obj->name = $value->Name;
 						$obj->category = $item->MainCategoryName;
 						$obj->brand = $item->Name;
-						$obj->variant = 'NS';
-						$document->addScriptDeclaration('callAnalyticsEEc("addProduct", [' . json_encode($obj) . '], "item");');
-						break;
-					case 1:
-						$allobjects = array();
-						foreach ($totalItems as $key => $value) {
-							$obj = new stdClass;
-							$obj->id = "" . $value->Id . " - " . $type;
-							$obj->name = $value->Name;
-							$obj->category = $item->MainCategoryName;
-							$obj->brand = $item->Name;
-							$obj->position = $key;
-							$allobjects[] = $obj;
-						}
-						$document->addScriptDeclaration('callAnalyticsEEc("addImpression", ' . json_encode($allobjects) . ', "list");');
-						break;
-					case 2:
-						$orderid = 	BFCHelper::getString('orderid');
-						$act = 	BFCHelper::getString('act');
-						if(!empty($orderid) && $act!="Contact" ){
+						$obj->position = $key;
+						$allobjects[] = $obj;
+					}
+					$document->addScriptDeclaration('callAnalyticsEEc("addImpression", ' . json_encode($allobjects) . ', "list");');					
+					break;
+				case 2:
+					$orderid = 	BFCHelper::getString('orderid');
+					$act = 	BFCHelper::getString('act');
+					if(!empty($orderid) && $act!="Contact" ){
 //						if(!empty($orderid)){
-							$order = BFCHelper::getSingleOrderFromService($orderid);
-							$purchaseObject = new stdClass;
-							$purchaseObject->id = "" . $order->OrderId;
-							$purchaseObject->affiliation = "" . $order->Label;
-							$purchaseObject->revenue = $order->TotalAmount;
-							$purchaseObject->tax = 0.00;
+						$order = BFCHelper::getSingleOrderFromService($orderid);
+						$purchaseObject = new stdClass;
+						$purchaseObject->id = "" . $order->OrderId;
+						$purchaseObject->affiliation = "" . $order->Label;
+						$purchaseObject->revenue = $order->TotalAmount;
+						$purchaseObject->tax = 0.00;
+						
+						$allobjects = array();
+						$allservices = array();
+						$svcTotal = 0;
+						
+						if(!empty($order->NotesData) && !empty(simpledom_load_string($order->NotesData)->xpath("//price"))) {
+							$allservices = array_values(array_filter(simpledom_load_string($order->NotesData)->xpath("//price"), function($prc) {
+								return (string)$prc->tag == "extrarequested";
+							}));
 							
-							$allobjects = array();
-							$allservices = array();
-							$svcTotal = 0;
 							
-							if(!empty($order->NotesData) && !empty(simpledom_load_string($order->NotesData)->xpath("//price"))) {
-								$allservices = array_values(array_filter(simpledom_load_string($order->NotesData)->xpath("//price"), function($prc) {
-									return (string)$prc->tag == "extrarequested";
-								}));
-								
-								
-								if(!empty($allservices )){
-									foreach($allservices as $svc) {
-										$svcObj = new stdClass;
-										$svcObj->id = "" . (int)$svc->priceId . " - Service";
-										$svcObj->name = (string)$svc->name;
-										$svcObj->category = "Services";
-										$svcObj->brand = $item->Name;
-										$svcObj->variant = (string)BFCHelper::getItem($order->NotesData, 'nome', 'unita');
-										$svcObj->price = round((float)$svc->discountedamount / (int)$svc->quantity, 2);
-										$svcObj->quantity = (int)$svc->quantity;
-										$allobjects[] = $svcObj;
-										$svcTotal += (float)$svc->discountedamount;
-									}
+							if(!empty($allservices )){
+								foreach($allservices as $svc) {
+									$svcObj = new stdClass;
+									$svcObj->id = "" . (int)$svc->priceId . " - Service";
+									$svcObj->name = (string)$svc->name;
+									$svcObj->category = "Services";
+									$svcObj->brand = $item->Name;
+									$svcObj->variant = (string)BFCHelper::getItem($order->NotesData, 'nome', 'unita');
+									$svcObj->price = round((float)$svc->discountedamount / (int)$svc->quantity, 2);
+									$svcObj->quantity = (int)$svc->quantity;
+									$allobjects[] = $svcObj;
+									$svcTotal += (float)$svc->discountedamount;
 								}
+							}
+						
+							$mainObj = new stdClass;
+							$mainObj->id = "" . $order->RequestedItemId . " - Resource";
+							$mainObj->name = (string)BFCHelper::getItem($order->NotesData, 'nome', 'unita');
+							$mainObj->variant = (string)BFCHelper::getItem($order->NotesData, 'refid', 'rateplan');
+							$mainObj->category = $item->MainCategoryName;
+							$mainObj->brand = $item->Name;
+							$mainObj->price = $order->TotalAmount - $svcTotal;
+							$mainObj->quantity = 1;
 							
-								$mainObj = new stdClass;
-								$mainObj->id = "" . $order->RequestedItemId . " - Resource";
-								$mainObj->name = (string)BFCHelper::getItem($order->NotesData, 'nome', 'unita');
-								$mainObj->variant = (string)BFCHelper::getItem($order->NotesData, 'refid', 'rateplan');
-								$mainObj->category = $item->MainCategoryName;
-								$mainObj->brand = $item->Name;
-								$mainObj->price = $order->TotalAmount - $svcTotal;
-								$mainObj->quantity = 1;
-								
-								$allobjects[] = $mainObj;
-								
-			
-						$document->addScriptDeclaration('
-						callAnalyticsEEc("addProduct", ' . json_encode($allobjects) . ', "checkout", "", {
-							"step": 3,
-						});
-						callAnalyticsEEc("addProduct", ' . json_encode($allobjects) . ', "purchase", "", ' . json_encode($purchaseObject) . ');');	
-						}
-						}
+							$allobjects[] = $mainObj;
+							
+		
+					$document->addScriptDeclaration('
+					callAnalyticsEEc("addProduct", ' . json_encode($allobjects) . ', "checkout", "", {
+						"step": 3,
+					});
+					callAnalyticsEEc("addProduct", ' . json_encode($allobjects) . ', "purchase", "", ' . json_encode($purchaseObject) . ');');	
+					}
+					}
 
-						break;
-				}
+					break;
 			}
+		}
 
 		// Check for errors.
 		if (count($errors = $this->get('Errors'))) {
@@ -301,13 +269,13 @@ class BookingForConnectorViewMerchantDetails extends BFCView
 			return false;
 		}
 		
-		if($layout == "thanks" || $layout == "default") {
+		if(COM_BOOKINGFORCONNECTOR_CRITEOENABLED && $layout == "thanks" || $layout == "default" ) {
 			$merchants = array();
 			$merchants[] = $item->MerchantId;
 			if($layout == "thanks") {
 				$orderid = BFCHelper::getString('orderid');
 				$criteoConfig = BFCHelper::getCriteoConfiguration(4, $merchants, $orderid);	
-			} else if ($layout == "") {
+			} else if ($layout == "default") {
 				$criteoConfig = BFCHelper::getCriteoConfiguration(2, $merchants);
 			}
 			if(isset($criteoConfig) && isset($criteoConfig->enabled) && $criteoConfig->enabled && count($criteoConfig->merchants) > 0) {
@@ -332,7 +300,7 @@ class BookingForConnectorViewMerchantDetails extends BFCView
 			}
 		}
 		
-		BFCHelper::setState($item, 'merchant', 'merchant');
+//		BFCHelper::setState($item, 'merchant', 'merchant');
 		
 		if($layout != "contactspopup") {
 			$this->setBreadcrumb($item, $layout);
@@ -351,6 +319,7 @@ class BookingForConnectorViewMerchantDetails extends BFCView
 		$this->state = $state;
 		$this->checkAnalytics = $checkAnalytics;
 		$this->analyticsListName = $listName;
+		$this->listNameAnalytics = $listNameAnalytics;
 		
 		// Display the view
 		parent::display($tpl);

@@ -174,9 +174,9 @@ class BookingForConnectorModelMerchantDetails extends JModelList
 
 		$sessionkey = 'merchant.' . $merchantId . $cultureCode ;
 		$merchant = null;
-		$merchant = BFCHelper::getSession($sessionkey); //$_SESSION[$sessionkey];
+		$merchant = BFCHelper::getSession($sessionkey);
 
-		if ($merchant == null) {
+		if ($merchant == null && !empty($merchantId)) {
 
 			$options = array(
 					'path' => $this->urlMerchant,
@@ -566,10 +566,10 @@ class BookingForConnectorModelMerchantDetails extends JModelList
 		
 		// typologyid filtering
 		if ($filters != null && $filters['typologyid'] != null) {
-			$_SESSION['ratings']['filters']['typologyid'] = $filters['typologyid'];
+			BFCHelper::setSession('ratingsfilterstypologyid', $filters['typologyid'] , 'com_bookingforconnector');
 		}
 		if ($filters != null && $filters['typologyid'] != null && $filters['typologyid']!= "0") {
-			$_SESSION['ratings']['filters']['typologyid'] = $filters['typologyid'];
+			BFCHelper::setSession('ratingsfilterstypologyid', $filters['typologyid'] , 'com_bookingforconnector');
 
 //			$options['data']['$filter'] .= ' and TypologyId eq ' .$filters['typologyid'];
 			$options['data']['tipologyId'] = $filters['typologyid'];

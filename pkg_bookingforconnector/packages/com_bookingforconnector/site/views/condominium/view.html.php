@@ -28,7 +28,6 @@ class BookingForConnectorViewCondominium extends BFCView
 		$sitename = $app->get('sitename');
 		$config = JComponentHelper::getParams('com_bookingforconnector');
  		$orderid = 0;
-		$cartType = 1; //$merchant->CartType;
 		
 		$items=null;
 		$pagination=null;
@@ -68,7 +67,11 @@ class BookingForConnectorViewCondominium extends BFCView
 				$allobjects[] = $obj;
 			}
 		}
-		$analyticsEnabled = $this->checkAnalytics("Condominium page");
+		
+		$listNameAnalytics =2;
+		$listName = BFCHelper::$listNameAnalytics[$listNameAnalytics];// "Resources Search List";
+
+		$analyticsEnabled = $this->checkAnalytics($listName);
 		if($analyticsEnabled && COM_BOOKINGFORCONNECTOR_EECENABLED == 1) {
 			$obj = new stdClass;
 			$obj->id = "" . $item->CondominiumId . " - Resource Group";
@@ -78,7 +81,7 @@ class BookingForConnectorViewCondominium extends BFCView
 			$obj->variant = 'NS';
 			$document->addScriptDeclaration('callAnalyticsEEc("addProduct", [' . json_encode($obj) . '], "item");');
 			
-			$document->addScriptDeclaration('callAnalyticsEEc("addImpression", ' . json_encode($allobjects) . ', "list", "Condominium Resources Search List");');
+			$document->addScriptDeclaration('callAnalyticsEEc("addImpression", ' . json_encode($allobjects) . ', "list", "'.$listName.'");');
 		}
 				
 		$this->document = $document;
@@ -92,6 +95,7 @@ class BookingForConnectorViewCondominium extends BFCView
 		$this->state = $state;
 		$this->isFromSearch = $isFromSearch;
 		$this->analyticsEnabled = $analyticsEnabled;
+		$this->listNameAnalytics = $listNameAnalytics;
 
 		$this->setBreadcrumb($item, 'condominiums', $language);
 		
