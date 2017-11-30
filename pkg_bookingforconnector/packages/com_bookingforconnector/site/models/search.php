@@ -507,7 +507,7 @@ class BookingForConnectorModelSearch extends JModelList
 				'duration' => BFCHelper::getStayParam('duration'),
 				'paxages' => BFCHelper::getStayParam('paxages'),
 				/*'pricetype' => BFCHelper::getStayParam('pricetype'),*/
-				'masterTypeId' => BFCHelper::getInt('masterTypeId'),
+				'masterTypeId' => BFCHelper::getVar('masterTypeId'),
 				'merchantResults' => $merchantResults,
 				'merchantCategoryId' => BFCHelper::getVar('merchantCategoryId'),
 				'merchantId' => BFCHelper::getInt('merchantId',0),
@@ -610,7 +610,7 @@ class BookingForConnectorModelSearch extends JModelList
 					'duration' => BFCHelper::getStayParam('duration'),
 					'paxages' => BFCHelper::getStayParam('paxages'),
 					/*'pricetype' => BFCHelper::getStayParam('pricetype'),*/
-					'masterTypeId' => BFCHelper::getInt('masterTypeId'),
+					'masterTypeId' => BFCHelper::getVar('masterTypeId'),
 					'merchantResults' => $merchantResults,
 					'merchantCategoryId' => BFCHelper::getInt('merchantCategoryId'),
 					'merchantId' => BFCHelper::getInt('merchantId',0),

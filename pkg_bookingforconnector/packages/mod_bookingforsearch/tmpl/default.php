@@ -146,9 +146,9 @@ if ($checkin < $startDate){
     $checkout->modify($checkoutspan); 
 }
 
-if ($checkin == $checkout){
-	$checkout->modify($checkoutspan);
-}
+//if ($checkin == $checkout){
+//	$checkout->modify($checkoutspan);
+//}
 
 //only for Joomla
 $checkin = new JDate($checkin->format('Y-m-d')); 
@@ -1594,10 +1594,10 @@ function showhideCategories<?php echo $currModID ?>() {
 			jQuery("#masterTypeId<?php echo $currModID ?>").closest("div").hide();
 			currUnitCategory.find('option:eq(0)').val(0);
 		}
-		if(jQuery.inArray(Number(currentMerchantCategoriesSelected), merchantCategoriesSelectedBooking) != -1){
+		if(currentMerchantCategoriesSelected.indexOf(",")==-1 && jQuery.inArray(Number(currentMerchantCategoriesSelected), merchantCategoriesSelectedBooking) != -1){
 			jQuery("#merchantCategoryId<?php echo $currModID ?>").val(currentMerchantCategoriesSelected);
 		}
-		if(jQuery.inArray(Number(currentUnitCategoriesSelected), unitCategoriesSelectedBooking) != -1){
+		if(currentUnitCategoriesSelected.indexOf(",")==-1 && jQuery.inArray(Number(currentUnitCategoriesSelected), unitCategoriesSelectedBooking) != -1){
 			jQuery("#masterTypeId<?php echo $currModID ?>").val(currentUnitCategoriesSelected);
 		}
 	}
@@ -1638,10 +1638,10 @@ function showhideCategories<?php echo $currModID ?>() {
 			jQuery("#masterTypeId<?php echo $currModID ?>").closest("div").hide();
 			currUnitCategory.find('option:eq(0)').val(0);
 		}
-		if(jQuery.inArray(Number(currentMerchantCategoriesSelected), merchantCategoriesSelectedActivities) != -1){
+		if(currentMerchantCategoriesSelected.indexOf(",")==-1 && jQuery.inArray(Number(currentMerchantCategoriesSelected), merchantCategoriesSelectedActivities) != -1){
 			jQuery("#merchantCategoryId<?php echo $currModID ?>").val(currentMerchantCategoriesSelected);
 		}
-		if(jQuery.inArray(Number(currentUnitCategoriesSelected), unitCategoriesSelectedActivities) != -1){
+		if(currentUnitCategoriesSelected.indexOf(",")==-1 && jQuery.inArray(Number(currentUnitCategoriesSelected), unitCategoriesSelectedActivities) != -1){
 			jQuery("#masterTypeId<?php echo $currModID ?>").val(currentUnitCategoriesSelected);
 		}
 	}
