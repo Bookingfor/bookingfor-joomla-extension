@@ -239,7 +239,7 @@ $merchantDescription = BFCHelper::getLanguage($merchant->Description, $language,
 			if (typeof google !== 'object' || typeof google.maps !== 'object'){
 				var script = document.createElement("script");
 				script.type = "text/javascript";
-				script.src = "http://maps.google.com/maps/api/js?key=<?php echo $googlemapsapykey ?>&libraries=drawing,places&callback=handleApiReadyMerchant";
+				script.src = "//maps.google.com/maps/api/js?key=<?php echo $googlemapsapykey ?>&libraries=drawing,places&callback=handleApiReadyMerchant";
 				document.body.appendChild(script);
 			}else{
 				if (typeof mapMerchant !== 'object'){
