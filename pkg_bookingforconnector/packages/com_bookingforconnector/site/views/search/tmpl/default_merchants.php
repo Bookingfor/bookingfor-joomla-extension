@@ -308,7 +308,7 @@ foreach ($merchants as $currKey => $merchant){
 					<?php echo sprintf(JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RESOURCE_PRICEPERSON') ,$totPerson) ?>
 					<?php } ?>					
 					</div>
-					<div class="bfi-col-sm-5 bfi-text-right ">
+					<div class="bfi-col-sm-4 bfi-text-right ">
 							<div class="bfi-gray-highlight">
 							<?php 
 								$currCheckIn = DateTime::createFromFormat('Y-m-d\TH:i:s',$merchant->AvailabilityDate);
@@ -354,7 +354,7 @@ foreach ($merchants as $currKey => $merchant){
 							<?php } ?>
 							<span class="bfi-price bfi-price-total bfi_<?php echo $currencyclass ?>  <?php echo ($merchant->Price < $merchant->TotalPrice)?"bfi-red":"" ?>" ><?php echo BFCHelper::priceFormat($merchant->Price,2, ',', '.') ?></span>
 					</div>
-					<div class="bfi-col-sm-3 bfi-text-right">
+					<div class="bfi-col-sm-4 bfi-text-right">
 						<?php if ($merchant->Price > 0){ ?>
 								<a href="<?php echo $resourceRoute ?>" class="bfi-btn eectrack <?php echo $btnClass ?>" target="_blank" data-type="Resource" data-id="<?php echo $merchant->ResourceId?>" data-index="<?php echo $counter?>" data-itemname="<?php echo $resourceNameTrack; ?>" data-category="<?php echo $merchantCategoryNameTrack; ?>" data-brand="<?php echo $merchantNameTrack; ?>"><?php echo $btnText ?></a>
 						<?php }else{ ?>

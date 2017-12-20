@@ -320,7 +320,7 @@ $totPerson = (isset($currParam)  && isset($currParam['paxes']))? $currParam['pax
 					<?php echo sprintf(JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RESOURCE_PRICEPERSON') ,$totPerson) ?>
 					<?php } ?>					
 					</div>
-					<div class="bfi-col-sm-5 bfi-text-right ">
+					<div class="bfi-col-sm-4 bfi-text-right ">
 							<div class="bfi-gray-highlight">
 							<?php 
 								$currCheckIn = DateTime::createFromFormat('Y-m-d\TH:i:s',$resource->AvailabilityDate);
@@ -365,7 +365,7 @@ $totPerson = (isset($currParam)  && isset($currParam['paxes']))? $currParam['pax
 							<?php } ?>
 							<span class="bfi-price bfi-price-total bfi_<?php echo $currencyclass ?> <?php echo ($resource->Price < $resource->TotalPrice)?"bfi-red":"" ?>"  ><?php echo BFCHelper::priceFormat($resource->Price,2, ',', '.') ?></span>
 					</div>
-					<div class="bfi-col-sm-3 bfi-text-right">
+					<div class="bfi-col-sm-4 bfi-text-right">
 						<?php if ($resource->Price > 0){ ?>
 								<a href="<?php echo $resourceRoute ?>" class="bfi-btn eectrack <?php echo $btnClass ?> " target="_blank" data-type="Resource" data-id="<?php echo $resource->ResourceId?>" data-index="<?php echo $currKey?>" data-itemname="<?php echo $resourceNameTrack; ?>" data-category="<?php echo $merchantCategoryNameTrack; ?>" data-brand="<?php echo $merchantNameTrack; ?>"><?php echo $btnText ?></a>
 						<?php }else{ ?>

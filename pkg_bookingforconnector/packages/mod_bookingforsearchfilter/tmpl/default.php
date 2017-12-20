@@ -137,7 +137,12 @@ if (!empty($firstFilters) ) {
 				break; 
 			case 'mrcrating':
 				if(!empty( $filter->Items )){
-					foreach ($filter->Items as $item ) {
+					$allItems = $filter->Items;
+					usort($allItems, function($a, $b)
+					{
+						return strcmp($b->Id,$a->Id);
+					});
+					foreach ($allItems as $item ) {
 					   $filtersMerchantsRating[$item->Id] = $item;
 					}
 				}
@@ -427,7 +432,7 @@ $minvaluetoshow=1;
 	<input type="hidden" value="0" name="newsearch">
 	<input type="hidden" value="<?php echo $searchtypetab ?>" name="searchtypetab">
 	<input type="hidden" name="filter_order" class="filterOrder" id="filter_order_filter" value="stay">
-	<input type="hidden"  name="filter_order_Dir" class= "filterOrderDirection"id="filter_order_Dir_filter" value="asc">
+	<input type="hidden"  name="filter_order_Dir" class= "filterOrderDirection" id="filter_order_Dir_filter" value="asc">
 <div id="bfi-filtertoggle">
 	<?php if (isset($filtersPrice) &&  is_array($filtersPrice) && count($filtersPrice)>$minvaluetoshow ) { 
 		//invert order filter price:
