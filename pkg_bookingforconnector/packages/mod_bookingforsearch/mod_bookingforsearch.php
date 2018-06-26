@@ -12,17 +12,25 @@ $pathbase = JPATH_BASE . DIRECTORY_SEPARATOR . 'components' . DIRECTORY_SEPARATO
 require_once $pathbase . 'defines.php';
 require_once $pathbase . 'helpers/BFCHelper.php';
 
+if(!empty( COM_BOOKINGFORCONNECTOR_CRAWLER )){
+	$listCrawler = json_decode(COM_BOOKINGFORCONNECTOR_CRAWLER , true);
+	foreach( $listCrawler as $key=>$crawler){
+	if (preg_match('/'.$crawler['pattern'].'/', $_SERVER['HTTP_USER_AGENT'])) return;
+	}
+	
+}
+
 $moduleclass_sfx = htmlspecialchars($params->get('moduleclass_sfx'));
 
 $config = JComponentHelper::getParams('com_bookingforconnector');
-$XGooglePosDef = htmlspecialchars($config->get('posx', 0));;
+$XGooglePosDef = htmlspecialchars($config->get('posx', 0));
 $YGooglePosDef = htmlspecialchars($config->get('posy', 0));
 $startzoom = $config->get('startzoom',14);
 $googlemapsapykey = $config->get('googlemapskey','');
 
 
 $document		= JFactory::getDocument();
-$language 	= $document->getLanguage();
+$language 	= JFactory::getLanguage()->getTag();
 $mainframe = JFactory::getApplication();
 
 		  $instance['tablistSelected'] =  $params->get('tablistSelected');
@@ -30,26 +38,49 @@ $mainframe = JFactory::getApplication();
 		  $instance['blockdays'] = $params->get('blockdays');
 		  $instance['onlystay'] = $params->get('onlystay');
 		  
+		  $instance['tabnamebooking'] = $params->get('tabnamebooking');
+		  $instance['tabnameservices'] = $params->get('tabnameservices');
+		  $instance['tabnameactivities'] = $params->get('tabnameactivities');
+		  $instance['tabnameothers'] = $params->get('tabnameothers');
+		  
+		  $instance['tabiconbooking'] = $params->get('tabiconbooking');
+		  $instance['tabiconservices'] = $params->get('tabiconservices');
+		  $instance['tabiconactivities'] = $params->get('tabiconactivities');
+		  $instance['tabiconothers'] = $params->get('tabiconothers');
+		  $instance['tabiconrealestate'] = $params->get('tabiconrealestate');
+
 		  $instance['merchantcategoriesbooking'] = $params->get('merchantcategoriesbooking');
 		  $instance['merchantcategoriesservices'] = $params->get('merchantcategoriesservices');
 		  $instance['merchantcategoriesactivities'] = $params->get('merchantcategoriesactivities');
+		  $instance['merchantcategoriesothers'] = $params->get('merchantcategoriesothers');
 		  $instance['merchantcategoriesrealestate'] = $params->get('merchantcategoriesrealestate');
 		  
 		  $instance['unitcategoriesbooking'] = $params->get('unitcategoriesbooking');
 		  $instance['unitcategoriesservices'] = $params->get('unitcategoriesservices');
 		  $instance['unitcategoriesactivities'] = $params->get('unitcategoriesactivities');
+		  $instance['unitcategoriesothers'] = $params->get('unitcategoriesothers');
 		  $instance['unitcategoriesrealestate'] = $params->get('unitcategoriesrealestate');
 
 		  $instance['availabilitytypesbooking'] = $params->get('availabilitytypesbooking');
+		  $instance['availabilitytypesservices'] = $params->get('availabilitytypesservices');
 		  $instance['availabilitytypesactivities'] = $params->get('availabilitytypesactivities');
+		  $instance['availabilitytypesothers'] = $params->get('availabilitytypesothers');
 
 		  $instance['itemtypesbooking'] = $params->get('itemtypesbooking');
+		  $instance['itemtypesservices'] = $params->get('itemtypesservices');
 		  $instance['itemtypesactivities'] = $params->get('itemtypesactivities');
+		  $instance['itemtypesothers'] = $params->get('itemtypesothers');
 
 		  $instance['groupbybooking'] = $params->get('groupbybooking');
+		  $instance['groupbyservices'] = $params->get('groupbyservices');
 		  $instance['groupbyactivities'] = $params->get('groupbyactivities');
+		  $instance['groupbyothers'] = $params->get('groupbyothers');
 
 		  $instance['showdirection'] = $params->get('showdirection');
+		  $instance['fixedontop'] = $params->get('fixedontop');
+		  $instance['fixedontopcorrection'] = $params->get('fixedontopcorrection');
+		  $instance['fixedonbottom'] = $params->get('fixedonbottom');
+
 		  $instance['showLocation'] = $params->get('showLocation');
 		  $instance['showMapIcon'] = $params->get('showMapIcon');
 		  $instance['showSearchText'] = $params->get('showSearchText');
@@ -81,7 +112,6 @@ $lang->load('com_bookingforconnector', $pathbase, 'en-GB', true);
 $lang->load('com_bookingforconnector', $pathbase, $lang->getTag(), true);
 
 bfi_load_scripts();
-
 //-----------------------------------------------------------------------------------------
 //	implementazione css 
 //	per uno style personalizzato usare il seguente file css nella cartella css del template

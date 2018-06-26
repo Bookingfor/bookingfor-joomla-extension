@@ -125,7 +125,7 @@ class plgSearchBookingforconnectorResource extends JPlugin
 		$resources = BFCHelper::getResourcesSearch($text,0,$limit,$order,$direction);
 		if(!empty( $resources  )){
 			$document 	= JFactory::getDocument();
-			$language 	= $document->getLanguage();
+			$language 	= JFactory::getLanguage()->getTag();
 				
 					
 			/* we have to find the itemid for the target page */ 

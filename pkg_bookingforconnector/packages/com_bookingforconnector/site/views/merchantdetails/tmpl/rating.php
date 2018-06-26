@@ -39,6 +39,12 @@ $uriMerchantthanksKo = $uriMerchant .'&layout=errors';
 $routeThanks = JRoute::_($uriMerchantthanks);
 $routeThanksKo = JRoute::_($uriMerchantthanksKo);
 
+$routePrivacy = str_replace("{language}", substr($language,0,2), COM_BOOKINGFORCONNECTOR_PRIVACYURL);
+$routeTermsofuse = str_replace("{language}", substr($language,0,2), COM_BOOKINGFORCONNECTOR_TERMSOFUSEURL);
+
+$infoSendBtn = sprintf(JTEXT::_('COM_BOOKINGFORCONNECTOR_FORM_INFO_SENDBTN'),$sitename,$routePrivacy,$routeTermsofuse);
+
+
 if ($merchant->RatingsContext !== 1 && $merchant->RatingsContext !== 3 ) {
 //redirect almerchant senza possibilità di renensirla
 		header ("Location: ". $routeMerchant); 
@@ -103,26 +109,30 @@ $genericlist = JHTML::_('select.genericlist', $list, 'typologyid',null, 'value',
 
 $formRoute = "index.php?option=com_bookingforconnector&task=sendRating"; 
 
-$privacy = BFCHelper::GetPrivacy($language);
-$additionalPurpose = BFCHelper::GetAdditionalPurpose($language);
-
+//$privacy = BFCHelper::GetPrivacy($language);
+//$additionalPurpose = BFCHelper::GetAdditionalPurpose($language);
+//
 $listDate = JHTML::_('select.genericlist',$listDateArray, 'checkin','','value', 'text', $checkin);
 
-$rating = $merchant->Rating;
+$hasSuperior = !empty($merchant->RatingSubValue);
+$rating = (int)$merchant->Rating;
 if ($rating>9 )
 {
 	$rating = $rating/10;
-}
-
+	$hasSuperior = ($MerchantDetail->Rating%10)>0;
+} 
 ?>
 <!-- {emailcloak=off} -->
 
 <div class="bfi-content">
 	<div class="bfi-title-name"><?php echo  $merchant->Name?> 
 		<span class="bfi-item-rating">
-		  <?php for($i = 0; $i < $rating; $i++) { ?>
-		  <i class="fa fa-star"></i>
-		  <?php } ?>
+			<?php for($i = 0; $i < $rating; $i++) { ?>
+			<i class="fa fa-star"></i>
+			<?php } ?>
+			<?php if ($hasSuperior) { ?>
+				&nbsp;S
+			<?php } ?>
 		</span>
 	</div>
 
@@ -252,7 +262,7 @@ if ($rating>9 )
 			<div class="bfi-col-md-4 text-center">
 				<div class="com_bookingforconnector_rating_valuation">
 					<div ><?php echo JText::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RATING_VALUATION') ?> </div>
-					<div class="com_bookingforconnector_rating_value" id="totale">6</div>
+					<div class="bfi-rating-value" id="totale">6</div>
 					<input type="hidden" id="hftotale" name="hftotale" value="6">
 				</div>
 			</div>
@@ -272,30 +282,13 @@ if ($rating>9 )
 			</div>
 		</div>
 
-		<div class="bfi-row" style="display:none;">
-			<div class="bfi-col-md-12">
-				<label id="mbfcPrivacyTitle"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_PRIVACY') ?></label>
-				<textarea id="mbfcPrivacyText" name="form[privacy]" class="" style="height:200px;" readonly ><?php echo $privacy ?></textarea>    
-			</div>
-		</div><!--/row-->
 		<div class="bfi-row">
-             <div class="bfi-col-md-12 bfi-checkbox-wrapper">
-		 	     <input name="form[accettazione]" id="agree" aria-invalid="true" aria-required="true" type="checkbox" required title="<?php echo JTEXT::_('MOD_BOOKINGFORSEARCH_ERROR_REQUIRED') ?>">
-			     <label  class="bfi-agreeprivacy"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RATING_CONFIRM') ?></label>
-			</div>
-		</div><!--/row-->
-		<div class="bfi-row" style="display:none;">
-			<div class="bfi-col-md-12">
-				<label id="mbfcAdditionalPurposeTitle"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_ADDITIONALPURPOSE_TITLE') ?></label>
-				<textarea id="mbfcAdditionalPurposeText" name="form[additionalPurpose]" class="" style="height:200px;" readonly ><?php echo $additionalPurpose ?></textarea>    
-			</div>
-		</div><!--/row-->
-		<div class="bfi-row" style="display:<?php echo empty($additionalPurpose)?"none":"";?>">
 			<div class="bfi-col-md-12 bfi-checkbox-wrapper">
-				<input name="form[accettazioneadditionalPurpose]" id="agreeadditionalPurpose" aria-invalid="true" aria-required="true" required type="checkbox" title="<?php echo JTEXT::_('MOD_BOOKINGFORSEARCH_ERROR_REQUIRED') ?>">
-				<label class="agreeadditionalPurpose"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_ADDITIONALPURPOSE') ?></label>
+				<input name="form[optinemail]" id="optinemailpop" type="checkbox">
+				<label for="optinemailpop"><?php echo sprintf(JTEXT::_('COM_BOOKINGFORCONNECTOR_FORM_OPTINEMAIL'),$sitename) ?></label>
 			</div>
 		</div>
+
 		<div class="bfi-row">
 			<div class="bfi-col-md-12 bfi-checkbox-wrapper">
 				<input type="checkbox" value="true" name="privacyrating" id="privacyrating" required="required">
@@ -312,15 +305,18 @@ echo (isset($recaptcha[0])) ? $recaptcha[0] : '';
 ?>
 <div id="recaptcha-error" style="display:none"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_CAPTCHA_REQUIRED') ?></div>
 
-		<div class="bfi-row">
-			<div class="bfi-col-md-12">
-				<button type="submit" class="bfi-btn"><?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RATING_SEND') ?></button>
+		<div class="bfi-row bfi-footer-book" >
+			<div class="bfi-col-md-10">
+			<?php echo $infoSendBtn ?>
 			</div>
-		</div><!--/row-->
+			<div class="bfi-col-md-2 bfi_footer-send"><button type="submit" class="bfi-btn"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_BUTTONSUBMIT'); ?></button></div>
+		</div>
 	</div>
 </form>
 	<div class="bfi-clearboth"></div>
-	<?php  include(JPATH_COMPONENT.'/views/shared/merchant_small_details.php');  ?>
+<?php
+				BFCHelper::bfi_get_template('shared/merchant_small_details.php',array("merchant"=>$merchant,"routeMerchant"=>$routeMerchant)); 
+?>
 
 </div>
 <script type="text/javascript">
@@ -374,12 +370,10 @@ echo (isset($recaptcha[0])) ? $recaptcha[0] : '';
 					email2: {
 						  equalTo: "#email"
 					},
-		        	confirmprivacy : "required",
 					privacyrating : "required"
 		        },
 		        messages:
 		        {
-		        	confirmprivacy: "<?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RATING_CONFIRM_ERROR') ?>",
 		        	privacyrating: "<?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RATING_ERROR_REQUIRED') ?>",
 		            email: "<?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_EMAIL_REQUIRED') ?>",
 		            email2: "<?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_EMAIL_REQUIRED') ?>"

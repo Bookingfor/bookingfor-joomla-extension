@@ -44,11 +44,14 @@ $routeMerchant  = JRoute::_($uriMerchant.$fromsearchparam);
 
 $listsId = array();
 
-$rating = $merchant->Rating;
+$hasSuperior = !empty($merchant->RatingSubValue);
+$rating = (int)$merchant->Rating;
 if ($rating>9 )
 {
 	$rating = $rating/10;
-}
+	$hasSuperior = ($merchant->Rating%10)>0;
+} 
+
 ?>
 
 <div class="bfi-content">
@@ -190,7 +193,7 @@ if ($rating>9 )
 </div>
 
 <?php if ($this->pagination->get('pages.total') > 1) { ?>
-	<div class="pagination">
+	<div class="pagination bfi-pagination">
 		<?php echo $this->pagination->getPagesLinks(); ?>
 	</div>
 <?php } ?>
@@ -362,5 +365,4 @@ jQuery(document).ready(function() {
 </div>
 <?php } ?>
 	<div class="bfi-clearboth"></div>
-	<?php  include(JPATH_COMPONENT.'/views/shared/merchant_small_details.php');  ?>
 </div>

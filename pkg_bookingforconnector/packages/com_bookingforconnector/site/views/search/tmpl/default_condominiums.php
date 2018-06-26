@@ -79,8 +79,8 @@ $formAction=$url;
 
 $totalResult = $total;
 
-$checkin = BFCHelper::getStayParam('checkin', new DateTime());
-$checkout = BFCHelper::getStayParam('checkout', new DateTime());
+$checkin = BFCHelper::getStayParam('checkin', new DateTime('UTC'));
+$checkout = BFCHelper::getStayParam('checkout', new DateTime('UTC'));
 $checkin = new JDate($checkin->format('Y-m-d')); 
 $checkout = new JDate($checkout->format('Y-m-d')); 
 $checkinstr = $checkin->format("d") . " " . $checkin->format("M") . ' ' . $checkin->format("Y") ;
@@ -108,8 +108,8 @@ $totPerson = (isset($currParam)  && isset($currParam['paxes']))? $currParam['pax
 	</div>	
 	<div class="bfi-search-menu">
 		<form action="<?php echo $formAction; ?>" method="post" name="bookingforsearchForm" id="bookingforsearchFilterForm">
-				<input type="hidden" class="filterOrder" name="filter_order" value="price" />
-				<input type="hidden" class="filterOrderDirection" name="filter_order_Dir" value="asc" />
+				<input type="hidden" class="filterOrder" name="filter_order" value="<?php echo $listOrder ?>" />
+				<input type="hidden" class="filterOrderDirection" name="filter_order_Dir" value="<?php echo $listDirn ?>" />
 				<input type="hidden" name="searchid" value="<?php //echo   $searchid ?>" />
 				<input type="hidden" name="limitstart" value="0" />
 		</form>
@@ -133,15 +133,10 @@ $totPerson = (isset($currParam)  && isset($currParam['paxes']))? $currParam['pax
 <?php 
 foreach ($merchants as $currKey => $merchant){ 
 
-	$rating = $merchant->MrcRating;
 
 	$currName = BFCHelper::getLanguage($merchant->GrpName, $this->language, null, array('ln2br'=>'ln2br', 'striptags'=>'striptags')); 
 	$merchantName = $merchant->MrcName;
 
-	if ($rating>9 )
-	{
-		$rating = $rating/10;
-	} 
 	$isCondominium = (!empty( $merchant->CondominiumId ) && ($merchant->CondominiumId != $merchant->ResourceId));
 
 	$currUri = $uri. '&resourceId=' . $merchant->CondominiumId. ':' . BFCHelper::getSlug($merchant->GrpName);
@@ -212,11 +207,13 @@ foreach ($merchants as $currKey => $merchant){
 		}
 	}
 
-	$ratingMrc = $merchant->MrcRating;
+	$hasSuperiorMrc = !empty($merchant->MrcRatingSubValue);
+	$ratingMrc = (int)$merchant->MrcRating;
 	if ($ratingMrc>9 )
 	{
 		$ratingMrc = $ratingMrc/10;
-	}
+		$hasSuperiorMrc = ($merchant->MrcRating%10)>0;
+	} 
 
 	$resourceDataTypeTrack =  ($isCondominium)?"Resource Group":"Resource";
 	$resourceNameTrack =  BFCHelper::string_sanitize($currName);
@@ -236,11 +233,14 @@ foreach ($merchants as $currKey => $merchant){
 						<div class="bfi-item-title">
 							<a href="<?php echo $routeCondominium ?>" id="nameAnchor<?php echo $merchant->CondominiumId?>" target="_blank" class="eectrack" data-type="<?php echo $resourceDataTypeTrack ?>" data-id="<?php echo $merchant->ResourceId?>" data-index="<?php echo $currKey?>" data-itemname="<?php echo $resourceNameTrack; ?>" data-category="<?php echo $merchantCategoryNameTrack; ?>" data-brand="<?php echo $merchantNameTrack; ?>"><?php echo  $currName ?></a> 
 							<?php if($isportal) { ?>
-								- <a href="<?php echo $routeMerchant?>" class="bfi-subitem-title eectrack" target="_blank" data-type="Merchant" data-id="<?php echo $resource->MerchantId?>" data-index="<?php echo $currKey?>" data-itemname="<?php echo $merchantNameTrack; ?>" data-category="<?php echo $merchantCategoryNameTrack; ?>" data-brand="<?php echo $merchantNameTrack; ?>"><?php echo $merchantName; ?></a>
+								- <a href="<?php echo $routeMerchant?>" class="bfi-subitem-title eectrack" target="_blank" data-type="Merchant" data-id="<?php echo $merchant->MerchantId?>" data-index="<?php echo $currKey?>" data-itemname="<?php echo $merchantNameTrack; ?>" data-category="<?php echo $merchantCategoryNameTrack; ?>" data-brand="<?php echo $merchantNameTrack; ?>"><?php echo $merchantName; ?></a>
 								<span class="bfi-item-rating">
 									<?php for($i = 0; $i < $ratingMrc; $i++) { ?>
 										<i class="fa fa-star"></i>
-									<?php } ?>	             
+									<?php } ?>
+									<?php if ($hasSuperiorMrc) { ?>
+										&nbsp;S
+									<?php } ?>									
 								</span>
 							<?php } ?>
 						</div>
@@ -293,7 +293,7 @@ foreach ($merchants as $currKey => $merchant){
 					<div class="bfi-col-sm-3 ">
 						<?php if (!$merchant->IsCatalog && $onlystay ){ ?>
 							<div class="bfi-availability">
-							<?php if ($merchant->Availability < 2){ ?>
+							<?php if ($merchant->Availability > 0 && $merchant->Availability < 2){ ?>
 							  <span class="bfi-availability-low"><?php echo sprintf(JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RESOURCE_LESSAVAIL') ,$merchant->Availability) ?></span>
 							<?php } ?>
 							</div>
@@ -329,7 +329,7 @@ foreach ($merchants as $currKey => $merchant){
 				<div class="bfi-clearfix bfi-hr-separ"></div>
 																<!-- end resource details -->
 
-				<?php if (!$merchant->IsCatalog && $onlystay ){ ?>
+				<?php if (!$merchant->IsCatalog && $onlystay && !empty($merchant->AvailabilityDate) ){ ?>
 				<!-- price details -->
 				<div class="bfi-row" >
 					<div class="bfi-col-sm-4 bfi-text-right ">
@@ -340,8 +340,8 @@ foreach ($merchants as $currKey => $merchant){
 					<div class="bfi-col-sm-5 bfi-text-right ">
 							<div class="bfi-gray-highlight">
 							<?php 
-								$currCheckIn = DateTime::createFromFormat('Y-m-d\TH:i:s',$merchant->AvailabilityDate);
-								$currCheckOut = DateTime::createFromFormat('Y-m-d\TH:i:s',$merchant->CheckOutDate);
+								$currCheckIn = DateTime::createFromFormat('Y-m-d\TH:i:s',$merchant->AvailabilityDate,new DateTimeZone('UTC'));
+								$currCheckOut = DateTime::createFromFormat('Y-m-d\TH:i:s',$merchant->CheckOutDate,new DateTimeZone('UTC'));
 								$currDiff = $currCheckOut->diff($currCheckIn);
 								$hours = $currDiff->h;
 								$minutes = $currDiff->i;
@@ -627,6 +627,10 @@ jQuery(document).ready(function() {
 
 	jQuery(".bfi-discounted-price").on("click", function (e) {
 		e.preventDefault();
+		var bfi_wuiP_width= 400;
+		if(jQuery(window).width()<bfi_wuiP_width){
+			bfi_wuiP_width = jQuery(window).width()*0.7;
+		}
 		var showdiscount = function (obj, text) {
 							obj.find("i").first().switchClass("fa-spinner fa-spin","fa-question-circle")
 							obj.webuiPopover({
@@ -637,6 +641,7 @@ jQuery(document).ready(function() {
 								dismissible:true,
 								trigger:'manual',
 								type:'html',
+								width : bfi_wuiP_width,
 								style:'bfi-webuipopover'
 							});
 							obj.webuiPopover('show');

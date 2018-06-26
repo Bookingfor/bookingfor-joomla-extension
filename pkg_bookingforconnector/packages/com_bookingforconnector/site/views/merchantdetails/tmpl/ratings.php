@@ -55,13 +55,13 @@ $rating_text = array('merchants_reviews_text_value_0' => JTEXT::_('COM_BOOKINGFO
 						'merchants_reviews_text_value_10' => JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RATING_VALUATION_10'),                                 
 					);
 
-$rating = $merchant->Rating;
+$hasSuperior = !empty($merchant->RatingSubValue);
+$rating = (int)$merchant->Rating;
 if ($rating>9 )
 {
 	$rating = $rating/10;
-}
-
-
+	$hasSuperior = ($MerchantDetail->Rating%10)>0;
+} 
 $merchantName = BFCHelper::getLanguage($merchant->Name, $language, null, array('nobr'=>'nobr', 'striptags'=>'striptags')); 
 $indirizzo = isset($merchant->AddressData->Address)?$merchant->AddressData->Address:"";
 $cap = isset($merchant->AddressData->ZipCode)?$merchant->AddressData->ZipCode:""; 
@@ -104,9 +104,12 @@ $stato = isset($merchant->AddressData->StateName)?$merchant->AddressData->StateN
 <div class="bfi-content">
 	<div class="bfi-title-name"><h1><?php echo  $merchant->Name?></h1> 
 		<span class="bfi-item-rating">
-		  <?php for($i = 0; $i < $rating; $i++) { ?>
-		  <i class="fa fa-star"></i>
-		  <?php } ?>
+			<?php for($i = 0; $i < $rating; $i++) { ?>
+			<i class="fa fa-star"></i>
+			<?php } ?>
+			<?php if ($hasSuperior) { ?>
+				&nbsp;S
+			<?php } ?>
 		</span>
 	</div>
 
@@ -116,10 +119,10 @@ $stato = isset($merchant->AddressData->StateName)?$merchant->AddressData->StateN
 	$listfiltered = BFCHelper::getSession('ratingsfilterstypologyid', 0 , 'com_bookingforconnector');
 	$genericlist = JHTML::_('select.genericlist', $list, 'filters[typologyid]',array('onchange' => 'this.form.submit();') , 'value', 'text', $listfiltered);
 
-	$summaryRatings = BFCHelper::getRatingByMerchantId($merchant->MerchantId);
+//	$summaryRatings = BFCHelper::getRatingByMerchantId($merchant->MerchantId);
+	$summaryRatings = $merchant->Avg;
 
 	$ratings = $this->items		;
-	$summaryRatings = $this->getModel()->getMerchantRatingAverageFromService();
 	if(isset($summaryRatings)) {
 		$val1 = round($summaryRatings->AValue1 * 10);
 		$val2 = round($summaryRatings->AValue2 * 10);
@@ -190,7 +193,7 @@ $stato = isset($merchant->AddressData->StateName)?$merchant->AddressData->StateN
 				
 				
 				$creationDate = BFCHelper::parseJsonDate($rating->CreationDate,'Y-m-d');
-				$jdate  = new DateTime($creationDate);
+				$jdate  = new DateTime($creationDate,new DateTimeZone('UTC'));
 				$creationDateLabel = sprintf(JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RATING_DATE_LABEL'), $jdate->format('d/m/Y'));
 			}
 			$checkInDateLabel = "";
@@ -223,7 +226,7 @@ $stato = isset($merchant->AddressData->StateName)?$merchant->AddressData->StateN
 
 					if(!empty($replydate)){
 //					$jdatereply  = new JDate(strtotime($replydate),2); // 3:20 PM, December 1st, 2012
-					$jdatereply  = DateTime::createFromFormat('Ymd', $replydate);
+					$jdatereply  = DateTime::createFromFormat('Ymd', $replydate,new DateTimeZone('UTC'));
 
 						$replydateLabel =sprintf(JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RATING_DATEREPLY_LABEL'), $jdatereply->format('d/m/Y'));
 					}
@@ -311,7 +314,7 @@ $stato = isset($merchant->AddressData->StateName)?$merchant->AddressData->StateN
 		<?php }?>
 	</div>
 					<?php if ($this->pagination->get('pages.total') > 1) { ?>
-						<div class="pagination">
+						<div class="pagination bfi-pagination">
 							<?php echo $this->pagination->getPagesLinks(); ?>
 						</div>
 					<?php } ?>
@@ -327,7 +330,9 @@ $stato = isset($merchant->AddressData->StateName)?$merchant->AddressData->StateN
 			<?php }?>	
 		<?php } ?>	
 	<div class="bfi-clearboth"></div>
-	<?php  include(JPATH_COMPONENT.'/views/shared/merchant_small_details.php');  ?>
+<?php
+				BFCHelper::bfi_get_template('shared/merchant_small_details.php',array("merchant"=>$merchant,"routeMerchant"=>$routeMerchant)); 
+?>
 
 </div>
 <script type="text/javascript">

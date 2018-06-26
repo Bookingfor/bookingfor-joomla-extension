@@ -54,8 +54,9 @@ class BookingForConnectorModelMerchantDetails extends JModelList
 //		$this->urlMerchantOffersCount = '/Packages/$count';
 //		$this->urlMerchantOffer = '/Packages(%d)';
 
-		$this->urlMerchantOnSellUnits = '/ResourceonsellView';
-		$this->urlMerchantOnSellUnitsCount = '/ResourceonsellView/$count';
+		$this->urlMerchantOnSellUnits = '/GetResourceonsellsByMerchantId';
+		$this->urlMerchantOnSellUnitsCount = '/GetResourceonsellsByMerchantIdCount';
+
 		$this->urlMerchantOnSellUnit = '/ResourceonsellView(%d)';
 		$this->urlMerchantRatingAverage = '/GetMerchantAverage';
 		$this->urlMerchantMerchantGroups = '/GetMerchantMerchantGroups';
@@ -88,7 +89,7 @@ class BookingForConnectorModelMerchantDetails extends JModelList
 			BFCHelper::setSession('searchseed', $searchseed, 'com_bookingforconnector');
 		}
 		if (!isset($defaultDate)){
-			$defaultDate = DateTime::createFromFormat('d/m/Y',BFCHelper::getStartDate());
+			$defaultDate = DateTime::createFromFormat('d/m/Y',BFCHelper::getStartDate(),new DateTimeZone('UTC'));
 		}
 		$ci = clone BFCHelper::getStayParam('checkin', $defaultDate);
 				
@@ -103,7 +104,7 @@ class BookingForConnectorModelMerchantDetails extends JModelList
 			'checkout' => BFCHelper::getStayParam('checkout', $ci->modify(BFCHelper::$defaultDaysSpan)),
 			'duration' => BFCHelper::getStayParam('duration'),
 			'paxages' => BFCHelper::getStayParam('paxages'),
-			'paxes' => count(BFCHelper::getStayParam('paxes'))
+			'paxes' => count(BFCHelper::getStayParam('paxages'))
 		));
 
 
@@ -213,10 +214,7 @@ class BookingForConnectorModelMerchantDetails extends JModelList
 		$options = array(
 				'path' => $this->urlMerchantOnSellUnits,
 				'data' => array(
-					'$filter' => 'MerchantId eq ' . $merchantId . ' and Enabled eq true',
-					'$orderby' => 'Weight',
-					/*'$skip' => $start,
-					'$top' => $limit,*/
+					'merchantid' =>  $merchantId ,
 					'$format' => 'json'
 				)
 		);
@@ -959,7 +957,7 @@ class BookingForConnectorModelMerchantDetails extends JModelList
 				return $this->getTotalOffers();
 				break;
 			case 'onsellunits':
-				return $this->getTotalOnSellUnits();
+				return $this->getTotalOnSellUnits(BFCHelper::getInt('merchantId'));
 				break;
 			case 'ratings':
 				return $this->getTotalRatings();
@@ -970,12 +968,17 @@ class BookingForConnectorModelMerchantDetails extends JModelList
 		}
 	}	
 
-	public function getTotalOnSellUnits()
+	public function getTotalOnSellUnits($merchantId)
 	{
+		if(empty($merchantId)){
+			$merchantId=BFCHelper::getInt('merchantId');
+		}
+
 		$options = array(
 				'path' => $this->urlMerchantOnSellUnitsCount,
 				'data' => array(
-					'$filter' => 'MerchantId eq ' . BFCHelper::getInt('merchantId'). ' and Enabled eq true'
+					'$format' => 'json',
+					'merchantid' =>  $merchantId
 			)
 		);
 
@@ -984,8 +987,13 @@ class BookingForConnectorModelMerchantDetails extends JModelList
 		$count = null;
 
 		$r = $this->helper->executeQuery($url);
+//		if (isset($r)) {
+//			$count = (int)$r;
+//		}
 		if (isset($r)) {
-			$count = (int)$r;
+			$res = json_decode($r);
+			$count = (int)$res->d->GetResourceonsellsByMerchantIdCount;
+
 		}
 
 		return $count;

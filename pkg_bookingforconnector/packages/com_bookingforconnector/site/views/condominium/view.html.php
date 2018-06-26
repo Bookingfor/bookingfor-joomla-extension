@@ -22,7 +22,7 @@ class BookingForConnectorViewCondominium extends BFCView
 		$state		= $this->get('State');
 		$item		= $this->get('Item');
 		$document 	= JFactory::getDocument();
-		$language 	= $document->getLanguage();
+		$language 	= JFactory::getLanguage()->getTag();
 		$params 	= $state->params;
 		$app = JFactory::getApplication();
 		$sitename = $app->get('sitename');
@@ -34,7 +34,7 @@ class BookingForConnectorViewCondominium extends BFCView
 		$checkAnalytics = false;
 		$isFromSearch = false;
 
-		$document->addScript('components/com_bookingforconnector/assets/js/bf_cart_type_1.js');
+		$document->addScript('components/com_bookingforconnector/assets/js/bf_cart.js');
 		$document->addScript('components/com_bookingforconnector/assets/js/bf_appTimePeriod.js');
 		$document->addScript('components/com_bookingforconnector/assets/js/bf_appTimeSlot.js');
 
@@ -105,17 +105,20 @@ class BookingForConnectorViewCondominium extends BFCView
 		if (!empty($resource)){
 				$mainframe = JFactory::getApplication();
 				$pathway   = $mainframe->getPathway();
-				// resetto il pathway				
-//				$pathway->setPathway(null);
-				$count = count($pathway);
+				$items   = $pathway->getPathWay();
+				$count = count($items);
 				$newPathway = array();
 				if($count>1){
-					$newPathway = array_pop($pathway);
+					$newPathway = array_pop($items);
 				}
 				$pathway->setPathway($newPathway);
 
 				$resourceName = BFCHelper::getLanguage($resource->Name, $this->language, null, array('ln2br'=>'ln2br', 'striptags'=>'striptags')); 
 
+				$pathway->addItem(
+					$resource->MerchantName,
+					JRoute::_('index.php?option=com_bookingforconnector&view=merchantdetails&merchantId=' . $resource->MerchantId . ':' . BFCHelper::getSlug($resource->MerchantName))
+				);
 				$pathway->addItem(
 					$resourceName,
 					JRoute::_('index.php?option=com_bookingforconnector&view=condominium&resourceId=' . $resource->CondominiumId . ':' . BFCHelper::getSlug($resourceName))

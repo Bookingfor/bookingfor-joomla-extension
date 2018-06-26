@@ -14,6 +14,9 @@ $mrcindirizzo = "";
 $mrccap = "";
 $mrccomune = "";
 $mrcstate = "";
+$isportal = COM_BOOKINGFORCONNECTOR_ISPORTAL;
+$document 	= JFactory::getDocument();
+$language 	= JFactory::getLanguage()->getTag();
 
 if (empty($merchant->AddressData)){
 	$mrcindirizzo = isset($merchant->Address)?$merchant->Address:""; 
@@ -78,6 +81,14 @@ if(BFCHelper::getVar( 'view')=="resource" && !empty($resource_id)){
 if(BFCHelper::getVar( 'view')=="onsellunit" && !empty($resource_id)){
 	$uriMerchantInfoRequest .= '&resourceid='.$resource_id.'&resourceType=onsellunit';
 }
+$hasSuperior = !empty($merchant->RatingSubValue);
+$rating = (int)$merchant->Rating;
+if ($rating>9 )
+{
+	$rating = $rating/10;
+	$hasSuperior = ($MerchantDetail->Rating%10)>0;
+} 
+
 ?>
 <div class=" bfi-hideonextra">
 	<br />
@@ -87,8 +98,11 @@ if(BFCHelper::getVar( 'view')=="onsellunit" && !empty($resource_id)){
 					<div class="bfi-vcard-name">
 						<a href="<?php echo ($isportal)?$routeMerchant :"/";?>"><?php echo  $merchant->Name?></a>
 						<span class="bfi-item-rating">
-						<?php for($i = 0; $i < $merchant->Rating ; $i++) { ?>
+						<?php for($i = 0; $i < $rating ; $i++) { ?>
 						  <i class="fa fa-star"></i>
+						<?php } ?>
+						<?php if ($hasSuperior) { ?>
+							&nbsp;S
 						<?php } ?>
 						</span>
 					</div>
@@ -112,8 +126,13 @@ if(BFCHelper::getVar( 'view')=="onsellunit" && !empty($resource_id)){
 					</div>			
 					<div class="bfi-height10"></div>
 					<div class="bfi-text-center">
+<?php
+$onlyTmpl =  BFCHelper::getVar('tmpl','0');
+if(empty( $onlyTmpl )){?>
+														
 							<a class="boxedpopup bfi-btn bfi-alternative" href="<?php echo $uriMerchantInfoRequest?>" style="width: 100%;"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RESOURCE_EMAIL') ?></a>
-					</div>
+<?php } ?>
+										</div>
 			</div>	
 			<div class="bfi-col-md-8 bfi-pad10">
 				<ul class="bfi-menu-small">
@@ -176,12 +195,15 @@ window.BFIInitReCaptcha2 = function() {
 		}
 	}
 };
+jQuery(function($){
+
 	var bfishortenOption = {
 		moreText: "<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RATING_PLUS')?>",
 		lessText: "<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RATING_MINUS')?>",
 		showChars: '250'
 	};
 	jQuery(".applyshorten").shorten(bfishortenOption);
+});
 
 //-->
 </script>

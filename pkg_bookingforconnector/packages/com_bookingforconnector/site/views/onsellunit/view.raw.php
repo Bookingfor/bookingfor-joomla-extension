@@ -32,7 +32,7 @@ class BookingForConnectorViewOnSellUnit extends BFCView
 		$item		= $this->get('Item');
 
 		$document 	= JFactory::getDocument();
-		$language 	= $document->getLanguage();
+		$language 	= JFactory::getLanguage()->getTag();
 		$params = $state->params;
 		
 		// Check for errors.

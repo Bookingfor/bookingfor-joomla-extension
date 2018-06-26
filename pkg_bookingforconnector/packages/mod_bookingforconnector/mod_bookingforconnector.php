@@ -28,7 +28,7 @@ $lang->load('com_bookingforconnector', $pathbase, 'en-EN', true);
 $lang->load('com_bookingforconnector', $pathbase, $lang->getTag(), true);
 
 $document		= JFactory::getDocument();
-$language 	= $document->getLanguage();
+$language 	= JFactory::getLanguage()->getTag();
 
 $config = JComponentHelper::getParams('com_bookingforconnector');
 $isportal = $config->get('isportal', 1);

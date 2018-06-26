@@ -34,7 +34,8 @@ if ($itemId<>0)
 else
 	$formAction = JRoute::_($uri);
 
-$formAction = (isset($_SERVER['HTTPS']) ? "https" : "http") . ':' ."//$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+//$formAction = (isset($_SERVER['HTTPS']) ? "https" : "http") . ':' ."//$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+$formAction = "//$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
 
 $currencyclass = bfi_get_currentCurrency();
 
@@ -48,6 +49,7 @@ $meals_text = array('ai' => JTEXT::_('COM_BOOKINGFORCONNECTOR_MEAL_ALLINCLUSIVE'
 						'bb' => JTEXT::_('COM_BOOKINGFORCONNECTOR_MEAL_BREAKFAST')                                 
 					);
 $rating_text = array('null' => JTEXT::_('MOD_BOOKINGFORSEARCHFILTER_UNRATED'),
+						'-1' => JTEXT::_('MOD_BOOKINGFORSEARCHFILTER_UNRATED'),
 						'0' => JTEXT::_('MOD_BOOKINGFORSEARCHFILTER_UNRATED'),
 						'1' => JTEXT::_('MOD_BOOKINGFORSEARCHFILTER_STARS1'),   
 						'2' => JTEXT::_('MOD_BOOKINGFORSEARCHFILTER_STARS2'),   
@@ -79,13 +81,14 @@ $pars = BFCHelper::getSearchParamsSession();
 
 $masterTypeId = isset($pars['masterTypeId']) ? $pars['masterTypeId'] : '';
 $merchantCategoryId = isset($pars['merchantCategoryId']) ? $pars['merchantCategoryId'] : '';
+$filtersGroupresulttype = isset($pars['groupresulttype']) ? $pars['groupresulttype'] : 0;
 $duration = 1;
 if (empty($duration)) {
 	$duration =1;
 }
 
 $searchid = isset($_GET['searchid']) ? $_GET['searchid'] : '';
-$searchtypetab = isset($_GET['searchtypetab']) ? $_GET['searchtypetab'] : '';;
+$searchtypetab = isset($_GET['searchtypetab']) ? $_GET['searchtypetab'] : '';
 $isMerchantResults = $pars['merchantResults'];
 
 $filtersMerchantsServices = array();
@@ -110,6 +113,9 @@ $filtersOffers = array();
 $filtersOffers[1] = JTEXT::_('MOD_BOOKINGFORSEARCHFILTER_OFFERS_OFFER') ;
 $filterscount = BFCHelper::getEnabledFilterSearchParamsSession();
 $firstFilters = BFCHelper::getFirstFilterSearchParamsSession();
+$filtersCheckAvailability = array();
+$filtersCheckAvailability[1] = JTEXT::_('MOD_BOOKINGFORSEARCHFILTER_CHECKAVAILABILITY') ;
+
 
 if (!empty($firstFilters) ) {
 	foreach ($firstFilters as $filter){
@@ -143,13 +149,30 @@ if (!empty($firstFilters) ) {
 						return strcmp($b->Id,$a->Id);
 					});
 					foreach ($allItems as $item ) {
+						$rating = intval($item->Name);
+						if (!isset($item->Sup)) {
+							$item->Sup = "";
+						}
+						if ($rating>9 )
+						{
+							if(($rating%10)>0){
+								$item->Sup = "S";
+							}
+							$rating = $rating/10;
+							$item->Name = intval($rating);
+						}
 					   $filtersMerchantsRating[$item->Id] = $item;
 					}
 				}
 				break; 
 			case 'mrcavg':
 				if(isset( $filter->Items )){
-					foreach ($filter->Items as $item ) {
+					$allItems = $filter->Items;
+					usort($allItems, function($a, $b)
+					{
+						return ((int)$b->Id > (int)$a->Id);
+					});
+					foreach ($allItems as $item ) {
 					   $filtersMerchantsAvg[$item->Id] = $item;
 					}
 				}
@@ -184,14 +207,37 @@ if (!empty($firstFilters) ) {
 				break; 
 			case 'resavg':
 				if(isset( $filter->Items )){
-					foreach ($filter->Items as $item ) {
+					$allItems = $filter->Items;
+					usort($allItems, function($a, $b)
+					{
+						return ((int)$b->Id > (int)$a->Id);
+					});
+					foreach ($allItems as $item ) {
 					   $filtersResourcesAvg[$item->Id] = $item;
 					}
 				}
 				break; 
 			case 'resrating':
 				if(!empty( $filter->Items )){
-					foreach ($filter->Items as $item ) {
+					$allItems = $filter->Items;
+					usort($allItems, function($a, $b)
+					{
+						return strcmp($b->Id,$a->Id);
+					});
+					foreach ($allItems as $item ) {
+						$rating = intval($item->Name);
+						if (!isset($item->Sup)) {
+							$item->Sup = "";
+						}
+						if ($rating>9 )
+						{
+							if(($rating%10)>0){
+								$item->Sup = "S";
+							}
+							$rating = $rating/10;
+							$item->Name = intval($rating);
+						}
+						$item->Name = $rating;
 					   $filtersResourcesRating[$item->Id] = $item;
 					}
 				}
@@ -374,6 +420,7 @@ $filtersOffersValue = "";
 $filtersTagsValue = "";
 $filtersRoomsValue = "";
 $filtersPaymodesValue = "";
+$filtersCheckAvailabilityValue = "";
 
 if (isset($filtersSelected)) {
 	$filtersPriceValue = ! empty( $filtersSelected[ 'price' ] ) ? $filtersSelected[ 'price' ] : "";
@@ -386,6 +433,7 @@ if (isset($filtersSelected)) {
 	$filtersZonesValue = ! empty( $filtersSelected[ 'zones' ] ) ? $filtersSelected[ 'zones' ] : "";
 	$filtersBookingTypesValue = ! empty( $filtersSelected[ 'bookingtypes' ] ) ? $filtersSelected[ 'bookingtypes' ] : "";
 	$filtersOffersValue = ! empty( $filtersSelected[ 'offers' ] ) ? $filtersSelected[ 'offers' ] : "";
+	$filtersCheckAvailabilityValue = ! empty( $filtersSelected[ 'checkAvailability' ] ) ? $filtersSelected[ 'checkAvailability' ] : "";
 	$filtersTagsValue = ! empty( $filtersSelected[ 'tags' ] ) ? $filtersSelected[ 'tags' ] : "";
 	$filtersRoomsValue = ! empty( $filtersSelected[ 'rooms' ] ) ? $filtersSelected[ 'rooms' ] : "";
 	$filtersPaymodesValue = ! empty( $filtersSelected[ 'paymodes' ] ) ? $filtersSelected[ 'paymodes' ] : "";
@@ -400,8 +448,8 @@ $filtersAvgCount = array();
 $filtersZonesCount = array();
 $filtersTagsCount = array();
 
-
 if (isset($isMerchantResults) && $isMerchantResults){
+	$filtersGroupresulttype =1;
 	$filtersRating = $filtersMerchantsRating;
 	$filtersAvg = $filtersMerchantsAvg;
 	$filtersZones = $filtersMerchantsZones;
@@ -419,6 +467,7 @@ if (isset($isMerchantResults) && $isMerchantResults){
 	$filtersAvgCount = $filtersResourcesAvgCount;
 	$filtersZonesCount = $filtersResourcesZonesCount;
 	$filtersTagsCount = $filtersResourcesTagsCount;
+	$isMerchantResults=0;
 }
 $minvaluetoshow=1;
 
@@ -482,7 +531,7 @@ $minvaluetoshow=1;
 			<div class="bfi-filteroptions">
 				<?php foreach ($filtersRating as $itemId => $item){?>
 					<a href="javascript:void(0);" rel="<?php echo $itemId ?>" rel1="rating" class="<?php echo (in_array(strval($itemId), $filtersValueArr, true))?"bfi-filter-active":""; ?>">
-					<span class="bfi-filter-label"><?php echo $rating_text[$item->Name] ?> </span>
+					<span class="bfi-filter-label"><?php echo $rating_text[$item->Name] ?> <?php echo $item->Sup ?></span>
 					<span class="bfi-filter-count"><?php echo BFCHelper::bfi_returnFilterCount($item->Count, $filtersRatingCount, $itemId) ?></span>
 					</a>
 				<?php } ?>
@@ -552,7 +601,7 @@ $minvaluetoshow=1;
 	<?php if (isset($filtersZones) &&  is_array($filtersZones) && count($filtersZones)>$minvaluetoshow)  { 
 	$filtersValueArr = explode ("|",$filtersZonesValue);
 	?>
-		<div>
+		<div class="bfi-filteroptionszone">
 			<div class="bfi-option-title bfi-option-active"><?php echo JText::_('MOD_BOOKINGFORSEARCHFILTER_LOCATION') ?></div>
 			<div class="bfi-filteroptions">
 				<?php foreach ($filtersZones as $itemId => $item){?>
@@ -592,6 +641,21 @@ $minvaluetoshow=1;
 			</div>
 		</div>
 	<?php } ?>
+	<?php if (false && isset($filtersCheckAvailability) &&  is_array($filtersCheckAvailability)) { 
+	$filtersValueArr = explode ("|",$filtersCheckAvailabilityValue);
+	?>
+		<div>
+			<div class="bfi-option-title bfi-option-active"><?php echo JText::_('MOD_BOOKINGFORSEARCHFILTER_AVAILABILITY') ?></div>
+			<div class="bfi-filteroptions">
+				<?php foreach ($filtersCheckAvailability as $itemId => $item){?>
+					<a href="javascript:void(0);" rel="<?php echo $itemId ?>" rel1="checkAvailability" class="<?php echo (in_array(strval($itemId), $filtersValueArr, true))?"bfi-filter-active":""; ?>">
+					<span class="bfi-filter-label"><?php echo $item ?></span>
+					</a>
+				<?php } ?>
+			</div>
+		</div>
+	<?php } ?>
+	
 	<?php if (isset($filtersTags) &&  is_array($filtersTags) && count($filtersTags)>0) { 
 	$filtersValueArr = explode ("|",$filtersTagsValue);
 	?>
@@ -652,6 +716,8 @@ $minvaluetoshow=1;
 	<input type="hidden" name="filters[tags]" id="filtersTagsHidden" value="<?php echo $filtersTagsValue ?>" />
 	<input type="hidden" name="filters[rooms]" id="filtersRoomsHidden" value="<?php echo $filtersRoomsValue ?>" />
 	<input type="hidden" name="filters[paymodes]" id="filtersPaymodesHidden" value="<?php echo $filtersPaymodesValue ?>" />
+	<input type="hidden" name="filters[checkAvailability]" id="filtersCheckAvailabilityHidden" value="<?php echo $filtersCheckAvailabilityValue ?>" />
+	<input type="hidden" name="merchantResults" id="filtersmerchantResultseHidden" value="<?php echo $isMerchantResults ?>" />
 </form>
 </div>
 <?php if(!empty(COM_BOOKINGFORCONNECTOR_GOOGLE_GOOGLEMAPSKEY)){ ?>
@@ -662,8 +728,18 @@ $minvaluetoshow=1;
 <?php } ?>
 
 <script type="text/javascript">
+jQuery.widget.bridge('bfiTooltip', jQuery.ui.tooltip );
+
 function bfi_applyfilterdata(){ 		
 
+	jQuery(".bfi-searchfilter h3").click(function(){
+		jQuery(this).toggleClass("bfi-searchfilter-active");
+		jQuery("#bfi-filtertoggle").slideToggle("normal",function() {
+			if (jQuery.prototype.masonry){
+				jQuery('.main-siderbar, .main-siderbar1').masonry('reload');
+			}
+		});
+	});
 	jQuery("#bfi-filtertoggle .bfi-option-title ").click(function(){
 		jQuery(this).toggleClass("bfi-option-active");
 		jQuery(this).next("div").stop('true','true').slideToggle("normal",function() {
@@ -683,11 +759,11 @@ function bfi_applyfilterdata(){
 		$this.css('white-space','normal');
 		if(divWidthBefore< divWidth && !$this.attr('title') ){
 			$this.attr('title', $this.text());
-			$this.tooltip({
+			$this.bfiTooltip({
 			position : { my: 'center bottom', at: 'center top-10' },
 			tooltipClass: 'bfi-tooltip bfi-tooltip-top '
 			});
-			$this.tooltip("open");
+			$this.bfiTooltip("open");
 		}
 	});
 	
@@ -720,7 +796,7 @@ function bfi_applyfilterdata(){
 
 			jQuery('.bfi-filteroptions a').on('click',function() {
 <?php 
-if(COM_BOOKINGFORCONNECTOR_EECENABLED == 1) {
+if(COM_BOOKINGFORCONNECTOR_GAENABLED == 1 && !empty(COM_BOOKINGFORCONNECTOR_GAACCOUNT) && COM_BOOKINGFORCONNECTOR_EECENABLED == 1) {
 ?>
 //				currValue = jQuery(this).attr("rel");
 				currValue = jQuery(this).find(".bfi-filter-label").first().text(); 

@@ -81,43 +81,43 @@ class BookingForConnectorModelOrders extends JModelList
 		
 	}
 	
-	public function GetOrdersByExternalUserCount() {
-//		$uid = get_current_user_id();
-//		if(empty($uid )){
+//	public function GetOrdersByExternalUserCount() {
+////		$uid = get_current_user_id();
+////		if(empty($uid )){
+////			return 0;
+////		}
+////		$user = get_user_by('id', $uid);
+////		if (!empty($user->ID)) {
+////		  $userId = $user->ID."|". $user->user_login . "|" . $_SERVER["SERVER_NAME"];
+////		}
+//		$userId = '';
+//		$user = JFactory::getUser();
+//		if ($user->id != 0) {
+//			$userId=$user->id."|". $user->username . "|" . $_SERVER["SERVER_NAME"];
+//		}else{
 //			return 0;
 //		}
-//		$user = get_user_by('id', $uid);
-//		if (!empty($user->ID)) {
-//		  $userId = $user->ID."|". $user->user_login . "|" . $_SERVER["SERVER_NAME"];
+//		$data = array(
+//                          'UserId' => BFCHelper::getQuotedString($userId),
+//			  'domainLabel' => BFCHelper::getQuotedString(COM_BOOKINGFORCONNECTOR_FORM_KEY),
+//			  '$format' => 'json'
+//		);
+//
+//		$options = array(
+//				'path' => $this->urlGetOrdersByExternalUserCount,
+//				'data' => $data
+//		);
+//
+//		$url = $this->helper->getQuery($options);
+//		$orderCount = 0;
+//
+//		$r = $this->helper->executeQuery($url);
+//		if (isset($r)) {
+//			$res = json_decode($r);
+//			$orderCount = (int)$res->d->GetOrdersByExternalUserCount;
 //		}
-		$userId = '';
-		$user = JFactory::getUser();
-		if ($user->id != 0) {
-			$userId=$user->id."|". $user->username . "|" . $_SERVER["SERVER_NAME"];
-		}else{
-			return 0;
-		}
-		$data = array(
-                          'UserId' => BFCHelper::getQuotedString($userId),
-			  'domainLabel' => BFCHelper::getQuotedString(COM_BOOKINGFORCONNECTOR_FORM_KEY),
-			  '$format' => 'json'
-		);
-
-		$options = array(
-				'path' => $this->urlGetOrdersByExternalUserCount,
-				'data' => $data
-		);
-
-		$url = $this->helper->getQuery($options);
-		$orderCount = 0;
-
-		$r = $this->helper->executeQuery($url);
-		if (isset($r)) {
-			$res = json_decode($r);
-			$orderCount = (int)$res->d->GetOrdersByExternalUserCount;
-		}
-		return $orderCount;
-	}
+//		return $orderCount;
+//	}
 
 	public function GetOrderDetailsById($orderId,$culturecode='') {
 		$data = array(
@@ -147,152 +147,152 @@ class BookingForConnectorModelOrders extends JModelList
 		}
 		return $orderDetails;
 	}
-	public function GetOrderDetailsByExternalUser($orderId) {
-//                $uid = get_current_user_id();
-//                $user = get_user_by('id', $uid);
-//		if (!empty($user->ID)) {
-//		  $userId = $user->ID."|". $user->user_login . "|" . $_SERVER["SERVER_NAME"];
+//	public function GetOrderDetailsByExternalUser($orderId) {
+////                $uid = get_current_user_id();
+////                $user = get_user_by('id', $uid);
+////		if (!empty($user->ID)) {
+////		  $userId = $user->ID."|". $user->user_login . "|" . $_SERVER["SERVER_NAME"];
+////		}
+//		$userId = '';
+//		$user = JFactory::getUser();
+//		if ($user->id != 0) {
+//			$userId=$user->id."|". $user->username . "|" . $_SERVER["SERVER_NAME"];
 //		}
-		$userId = '';
-		$user = JFactory::getUser();
-		if ($user->id != 0) {
-			$userId=$user->id."|". $user->username . "|" . $_SERVER["SERVER_NAME"];
-		}
+//
+//		$data = array(
+//                          'UserId' => BFCHelper::getQuotedString($userId),
+//                          'orderId' => $orderId,
+//			  'domainLabel' => BFCHelper::getQuotedString(COM_BOOKINGFORCONNECTOR_FORM_KEY),
+//			  '$format' => 'json'
+//		);
+//		$options = array(
+//				'path' => $this->urlGetOrderDetailsByExternalUser,
+//				'data' => $data
+//
+//
+//
+//
+//		);
+//		$url = $this->helper->getQuery($options);
+//		$orderDetails = null;
+//
+//		$r = $this->helper->executeQuery($url);
+//		if (isset($r)) {
+//			$res = json_decode($r);
+//			$orderDetails = $res->d->GetOrderDetailsByExternalUser ?: $res->d;
+//
+//
+//
+//
+//		}
+//		return $orderDetails;
+//	}
 
-		$data = array(
-                          'UserId' => BFCHelper::getQuotedString($userId),
-                          'orderId' => $orderId,
-			  'domainLabel' => BFCHelper::getQuotedString(COM_BOOKINGFORCONNECTOR_FORM_KEY),
-			  '$format' => 'json'
-		);
-		$options = array(
-				'path' => $this->urlGetOrderDetailsByExternalUser,
-				'data' => $data
-
-
-
-
-		);
-		$url = $this->helper->getQuery($options);
-		$orderDetails = null;
-
-		$r = $this->helper->executeQuery($url);
-		if (isset($r)) {
-			$res = json_decode($r);
-			$orderDetails = $res->d->GetOrderDetailsByExternalUser ?: $res->d;
-
-
-
-
-		}
-		return $orderDetails;
-	}
-
-	public function insertContact($customerData) {
-		$userId = '';
-		if(!empty($customerData) && isset($customerData['Email'])){
-			$userId = $customerData['Email'];
-		}
-		$user = JFactory::getUser();
-		if ($user->id != 0) {
-			$userId=$user->id."|". $user->username . "|" . $_SERVER["SERVER_NAME"];
-		}
-		$options = array(
-			'path' => $this->urlInsertContact,
-			'data' => array(
-			'customerData' => BFCHelper::getQuotedString(BFCHelper::getJsonEncodeString($customerData)),
-			'domainlabel' => BFCHelper::getQuotedString(COM_BOOKINGFORCONNECTOR_FORM_KEY),
-			'userrefid' => BFCHelper::getQuotedString($userId),
-			'$format' => 'json'
-			)
-		);
-		$url = $this->helper->getQuery($options);
-		$contact = null;
-
-		$r = $this->helper->executeQuery($url,"POST");
-		if (isset($r)) {
-			$res = json_decode($r);
-			if (!empty($res->d->results)){
-				$contact = $res->d->results;
-			} elseif(!empty($res->d)){
-				$contact = $res->d;
-			}
-		}
-		return $contact;
-	}
-
-	public function updateContact($customerData) {
-		$userId = '';
-		if(!empty($customerData) && isset($customerData['Email'])){
-			$userId = $customerData['Email'];
-		}
-		$user = JFactory::getUser();
-		if ($user->id != 0) {
-			$userId=$user->id."|". $user->username . "|" . $_SERVER["SERVER_NAME"];
-		}
-		$options = array(
-			'path' => $this->urlUpdateContact,
-			'data' => array(
-			'customerData' => BFCHelper::getQuotedString(BFCHelper::getJsonEncodeString($customerData)),
-			'domainlabel' => BFCHelper::getQuotedString(COM_BOOKINGFORCONNECTOR_FORM_KEY),
-			'userrefid' => BFCHelper::getQuotedString($userId),
-			'$format' => 'json'
-			)
-		);
-		$url = $this->helper->getQuery($options);
-		$contact = null;
-
-		$r = $this->helper->executeQuery($url,"POST");
-		if (isset($r)) {
-			$res = json_decode($r);
-			if (!empty($res->d->results)){
-				$contact = $res->d->results;
-			} elseif(!empty($res->d)){
-				$contact = $res->d;
-			}
-		}
-		return $contact;
-	}
-
-	public function getContactData($customerData) {
-		$userId = '';
-		if(!empty($customerData) && isset($customerData['Email'])){
-			$userId = $customerData['Email'];
-		}
-		$user = JFactory::getUser();
-		if ($user->id != 0) {
-			$userId=$user->id."|". $user->username . "|" . $_SERVER["SERVER_NAME"];
-		}
-		$data = array(
-			'userrefid' => BFCHelper::getQuotedString($userId),
-			'domainLabel' => BFCHelper::getQuotedString(COM_BOOKINGFORCONNECTOR_FORM_KEY),
-			'$format' => 'json'
-		);
-		$options = array(
-			'path' => $this->urlGetContactData,
-			'data' => $data
-		);
-		$url = $this->helper->getQuery($options);
-
-		$contact= null;
-
-		$r = $this->helper->executeQuery($url);
-		if (isset($r)) {
-			$res = json_decode($r);
-			if(isset($res->error)) {
-				return NULL;
-			} else {
-				if (!empty($res->d->results)){
-					$contact = $res->d->results;
-				}elseif(!empty($res->d)){
-					$contact = $res->d;
-				}
-				return $contact;
-			}
-		}
-		
-		return $contact;
-	}
+//	public function insertContact($customerData) {
+//		$userId = '';
+//		if(!empty($customerData) && isset($customerData['Email'])){
+//			$userId = $customerData['Email'];
+//		}
+//		$user = JFactory::getUser();
+//		if ($user->id != 0) {
+//			$userId=$user->id."|". $user->username . "|" . $_SERVER["SERVER_NAME"];
+//		}
+//		$options = array(
+//			'path' => $this->urlInsertContact,
+//			'data' => array(
+//			'customerData' => BFCHelper::getQuotedString(BFCHelper::getJsonEncodeString($customerData)),
+//			'domainlabel' => BFCHelper::getQuotedString(COM_BOOKINGFORCONNECTOR_FORM_KEY),
+//			'userrefid' => BFCHelper::getQuotedString($userId),
+//			'$format' => 'json'
+//			)
+//		);
+//		$url = $this->helper->getQuery($options);
+//		$contact = null;
+//
+//		$r = $this->helper->executeQuery($url,"POST");
+//		if (isset($r)) {
+//			$res = json_decode($r);
+//			if (!empty($res->d->results)){
+//				$contact = $res->d->results;
+//			} elseif(!empty($res->d)){
+//				$contact = $res->d;
+//			}
+//		}
+//		return $contact;
+//	}
+//
+//	public function updateContact($customerData) {
+//		$userId = '';
+//		if(!empty($customerData) && isset($customerData['Email'])){
+//			$userId = $customerData['Email'];
+//		}
+//		$user = JFactory::getUser();
+//		if ($user->id != 0) {
+//			$userId=$user->id."|". $user->username . "|" . $_SERVER["SERVER_NAME"];
+//		}
+//		$options = array(
+//			'path' => $this->urlUpdateContact,
+//			'data' => array(
+//			'customerData' => BFCHelper::getQuotedString(BFCHelper::getJsonEncodeString($customerData)),
+//			'domainlabel' => BFCHelper::getQuotedString(COM_BOOKINGFORCONNECTOR_FORM_KEY),
+//			'userrefid' => BFCHelper::getQuotedString($userId),
+//			'$format' => 'json'
+//			)
+//		);
+//		$url = $this->helper->getQuery($options);
+//		$contact = null;
+//
+//		$r = $this->helper->executeQuery($url,"POST");
+//		if (isset($r)) {
+//			$res = json_decode($r);
+//			if (!empty($res->d->results)){
+//				$contact = $res->d->results;
+//			} elseif(!empty($res->d)){
+//				$contact = $res->d;
+//			}
+//		}
+//		return $contact;
+//	}
+//
+//	public function getContactData($customerData) {
+//		$userId = '';
+//		if(!empty($customerData) && isset($customerData['Email'])){
+//			$userId = $customerData['Email'];
+//		}
+//		$user = JFactory::getUser();
+//		if ($user->id != 0) {
+//			$userId=$user->id."|". $user->username . "|" . $_SERVER["SERVER_NAME"];
+//		}
+//		$data = array(
+//			'userrefid' => BFCHelper::getQuotedString($userId),
+//			'domainLabel' => BFCHelper::getQuotedString(COM_BOOKINGFORCONNECTOR_FORM_KEY),
+//			'$format' => 'json'
+//		);
+//		$options = array(
+//			'path' => $this->urlGetContactData,
+//			'data' => $data
+//		);
+//		$url = $this->helper->getQuery($options);
+//
+//		$contact= null;
+//
+//		$r = $this->helper->executeQuery($url);
+//		if (isset($r)) {
+//			$res = json_decode($r);
+//			if(isset($res->error)) {
+//				return NULL;
+//			} else {
+//				if (!empty($res->d->results)){
+//					$contact = $res->d->results;
+//				}elseif(!empty($res->d)){
+//					$contact = $res->d;
+//				}
+//				return $contact;
+//			}
+//		}
+//		
+//		return $contact;
+//	}
 
 	public function setOrder($customerData = NULL, $suggestedStay = NULL, $creditCardData = NULL, $otherNoteData = NULL, $merchantId = 0, $orderType = NULL, $userNotes = NULL, $label = NULL, $cultureCode = NULL, $processOrder = NULL, $priceType = NULL, $merchantBookingTypeId = NULL, $policyId = NULL) {
 //		if($this->getContactData($customerData[0]) == NULL) {
@@ -337,6 +337,7 @@ class BookingForConnectorModelOrders extends JModelList
 //					'priceType' =>  BFCHelper::getQuotedString($priceType),
 					'addedBy' =>  BFCHelper::getQuotedString($tmpUserId),
 //					'isCartOrder' =>  1,
+					'cryptoVersion' =>COM_BOOKINGFORCONNECTOR_CRYPTOVERSION,
 					'$format' => 'json'
 				)
 			);
@@ -368,143 +369,143 @@ class BookingForConnectorModelOrders extends JModelList
 		return $order;
 	}
 
-	public function updateEmail($orderId = NULL,$email = NULL) 
-		{
-		$options = array(
-				'path' => $this->urlUpdateOrderEmail,
-				'data' => array(
-						'orderId' => $orderId,
-						'email' => BFCHelper::getQuotedString($email),
-						'$format' => 'json'
-				)
-		);
-		$url = $this->helper->getQuery($options);
-	
-		$order = null;
-		$r = $this->helper->executeQuery($url,"POST");
-		if (isset($r)) {
-			$res = json_decode($r);
-			if (!empty($res->d->results)){
-				$order = $res->d->results;
-			}elseif(!empty($res->d)){
-				$order = $res->d;
-			}
-		}
-		return $order;
-	}
-	
-	public function updateCCdata($orderId = NULL,$creditCardData = NULL, $processOrder=null) 
-		{
-		$options = array(
-				'path' => $this->urlUpdateOrderCreditCardData,
-				'data' => array(
-						'orderId' => $orderId,
-						'creditCard' => BFCHelper::getQuotedString($creditCardData),
-						'processOrder' => $processOrder,
-						'$format' => 'json'
-				)
-		);
-		$url = $this->helper->getQuery($options);
-	
-		$order = null;
-	
-		$r = $this->helper->executeQuery($url,"POST");
-		if (isset($r)) {
-			$res = json_decode($r);
-			if (!empty($res->d->results)){
-				$order = $res->d->results;
-			}elseif(!empty($res->d)){
-				$order = $res->d;
-			}
-		}
-	
-		return $order;
-	
-	}
-
-	public function setOrderStatus($orderId = NULL, $status = NULL, $sendEmails = false, $setAvailability = false, $paymentData = NULL) 
-		{
-		$options = array(
-				'path' => $this->urlProcessOrderStatus,
-				'data' => array(
-						'orderId' => $orderId,
-						'status' => $status,
-						'sendEmails' => $sendEmails,
-						'setAvailability' => $setAvailability,
-						'paymentData' => BFCHelper::getQuotedString($paymentData),	
-						'$format' => 'json'
-				)
-		);
-		$url = $this->helper->getQuery($options);
-	
-		$order = null;
-	
-		$r = $this->helper->executeQuery($url,"POST");
-		if (isset($r)) {
-			$res = json_decode($r);
-			if (!empty($res->d->results)){
-				$order = $res->d->results;
-			}elseif(!empty($res->d)){
-				$order = $res->d;
-			}
-		}
-
-		return $order;
-	
-	}
-	
-	
-	public function GetOrdersByExternalUser() {
-//		$uid = get_current_user_id();
-//		$user = get_user_by('id', $uid);
-//		if (empty($user->ID)) return null;
-//		
-//		if (!empty($user->ID)) {
-//			$userId = $user->ID."|". $user->user_login . "|" . $_SERVER["SERVER_NAME"];
+//	public function updateEmail($orderId = NULL,$email = NULL) 
+//		{
+//		$options = array(
+//				'path' => $this->urlUpdateOrderEmail,
+//				'data' => array(
+//						'orderId' => $orderId,
+//						'email' => BFCHelper::getQuotedString($email),
+//						'$format' => 'json'
+//				)
+//		);
+//		$url = $this->helper->getQuery($options);
+//	
+//		$order = null;
+//		$r = $this->helper->executeQuery($url,"POST");
+//		if (isset($r)) {
+//			$res = json_decode($r);
+//			if (!empty($res->d->results)){
+//				$order = $res->d->results;
+//			}elseif(!empty($res->d)){
+//				$order = $res->d;
+//			}
 //		}
-		$userId = '';
-		$user = JFactory::getUser();
-		if ($user->id != 0) {
-			$userId=$user->id."|". $user->username . "|" . $_SERVER["SERVER_NAME"];
-		}else{
-			return null;
-		}
+//		return $order;
+//	}
+	
+//	public function updateCCdata($orderId = NULL,$creditCardData = NULL, $processOrder=null) 
+//		{
+//		$options = array(
+//				'path' => $this->urlUpdateOrderCreditCardData,
+//				'data' => array(
+//						'orderId' => $orderId,
+//						'creditCard' => BFCHelper::getQuotedString($creditCardData),
+//						'processOrder' => $processOrder,
+//						'$format' => 'json'
+//				)
+//		);
+//		$url = $this->helper->getQuery($options);
+//	
+//		$order = null;
+//	
+//		$r = $this->helper->executeQuery($url,"POST");
+//		if (isset($r)) {
+//			$res = json_decode($r);
+//			if (!empty($res->d->results)){
+//				$order = $res->d->results;
+//			}elseif(!empty($res->d)){
+//				$order = $res->d;
+//			}
+//		}
+//	
+//		return $order;
+//	
+//	}
 
-		if(isset($_GET['pager'])) {
-			$skip = 5 * $_GET['pager'];
-		}
-		else {
-			$skip = 0;
-		}
-
-		$data = array(
-			'UserId' => BFCHelper::getQuotedString($userId),
-			'domainLabel' => BFCHelper::getQuotedString(COM_BOOKINGFORCONNECTOR_FORM_KEY),
-			'top' => 5,
-			'skip' => $skip,
-			'$format' => 'json'
-		);
-		$options = array(
-			'path' => $this->urlGetOrdersByExternalUser,
-			'data' => $data
-		);
-		$url = $this->helper->getQuery($options);
-
-		$order= null;
-
-		$r = $this->helper->executeQuery($url);
-		if (isset($r)) {
-			$res = json_decode($r);
-			if (!empty($res->d->results)){
-				$order = $res->d->results;
-			}elseif(!empty($res->d)){
-				$order = $res->d;
-			}
-		}
-
-
-		return $order;
-	}
+//	public function setOrderStatus($orderId = NULL, $status = NULL, $sendEmails = false, $setAvailability = false, $paymentData = NULL) 
+//		{
+//		$options = array(
+//				'path' => $this->urlProcessOrderStatus,
+//				'data' => array(
+//						'orderId' => $orderId,
+//						'status' => $status,
+//						'sendEmails' => $sendEmails,
+//						'setAvailability' => $setAvailability,
+//						'paymentData' => BFCHelper::getQuotedString($paymentData),	
+//						'$format' => 'json'
+//				)
+//		);
+//		$url = $this->helper->getQuery($options);
+//	
+//		$order = null;
+//	
+//		$r = $this->helper->executeQuery($url,"POST");
+//		if (isset($r)) {
+//			$res = json_decode($r);
+//			if (!empty($res->d->results)){
+//				$order = $res->d->results;
+//			}elseif(!empty($res->d)){
+//				$order = $res->d;
+//			}
+//		}
+//
+//		return $order;
+//	
+//	}
+	
+	
+//	public function GetOrdersByExternalUser() {
+////		$uid = get_current_user_id();
+////		$user = get_user_by('id', $uid);
+////		if (empty($user->ID)) return null;
+////		
+////		if (!empty($user->ID)) {
+////			$userId = $user->ID."|". $user->user_login . "|" . $_SERVER["SERVER_NAME"];
+////		}
+//		$userId = '';
+//		$user = JFactory::getUser();
+//		if ($user->id != 0) {
+//			$userId=$user->id."|". $user->username . "|" . $_SERVER["SERVER_NAME"];
+//		}else{
+//			return null;
+//		}
+//
+//		if(isset($_GET['pager'])) {
+//			$skip = 5 * $_GET['pager'];
+//		}
+//		else {
+//			$skip = 0;
+//		}
+//
+//		$data = array(
+//			'UserId' => BFCHelper::getQuotedString($userId),
+//			'domainLabel' => BFCHelper::getQuotedString(COM_BOOKINGFORCONNECTOR_FORM_KEY),
+//			'top' => 5,
+//			'skip' => $skip,
+//			'$format' => 'json'
+//		);
+//		$options = array(
+//			'path' => $this->urlGetOrdersByExternalUser,
+//			'data' => $data
+//		);
+//		$url = $this->helper->getQuery($options);
+//
+//		$order= null;
+//
+//		$r = $this->helper->executeQuery($url);
+//		if (isset($r)) {
+//			$res = json_decode($r);
+//			if (!empty($res->d->results)){
+//				$order = $res->d->results;
+//			}elseif(!empty($res->d)){
+//				$order = $res->d;
+//			}
+//		}
+//
+//
+//		return $order;
+//	}
 	
 	public function getSingleOrderFromService($orderId = null) {
 		$order= null;
@@ -533,84 +534,84 @@ class BookingForConnectorModelOrders extends JModelList
 		return $order;
 	}
 
-	public function getOrderFromService($orderId = null)
-	{
-
-		$params = $this->getState('params');
-		$checkmode = $params['checkmode'];
-		$donation = $params['donation'];
-		
-		$data = array(
-					'checkMode' => $checkmode,
-					'$format' => 'json'
-				);
-		
-		if ($checkmode & OrderCheckMode::OrderId){
-				$orderId = $params['orderId'];
-				$data['orderId'] = $orderId;			
-		}
-		if ($checkmode & OrderCheckMode::ExternalOrderId){
-			$externalOrderId = $params['externalOrderId'];
-			$data['externalOrderId'] = BFCHelper::getQuotedString($externalOrderId);
-		}	
-		if ($checkmode & OrderCheckMode::CustomerId){
-			$customerId = $params['customerId'];
-			$data['customerId'] = $customerId;
-		}
-		if ($checkmode & OrderCheckMode::ExternalCustomerId){
-			$externalCustomerId = $params['externalCustomerId'];
-			$data['externalCustomerId'] = BFCHelper::getQuotedString($externalCustomerId);
-		}	
-		if ($checkmode & OrderCheckMode::CheckIn){
-			$checkIn = $params['checkIn'];
-			$data['checkIn'] = BFCHelper::getQuotedString($checkIn);
-		}
-		if ($checkmode & OrderCheckMode::CheckOut){
-			$checkOut = $params['checkOut'];
-			$data['checkOut'] = BFCHelper::getQuotedString($checkOut);
-		}		
-		if ($checkmode & OrderCheckMode::CustomerFirstname){
-			$customerFirstname = $params['customerFirstname'];
-			$data['customerFirstname'] = BFCHelper::getQuotedString($customerFirstname);
-		}
-		if ($checkmode & OrderCheckMode::CustomerLastname){
-			$customerLastname = $params['customerLastname'];
-			$data['customerLastname'] = BFCHelper::getQuotedString($customerLastname);
-		}
-		if ($checkmode & OrderCheckMode::Email){
-			$email = $params['email'];
-			$data['email'] = BFCHelper::getQuotedString($email);
-		}		
-		
-		if(COM_BOOKINGFORCONNECTOR_USEEXTERNALUPDATEORDER){
-			
-			$this->urlGetOrder = '/GetOrderFrom'.COM_BOOKINGFORCONNECTOR_USEEXTERNALUPDATEORDERSYSTEM;
-			$data['cultureCode'] = BFCHelper::getQuotedString($params['cultureCode']);
-			$data['merchantCode'] = BFCHelper::getQuotedString(COM_BOOKINGFORCONNECTOR_EXTERNALMERCHANTCODE);
-
-		}
-
-		$options = array(
-				'path' => $this->urlGetOrder,
-				'data' => $data
-		);
-		$url = $this->helper->getQuery($options);
-		
-		$order= null;
-				
-		$r = $this->helper->executeQuery($url);
-		if (isset($r)) {
-			$res = json_decode($r);
-			if (!empty($res->d->results)){
-				$order = $res->d->results;
-			}elseif(!empty($res->d)){
-				$order = $res->d;
-			}
-		}
-
-		
-		return $order;
-	}
+//	public function getOrderFromService($orderId = null)
+//	{
+//
+//		$params = $this->getState('params');
+//		$checkmode = $params['checkmode'];
+//		$donation = $params['donation'];
+//		
+//		$data = array(
+//					'checkMode' => $checkmode,
+//					'$format' => 'json'
+//				);
+//		
+//		if ($checkmode & OrderCheckMode::OrderId){
+//				$orderId = $params['orderId'];
+//				$data['orderId'] = $orderId;			
+//		}
+//		if ($checkmode & OrderCheckMode::ExternalOrderId){
+//			$externalOrderId = $params['externalOrderId'];
+//			$data['externalOrderId'] = BFCHelper::getQuotedString($externalOrderId);
+//		}	
+//		if ($checkmode & OrderCheckMode::CustomerId){
+//			$customerId = $params['customerId'];
+//			$data['customerId'] = $customerId;
+//		}
+//		if ($checkmode & OrderCheckMode::ExternalCustomerId){
+//			$externalCustomerId = $params['externalCustomerId'];
+//			$data['externalCustomerId'] = BFCHelper::getQuotedString($externalCustomerId);
+//		}	
+//		if ($checkmode & OrderCheckMode::CheckIn){
+//			$checkIn = $params['checkIn'];
+//			$data['checkIn'] = BFCHelper::getQuotedString($checkIn);
+//		}
+//		if ($checkmode & OrderCheckMode::CheckOut){
+//			$checkOut = $params['checkOut'];
+//			$data['checkOut'] = BFCHelper::getQuotedString($checkOut);
+//		}		
+//		if ($checkmode & OrderCheckMode::CustomerFirstname){
+//			$customerFirstname = $params['customerFirstname'];
+//			$data['customerFirstname'] = BFCHelper::getQuotedString($customerFirstname);
+//		}
+//		if ($checkmode & OrderCheckMode::CustomerLastname){
+//			$customerLastname = $params['customerLastname'];
+//			$data['customerLastname'] = BFCHelper::getQuotedString($customerLastname);
+//		}
+//		if ($checkmode & OrderCheckMode::Email){
+//			$email = $params['email'];
+//			$data['email'] = BFCHelper::getQuotedString($email);
+//		}		
+//		
+//		if(COM_BOOKINGFORCONNECTOR_USEEXTERNALUPDATEORDER){
+//			
+//			$this->urlGetOrder = '/GetOrderFrom'.COM_BOOKINGFORCONNECTOR_USEEXTERNALUPDATEORDERSYSTEM;
+//			$data['cultureCode'] = BFCHelper::getQuotedString($params['cultureCode']);
+//			$data['merchantCode'] = BFCHelper::getQuotedString(COM_BOOKINGFORCONNECTOR_EXTERNALMERCHANTCODE);
+//
+//		}
+//
+//		$options = array(
+//				'path' => $this->urlGetOrder,
+//				'data' => $data
+//		);
+//		$url = $this->helper->getQuery($options);
+//		
+//		$order= null;
+//				
+//		$r = $this->helper->executeQuery($url);
+//		if (isset($r)) {
+//			$res = json_decode($r);
+//			if (!empty($res->d->results)){
+//				$order = $res->d->results;
+//			}elseif(!empty($res->d)){
+//				$order = $res->d;
+//			}
+//		}
+//
+//		
+//		return $order;
+//	}
 
 	public function GetCartByExternalUser($userId, $culturecode, $includeDetails = true) {
 //		$uid = get_current_user_id();
@@ -620,10 +621,10 @@ class BookingForConnectorModelOrders extends JModelList
 //		if (!empty($user->ID)) {
 //			$userId = $user->ID."|". $user->user_login . "|" . $_SERVER["SERVER_NAME"];
 //		}
-		$user = JFactory::getUser();
-		if ($user->id != 0) {
-			$userId=$user->id."|". $user->username . "|" . $_SERVER["SERVER_NAME"];
-		}
+//		$user = JFactory::getUser();
+//		if ($user->id != 0) {
+//			$userId=$user->id."|". $user->username . "|" . $_SERVER["SERVER_NAME"];
+//		}
 		$data = array(
 			'UserId' => BFCHelper::getQuotedString($userId),
 			'domainLabel' => BFCHelper::getQuotedString(COM_BOOKINGFORCONNECTOR_FORM_KEY),
@@ -803,44 +804,45 @@ class BookingForConnectorModelOrders extends JModelList
 	public function getItem()
 	{
 		// Get a storage key.
-		$store = $this->getStoreId();
-		
-		// Try to load the data from internal storage.
-		if (isset($this->cache[$store]))
-		{
-			return $this->cache[$store];
-		}
-		
-		$item = $this->getOrderFromService();
-		
-		// Add the items to the internal cache.
-		$this->cache[$store] = $item;
-		
-		return $this->cache[$store];
-		
+//		$store = $this->getStoreId();
+//		
+//		// Try to load the data from internal storage.
+//		if (isset($this->cache[$store]))
+//		{
+//			return $this->cache[$store];
+//		}
+//		
+//		$item = $this->getOrderFromService();
+//		
+//		// Add the items to the internal cache.
+//		$this->cache[$store] = $item;
+//		
+//		return $this->cache[$store];
+		return 	null;
 	}
 	
 	public function getItems()
 	{
-		// Get a storage key.
-		$store = $this->getStoreId();
-
-		// Try to load the data from internal storage.
-		if (isset($this->cache[$store]))
-		{
-			return $this->cache[$store];
-		}
-
-		$items = $this->getOrdersFromService(
-			$this->getStart(), 
-			$this->getState('list.limit'), 
-			$this->getState('list.ordering', 'Name'), 
-			$this->getState('list.direction', 'asc')
-		);
-
-		// Add the items to the internal cache.
-		$this->cache[$store] = $items;
-
-		return $this->cache[$store];
+//		// Get a storage key.
+//		$store = $this->getStoreId();
+//
+//		// Try to load the data from internal storage.
+//		if (isset($this->cache[$store]))
+//		{
+//			return $this->cache[$store];
+//		}
+//
+//		$items = $this->getOrdersFromService(
+//			$this->getStart(), 
+//			$this->getState('list.limit'), 
+//			$this->getState('list.ordering', 'Name'), 
+//			$this->getState('list.direction', 'asc')
+//		);
+//
+//		// Add the items to the internal cache.
+//		$this->cache[$store] = $items;
+//
+//		return $this->cache[$store];
+		return 	null;
 	}
 }

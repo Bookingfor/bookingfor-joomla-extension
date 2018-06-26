@@ -10,7 +10,11 @@
 defined('_JEXEC') or die('Restricted access');
 
 $language 	= $this->language;
-$checkmode = $this->params['checkmode'];
+$checkmode = $this->currparams['checkmode'];
+if(empty( $checkmode )){
+	$checkmode = 5;
+}
+
 $route = str_replace("{language}", substr($language,0,2), COM_BOOKINGFORCONNECTOR_ORDERURL);
  
 ?>

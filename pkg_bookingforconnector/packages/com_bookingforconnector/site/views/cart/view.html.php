@@ -30,7 +30,7 @@ class BookingForConnectorViewCart extends BFCView
 		$items		= $this->get('Items');
 		$document 	= JFactory::getDocument();
 
-		$language 	= $document->getLanguage();
+		$language 	= JFactory::getLanguage()->getTag();
 		$app = JFactory::getApplication();
 		$sitename = $app->get('sitename');
 		$layout = BFCHelper::getString('layout', "default");

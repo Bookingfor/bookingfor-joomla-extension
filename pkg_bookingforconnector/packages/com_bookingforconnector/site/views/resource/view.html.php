@@ -24,13 +24,18 @@ class BookingForConnectorViewResource extends BFCView
 	function display($tpl = null)
 	{
 		$document 	= JFactory::getDocument();
-		$language 	= $document->getLanguage();
+		$language 	= JFactory::getLanguage()->getTag();
 		$config = JComponentHelper::getParams('com_bookingforconnector');
 		$app = JFactory::getApplication();
 		$sitename = $app->get('sitename');
 		$state		= $this->get('State');
 		$item		= $this->get('Item');
 		$params		= $this->params;		
+
+		if(!isset($item)){
+			header ("Location: ". JURI::root()); 
+			$app->close();
+		}
 
 		$this->state = $state;
 		$this->params = $params;
@@ -55,7 +60,7 @@ class BookingForConnectorViewResource extends BFCView
 
 
 		// load scripts
-		$document->addScript('components/com_bookingforconnector/assets/js/bf_cart_type_1.js');
+		$document->addScript('components/com_bookingforconnector/assets/js/bf_cart.js');
 		$document->addScript('components/com_bookingforconnector/assets/js/bf_appTimePeriod.js');
 		$document->addScript('components/com_bookingforconnector/assets/js/bf_appTimeSlot.js');
 
@@ -65,11 +70,11 @@ class BookingForConnectorViewResource extends BFCView
 			$sendAnalytics =false;
 		}
 
-		if ($this->getLayout() == 'ratings') {
-			$items = $this->get('ItemsRating');
-			$pagination	= $this->get('PaginationRatings');
-			$sendAnalytics =false;
-		}
+//		if ($this->getLayout() == 'ratings') {
+//			$items = $this->get('ItemsRating');
+//			$pagination	= $this->get('PaginationRatings');
+//			$sendAnalytics =false;
+//		}
 
 		$this->items = $items;
 		$this->pagination = $pagination;
@@ -79,6 +84,8 @@ class BookingForConnectorViewResource extends BFCView
 		$analyticsEnabled = $this->checkAnalytics();
 		$criteoConfig = null;
 		if(BFCHelper::getString('layout', "default") == "default") {
+			
+		if(COM_BOOKINGFORCONNECTOR_CRITEOENABLED){
 			$criteoConfig = BFCHelper::getCriteoConfiguration(2, $merchants);
 			if(isset($criteoConfig) && isset($criteoConfig->enabled) && $criteoConfig->enabled && count($criteoConfig->merchants) > 0) {
 				$document->addScript('//static.criteo.net/js/ld/ld.js');
@@ -86,12 +93,13 @@ class BookingForConnectorViewResource extends BFCView
 				window.criteo_q = window.criteo_q || [];');
 				if($item->IsCatalog) {
 					$document->addScriptDeclaration('
-				window.criteo_q.push( 
-					{ event: "setAccount", account: '. $criteoConfig->campaignid .'}, 
-					{ event: "setSiteType", type: "d" }, 
-					{ event: "setEmail", email: "" }, 
-					{ event: "viewItem", item: "'. $criteoConfig->merchants[0] .'" }
-				);');
+					window.criteo_q.push( 
+						{ event: "setAccount", account: '. $criteoConfig->campaignid .'}, 
+						{ event: "setSiteType", type: "d" }, 
+						{ event: "setEmail", email: "" }, 
+						{ event: "viewItem", item: "'. $criteoConfig->merchants[0] .'" }
+					);');
+				}
 			}
 		}
 			if($sendAnalytics &&  $analyticsEnabled && COM_BOOKINGFORCONNECTOR_EECENABLED == 1) {
@@ -117,15 +125,20 @@ class BookingForConnectorViewResource extends BFCView
 		if (!empty($resource)){
 				$mainframe = JFactory::getApplication();
 				$pathway   = $mainframe->getPathway();
-				
-				$count = count($pathway);
+				$items   = $pathway->getPathWay();
+				$count = count($items);
 				$newPathway = array();
 				if($count>1){
-					$newPathway = array_pop($pathway);
+					$newPathway = array_pop($items);
 				}
 				$pathway->setPathway($newPathway);
 
 				$resourceName = BFCHelper::getLanguage($resource->Name, $this->language, null, array('ln2br'=>'ln2br', 'striptags'=>'striptags')); 
+
+				$pathway->addItem(
+					$resource->MerchantName,
+					JRoute::_('index.php?option=com_bookingforconnector&view=merchantdetails&merchantId=' . $resource->MerchantId . ':' . BFCHelper::getSlug($resource->MerchantName))
+				);
 				$pathway->addItem(
 					$resourceName,
 					JRoute::_('index.php?option=com_bookingforconnector&view=resource&resourceId=' . $resource->ResourceId . ':' . BFCHelper::getSlug($resourceName))

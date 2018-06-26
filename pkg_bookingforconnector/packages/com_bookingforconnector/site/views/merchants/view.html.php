@@ -24,7 +24,7 @@ class BookingForConnectorViewMerchants extends BFCView
 	{
 
 		$document 	= JFactory::getDocument();
-		$language 	= $document->getLanguage();		
+		$language 	= JFactory::getLanguage()->getTag();		
 
 		// Initialise variables
 		$state		= $this->get('State');
@@ -41,18 +41,21 @@ class BookingForConnectorViewMerchants extends BFCView
 			BFCHelper::raiseWarning(500, implode("\n", $errors));
 			return false;
 		}
-		$merchantsCriteo = isset($items) && !empty($items) ? array_unique(array_map(function($a) { return $a->MerchantId; }, $items)) : array();
-		$criteoConfig = BFCHelper::getCriteoConfiguration(1, $merchantsCriteo);
-		if(isset($criteoConfig) && isset($criteoConfig->enabled) && $criteoConfig->enabled && count($criteoConfig->merchants) > 0) {
-			$document->addScript('//static.criteo.net/js/ld/ld.js');
-			$document->addScriptDeclaration('window.criteo_q = window.criteo_q || []; 
-			window.criteo_q.push( 
-				{ event: "setAccount", account: '. $criteoConfig->campaignid .'}, 
-				{ event: "setSiteType", type: "d" }, 
-				{ event: "setEmail", email: "" }, 
-				{ event: "viewList", item: '. json_encode($criteoConfig->merchants) .' }
-			);');
+		if(COM_BOOKINGFORCONNECTOR_CRITEOENABLED){
+			$merchantsCriteo = isset($items) && !empty($items) ? array_unique(array_map(function($a) { return $a->MerchantId; }, $items)) : array();
+			$criteoConfig = BFCHelper::getCriteoConfiguration(1, $merchantsCriteo);
+			if(isset($criteoConfig) && isset($criteoConfig->enabled) && $criteoConfig->enabled && count($criteoConfig->merchants) > 0) {
+				$document->addScript('//static.criteo.net/js/ld/ld.js');
+				$document->addScriptDeclaration('window.criteo_q = window.criteo_q || []; 
+				window.criteo_q.push( 
+					{ event: "setAccount", account: '. $criteoConfig->campaignid .'}, 
+					{ event: "setSiteType", type: "d" }, 
+					{ event: "setEmail", email: "" }, 
+					{ event: "viewList", item: '. json_encode($criteoConfig->merchants) .' }
+				);');
+			}
 		}
+		
 		
 //		$analyticsEnabled = count($items) > 0 && $this->checkAnalytics("Merchants List") && COM_BOOKINGFORCONNECTOR_EECENABLED == 1;
 		$listNameAnalytics =4;

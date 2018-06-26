@@ -16,7 +16,7 @@ require_once $pathbase . 'helpers/BFCHelper.php';
 $moduleclass_sfx = htmlspecialchars($params->get('moduleclass_sfx'));
 
 $document		= JFactory::getDocument();
-$language 	= $document->getLanguage();
+$language 	= JFactory::getLanguage()->getTag();
 $mainframe = JFactory::getApplication();
 $currentComponent = BFCHelper::getCmd( 'option' );
 $currentView = BFCHelper::getCmd( 'view' );

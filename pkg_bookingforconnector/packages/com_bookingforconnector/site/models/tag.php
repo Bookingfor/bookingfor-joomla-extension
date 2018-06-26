@@ -545,7 +545,7 @@ class BookingForConnectorModelTag extends JModelList
 								
 		$url = $this->helper->getQuery($options);
 				
-		$ret = null;
+		$ret = array();
 		
 		$r = $this->helper->executeQuery($url);
 		if (isset($r)) {

@@ -25,11 +25,15 @@ class BookingForConnectorViewSearch extends BFCView
 
 		// Initialise variables
 		$document 	= JFactory::getDocument();
-		$language 	= $document->getLanguage();
+		$language 	= JFactory::getLanguage()->getTag();
 		$config = JComponentHelper::getParams('com_bookingforconnector');
 		$app = JFactory::getApplication();
 		$session = JFactory::getSession();
 
+		JHTML::stylesheet('components/com_bookingforconnector/assets/js/slick/slick.css');
+		JHTML::stylesheet('components/com_bookingforconnector/assets/js/slick/slick-theme.css');
+		JHTML::script('components/com_bookingforconnector/assets/js/slick/slick.min.js');
+		
 		bfi_setSessionFromSubmittedData();
 
 		$state		= $this->get('State');
@@ -75,7 +79,7 @@ class BookingForConnectorViewSearch extends BFCView
 						{ event: "setAccount", account: '. $criteoConfig->campaignid .'}, 
 						{ event: "setSiteType", type: "d" }, 
 						{ event: "setEmail", email: "" }, 
-						{ event: "viewSearch", checkin_date: "' . $pars["checkin"]->format('Y-m-d') . '", checkout_date: "' . $pars["checkout"]->format('Y-m-d') . '"},
+						{ event: "viewSearch", checkin_date: "' . $currParam["checkin"]->format('Y-m-d') . '", checkout_date: "' . $currParam["checkout"]->format('Y-m-d') . '"},
 						{ event: "viewList", item: ' . json_encode($criteoConfig->merchants) .' }
 					);');
 				}
@@ -190,6 +194,8 @@ class BookingForConnectorViewSearch extends BFCView
 		$this->state = $state;
 		$this->params = $params;
 		$this->items = $items;
+		$this->totalAvailable = $this->get('TotalAvailable');
+
 		$this->pagination = $pagination;
 		$this->language = $language;
 //		$this->typologies = $typologies;

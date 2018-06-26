@@ -45,11 +45,14 @@ $routeMerchant  = JRoute::_($uriMerchant.$fromsearchparam);
 
 $listsId = array();
 
-$rating = $merchant->Rating;
+$hasSuperior = !empty($merchant->RatingSubValue);
+$rating = (int)$merchant->Rating;
 if ($rating>9 )
 {
 	$rating = $rating/10;
-}
+	$hasSuperior = ($MerchantDetail->Rating%10)>0;
+} 
+
 $merchantName = BFCHelper::getLanguage($merchant->Name, $language, null, array('nobr'=>'nobr', 'striptags'=>'striptags')); 
 $indirizzo = isset($merchant->AddressData->Address)?$merchant->AddressData->Address:"";
 $cap = isset($merchant->AddressData->ZipCode)?$merchant->AddressData->ZipCode:""; 
@@ -96,8 +99,11 @@ $stato = isset($merchant->AddressData->StateName)?$merchant->AddressData->StateN
 		<div class="bfi-col-xs-9 ">
 			<div class="bfi-title-name bfi-hideonextra"><h1><?php echo  $merchant->Name?></h1>
 				<span class="bfi-item-rating">
-					<?php for($i = 0; $i < $merchant->Rating; $i++) { ?>
+					<?php for($i = 0; $i < $rating; $i++) { ?>
 					<i class="fa fa-star"></i>
+					<?php } ?>
+					<?php if ($hasSuperior) { ?>
+						&nbsp;S
 					<?php } ?>
 				</span>
 			</div>
@@ -131,7 +137,7 @@ $stato = isset($merchant->AddressData->StateName)?$merchant->AddressData->StateN
 		$resourceImageUrl = Juri::root() . "components/com_bookingforconnector/assets/images/defaults/default-s6.jpeg";
 
 		$resourceName = BFCHelper::getLanguage($resource->Name, $language, null, array('ln2br'=>'ln2br', 'striptags'=>'striptags')); 
-		$resourceDescription = BFCHelper::getLanguage($resource->Description, $language, null, array('ln2br'=>'ln2br', 'striptags'=>'striptags')); 
+		$resourceDescription = BFCHelper::getLanguage($resource->Description, $language, null, array('ln2br'=>'ln2br', 'bbcode'=>'bbcode', 'striptags'=>'striptags')); 
 
 		$resourceLat = $resource->XPos;
 		$resourceLon = $resource->YPos;
@@ -177,7 +183,7 @@ $stato = isset($merchant->AddressData->StateName)?$merchant->AddressData->StateN
 							<span class="bfi-item-rating">
 								<?php for($i = 0; $i < $rating; $i++) { ?>
 									<i class="fa fa-star"></i>
-								<?php } ?>	             
+								<?php } ?>
 							</span>
 							<?php if($isportal){ ?>
 							- <a href="<?php echo $routeMerchant?>" class="bfi-subitem-title eectrack" target="_blank" data-type="Merchant" data-id="<?php echo $resource->MerchantId?>" data-index="<?php echo $currKey?>" data-itemname="<?php echo $merchantNameTrack; ?>" data-category="<?php echo $merchantCategoryNameTrack; ?>" data-brand="<?php echo $merchantNameTrack; ?>" data-list="<?php echo $analyticsListName; ?>"><?php echo $resource->MerchantName; ?></a>
@@ -241,8 +247,8 @@ $stato = isset($merchant->AddressData->StateName)?$merchant->AddressData->StateN
 				</div>
 				<div class="bfi-clearfix"></div>
 				<!-- end resource details -->
-				<div  class="ribbonnew bfi-hide" id="ribbonnew<?php echo $resource->ResourceId?>"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_SEARCHONSELL_VIEW_RIBBONNEW') ?></div>
 			</div>
+				<div  class="bfi-ribbonnew bfi-hide" id="ribbonnew<?php echo $resource->ResourceId?>"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_SEARCHONSELL_VIEW_RIBBONNEW') ?></div>
 		</div>
 	</div>
 	<?php 
@@ -252,7 +258,7 @@ $stato = isset($merchant->AddressData->StateName)?$merchant->AddressData->StateN
 </div>
 
 <?php if ($this->pagination->get('pages.total') > 1) { ?>
-	<div class="pagination">
+	<div class="pagination bfi-pagination">
 		<?php echo $this->pagination->getPagesLinks(); ?>
 	</div>
 <?php } ?>
@@ -419,5 +425,7 @@ jQuery(document).ready(function() {
 </div>
 <?php } ?>
 	<div class="bfi-clearboth"></div>
-	<?php  include(JPATH_COMPONENT.'/views/shared/merchant_small_details.php');  ?>
+<?php
+				BFCHelper::bfi_get_template('shared/merchant_small_details.php',array("merchant"=>$merchant,"routeMerchant"=>$routeMerchant)); 
+?>
 </div>

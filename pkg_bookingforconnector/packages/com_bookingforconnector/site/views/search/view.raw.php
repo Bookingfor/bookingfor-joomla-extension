@@ -27,7 +27,7 @@ class BookingForConnectorViewSearch extends BFCView
 	function display($tpl = NULL, $preparecontent = false) 
 	{
 		$document 	= JFactory::getDocument();
-		$language 	= $document->getLanguage();
+		$language 	= JFactory::getLanguage()->getTag();
 		$config = JComponentHelper::getParams('com_bookingforconnector');
 		$app = JFactory::getApplication();
 

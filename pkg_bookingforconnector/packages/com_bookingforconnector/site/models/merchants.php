@@ -122,6 +122,9 @@ class BookingForConnectorModelMerchants extends JModelList
 //		$groupresulttype = $params['groupresulttype'];
 
 		$cultureCode =  isset($params['cultureCode']) ? $params['cultureCode'] : ''; 
+		if(empty( $cultureCode )){
+			$cultureCode = JFactory::getLanguage()->getTag();
+		}
 		
 		$options['data']['calculate'] = 0;
 		$options['data']['checkAvailability'] = 0;
@@ -153,7 +156,7 @@ class BookingForConnectorModelMerchants extends JModelList
 			if (isset($params['locationzone']) ) {
 				$locationzone = $params['locationzone'];
 			}
-			if (!empty($merchantCategoryId) && $merchantCategoryId > 0) {
+			if (!empty($merchantCategoryId)) {
 				$options['data']['merchantCategoryIds'] = '\'' .$merchantCategoryId.'\'';
 			}
 
@@ -231,6 +234,10 @@ class BookingForConnectorModelMerchants extends JModelList
 			if(!empty( $filters['merchantsservices'] )){
 				$options['data']['merchantServiceIds'] = BFCHelper::getQuotedString(str_replace("|",",",$filters['merchantsservices'])) ;
 			}
+			
+			if(!empty( $filters['merchantscategories'] )){
+				$options['data']['merchantCategoryIds'] = BFCHelper::getQuotedString(str_replace("|",",",$filters['merchantscategories'])) ;
+			}
 
 			if(!empty( $filters['zones'] )){
 				$options['data']['zoneIds'] = BFCHelper::getQuotedString(str_replace("|",",",$filters['zones'])) ;
@@ -270,7 +277,7 @@ class BookingForConnectorModelMerchants extends JModelList
 		
 		$locationZones = null;
 		
-		$r = $this->helper->executeQuery($url);
+		$r = $this->helper->executeQuery($url,null,null,false);
 		if (isset($r)) {
 			$res = json_decode($r);
 //			$locationZones = $res->d->results ?: $res->d;
@@ -348,7 +355,7 @@ class BookingForConnectorModelMerchants extends JModelList
 		
 		$locations = null;
 		
-		$r = $this->helper->executeQuery($url);
+		$r = $this->helper->executeQuery($url,null,null,false);
 		if (isset($r)) {
 			$res = json_decode($r);
 //			$locationZones = $res->d->results ?: $res->d;
@@ -418,7 +425,7 @@ class BookingForConnectorModelMerchants extends JModelList
 	
 		$categoriesFromService = null;
 	
-		$r = $this->helper->executeQuery($url);
+		$r = $this->helper->executeQuery($url,null,null,false);
 		if (isset($r)) {
 			$res = json_decode($r);
 //			$categories = $res->d->results ?: $res->d;
@@ -463,7 +470,7 @@ class BookingForConnectorModelMerchants extends JModelList
 		
 			$categoriesFromService = null;
 		
-			$r = $this->helper->executeQuery($url);
+			$r = $this->helper->executeQuery($url,null,null,false);
 			if (isset($r)) {
 				$res = json_decode($r);
 				//$categoriesFromService = $res->d->results ?: $res->d;

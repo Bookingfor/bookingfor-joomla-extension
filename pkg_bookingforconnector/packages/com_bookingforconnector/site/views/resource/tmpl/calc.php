@@ -23,5 +23,5 @@ $showdata = COM_BOOKINGFORCONNECTOR_SHOWDATA;
 				<?php 
 				$resourceId = $resource->ResourceId;
 				$condominiumId = 0;
-
-				include(JPATH_COMPONENT.'/views/shared/search_details.php'); //merchant temp ?>
+				BFCHelper::bfi_get_template('shared/search_details.php',array("resource"=>$resource,"merchant"=>$merchant,"resourceId"=>$resourceId,"condominiumId"=>$condominiumId,"currencyclass"=>$currencyclass));	
+?>

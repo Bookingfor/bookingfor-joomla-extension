@@ -27,7 +27,7 @@ class BookingForConnectorViewMerchantDetails extends BFCView
 		$state		= $this->get('State');
 		$item		= $this->get('Item');
 		$document 	= JFactory::getDocument();
-		$language 	= $document->getLanguage();
+		$language 	= JFactory::getLanguage()->getTag();
 		$params 	= $state->params;
 		$app = JFactory::getApplication();
 		$sitename = $app->get('sitename');
@@ -46,7 +46,7 @@ class BookingForConnectorViewMerchantDetails extends BFCView
 		}
 		if ($item->HasResources) {
 			// load scripts
-			$document->addScript('components/com_bookingforconnector/assets/js/bf_cart_type_1.js');
+			$document->addScript('components/com_bookingforconnector/assets/js/bf_cart.js');
 			$document->addScript('components/com_bookingforconnector/assets/js/bf_appTimePeriod.js');
 			$document->addScript('components/com_bookingforconnector/assets/js/bf_appTimeSlot.js');
 			if ($layout == 'resourcesajax') {
@@ -205,7 +205,7 @@ class BookingForConnectorViewMerchantDetails extends BFCView
 				case 2:
 					$orderid = 	BFCHelper::getString('orderid');
 					$act = 	BFCHelper::getString('act');
-					if(!empty($orderid) && $act!="Contact" ){
+					if(!empty($orderid) && $act!="Contact" && $act!="ContactSale"  && $act!="ContactMerchant"  && $act!="ContactResource"){
 //						if(!empty($orderid)){
 						$order = BFCHelper::getSingleOrderFromService($orderid);
 						$purchaseObject = new stdClass;
@@ -328,22 +328,20 @@ class BookingForConnectorViewMerchantDetails extends BFCView
 	function setBreadcrumb($merchant, $layout = '') {
 		$mainframe = JFactory::getApplication();
 		$pathway   = $mainframe->getPathway();
-
-
-		$count = count($pathway);
+		$items   = $pathway->getPathWay();
+		$count = count($items);
 		$newPathway = array();
 		if($count>1){
-			$newPathway = array_pop($pathway);
+			$newPathway = array_pop($items);
 		}
 		$pathway->setPathway($newPathway);
 
-		
 		$pathway->addItem(
 			$merchant->Name,
 			JRoute::_('index.php?option=com_bookingforconnector&view=merchantdetails&merchantId=' . $merchant->MerchantId . ':' . BFCHelper::getSlug($merchant->Name))
 		);
 		
-		if ($layout != '' && $layout != 'default') {
+		if ($layout != '' && $layout != 'default' && $layout != 'contacts') {
 			$pathway->addItem(
 				JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_MERCHANTDETAILS_LAYOUT_' . strtoupper($layout) ),
 				JRoute::_('index.php?layout=' . $layout . '&option=com_bookingforconnector&view=merchantdetails&merchantId=' . $merchant->MerchantId . ':' . BFCHelper::getSlug($merchant->Name))

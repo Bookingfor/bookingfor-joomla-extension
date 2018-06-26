@@ -33,16 +33,25 @@
 				<option value="0">JNo</option>
 				<option value="1">JYes</option>
 			</field>
-			<field name="bfi_showbadge_key" type="radio" default="0"
+			<!-- <field name="bfi_showbadge_key" type="radio" default="1"
 				label="CONFIG_SHOWBADGE_LABEL"
 				description="CONFIG_SHOWBADGE_DESC"
 				class="btn-group btn-group-yesno">
 				<option value="0">JNo</option>
 				<option value="1">JYes</option>
-			</field>
+			</field> -->
 			<field name="bfi_enablecoupon_key" type="radio" default="0"
 				label="CONFIG_ENABLECOUPON_LABEL"
 				description="CONFIG_ENABLECOUPON_DESC"
+				class="btn-group btn-group-yesno">
+				<option value="0">JNo</option>
+				<option value="1">JYes</option>
+			</field>
+			<field name="bfi_showlogincart_key" 
+				label="CONFIG_SHOWLOGINCART_LABEL"
+				description="CONFIG_SHOWLOGINCART_DESC"
+				type="radio" 
+				default="1"
 				class="btn-group btn-group-yesno">
 				<option value="0">JNo</option>
 				<option value="1">JYes</option>
@@ -210,7 +219,8 @@
 		<field name="enablecache"  type="radio" default="1"
 			label="CONFIG_DEBUG_ENABLECACHE_LABEL"
 			description="CONFIG_DEBUG_ENABLECACHE_DESCRIPTION"
-            class="btn-group btn-group-yesno">
+            class="btn-group btn-group-yesno hide"
+			labelclass="hide">
 			<option value="0">JNo</option>
 			<option value="1">JYes</option>
 		</field>

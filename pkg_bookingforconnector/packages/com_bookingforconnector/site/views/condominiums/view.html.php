@@ -34,7 +34,7 @@ class BookingForConnectorViewCondominiums extends BFCView
 		$direction 	= $state->get('list.direction');
 
 		$document 	= JFactory::getDocument();
-		$language 	= $document->getLanguage();		
+		$language 	= JFactory::getLanguage()->getTag();		
 		$params = $state->params;
 		
 		// Check for errors.

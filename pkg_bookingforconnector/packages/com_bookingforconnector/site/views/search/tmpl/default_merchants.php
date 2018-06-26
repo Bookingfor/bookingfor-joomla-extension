@@ -32,6 +32,8 @@ $app = JFactory::getApplication();
 
 $language = $this->language;
 $total = $this->pagination->total;
+$totalAvailable = $this->totalAvailable;
+
 $searchid =  $this->params['searchid'];
 $listOrder	= $this->escape($this->state->get('list.ordering'));
 $listDirn	= $this->escape($this->state->get('list.direction'));
@@ -81,10 +83,11 @@ if($this->getLayout()=='tags') {
 $url=JFactory::getURI()->toString();
 $formAction=$url;
 
-$totalResult = $total;
+$totalResult = $totalAvailable;
 
-$checkin = BFCHelper::getStayParam('checkin', new DateTime());
-$checkout = BFCHelper::getStayParam('checkout', new DateTime());
+
+$checkin = BFCHelper::getStayParam('checkin', new DateTime('UTC'));
+$checkout = BFCHelper::getStayParam('checkout', new DateTime('UTC'));
 $checkin = new JDate($checkin->format('Y-m-d')); 
 $checkout = new JDate($checkout->format('Y-m-d')); 
 $checkinstr = $checkin->format("d") . " " . $checkin->format("M") . ' ' . $checkin->format("Y") ;
@@ -100,6 +103,9 @@ $counter = 0;
 			<?php if($showSearchTitle){ ?>
 			<div class="bfi-search-title">
 				<?php echo sprintf(JTEXT::_('COM_BOOKINGFORCONNECTOR_SEARCH_VIEW_SEARCHRESULTS_TITLE_DEFAULT') ,$totalResult ) ?>
+				<?php if ($totalAvailable != $total) {
+					echo " " .JTEXT::_('COM_BOOKINGFOR_SU') . " " . $total ." ";
+				} ?>
 			</div>
 			<div class="bfi-search-title-sub">
 				<?php echo sprintf( JTEXT::_('COM_BOOKINGFORCONNECTOR_SEARCH_VIEW_SEARCHRESULTS_TITLE_FROM') ,$checkinstr,$checkoutstr ) ?>
@@ -116,8 +122,8 @@ $counter = 0;
 	</div>	
 	<div class="bfi-search-menu">
 		<form action="<?php echo $formAction; ?>" method="post" name="bookingforsearchForm" id="bookingforsearchFilterForm">
-				<input type="hidden" class="filterOrder" name="filter_order" value="price" />
-				<input type="hidden" class="filterOrderDirection" name="filter_order_Dir" value="asc" />
+				<input type="hidden" class="filterOrder" name="filter_order" value="<?php echo $listOrder ?>" />
+				<input type="hidden" class="filterOrderDirection" name="filter_order_Dir" value="<?php echo $listDirn ?>" />
 				<input type="hidden" name="searchid" value="<?php //echo   $searchid ?>" />
 				<input type="hidden" name="limitstart" value="0" />
 		</form>
@@ -141,13 +147,18 @@ $counter = 0;
 <?php 
 foreach ($merchants as $currKey => $merchant){
 
-	$rating = $merchant->MrcRating;
 	$merchantName = $merchant->MrcName;
+
+	$hasSuperior = !empty($merchant->MrcRatingSubValue);
+	$rating = (int)$merchant->MrcRating;
 	if ($rating>9 )
 	{
 		$rating = $rating/10;
+		$hasSuperior = ($merchant->MrcRating%10)>0;
 	} 
-	
+
+
+
 	$currUriMerchant = $uriMerchant. '&merchantId=' . $merchant->MerchantId . ':' . BFCHelper::getSlug($merchantName);
 	if ($itemIdMerchant<>0)
 		$currUriMerchant.='&Itemid='.$itemIdMerchant;
@@ -202,6 +213,10 @@ foreach ($merchants as $currKey => $merchant){
 	$resourceNameTrack =  BFCHelper::string_sanitize($resourceName);
 	$merchantNameTrack =  BFCHelper::string_sanitize($merchantName);
 	$merchantCategoryNameTrack =  BFCHelper::string_sanitize($merchant->MrcCategoryName);
+	if (!$merchant->IsCatalog && $onlystay && !empty($merchant->AvailabilityDate) && $merchant->AvailabilityType ==3){
+		$currCheckIn = DateTime::createFromFormat('Y-m-d\TH:i:s',$merchant->AvailabilityDate,new DateTimeZone('UTC'));
+		$resourceRoute .="&checkin=". $currCheckIn->format('d/m/Y');
+	}
 
 ?>
 	<div class="bfi-col-sm-6 bfi-item">
@@ -218,8 +233,12 @@ foreach ($merchants as $currKey => $merchant){
 							<span class="bfi-item-rating">
 								<?php for($i = 0; $i < $rating; $i++) { ?>
 									<i class="fa fa-star"></i>
-								<?php } ?>	             
+								<?php } ?>
+								<?php if ($hasSuperior) { ?>
+									&nbsp;S
+								<?php } ?>
 							</span>
+							<?php if((isset($merchant->IsRecommendedResult) && $merchant->IsRecommendedResult )) { ?><i class="fa fa-heart-o" aria-hidden="true" data-toggle="tooltip" title="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_SEARCH_VIEW_SEARCHRESULTS_ISRECOMMENDEDRESULT_TITLE') ?>"></i>	<?php } ?>							
 						</div>
 						<div class="bfi-item-address">
 							<?php if ($showMerchantMap){?>
@@ -244,7 +263,7 @@ foreach ($merchants as $currKey => $merchant){
 				</div>
 				<div class="bfi-clearfix bfi-hr-separ"></div>
 				<!-- end merchant details -->
-
+<?php if( !empty($merchant->Availability) || $merchant->IsCatalog) { //ok disp ?>
 				<!-- resource details -->
 				<div class="bfi-row" >
 					<div class="bfi-col-sm-6">
@@ -264,7 +283,7 @@ foreach ($merchants as $currKey => $merchant){
 					<div class="bfi-col-sm-3 ">
 						<?php if (!$merchant->IsCatalog && $onlystay ){ ?>
 							<div class="bfi-availability">
-							<?php if ($merchant->Availability < 2){ ?>
+							<?php if ($merchant->Availability > 0 && $merchant->Availability < 2){ ?>
 							  <span class="bfi-availability-low"><?php echo sprintf(JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RESOURCE_LESSAVAIL') ,$merchant->Availability) ?></span>
 							<?php } ?>
 							</div>
@@ -300,7 +319,7 @@ foreach ($merchants as $currKey => $merchant){
 				<div class="bfi-clearfix bfi-hr-separ"></div>
 																<!-- end resource details -->
 
-				<?php if (!$merchant->IsCatalog && $onlystay ){ ?>
+				<?php if (!$merchant->IsCatalog && $onlystay && !empty($merchant->AvailabilityDate) ){ ?>
 				<!-- price details -->
 				<div class="bfi-row" >
 					<div class="bfi-col-sm-4 bfi-text-right ">
@@ -311,8 +330,8 @@ foreach ($merchants as $currKey => $merchant){
 					<div class="bfi-col-sm-4 bfi-text-right ">
 							<div class="bfi-gray-highlight">
 							<?php 
-								$currCheckIn = DateTime::createFromFormat('Y-m-d\TH:i:s',$merchant->AvailabilityDate);
-								$currCheckOut = DateTime::createFromFormat('Y-m-d\TH:i:s',$merchant->CheckOutDate);
+								$currCheckIn = DateTime::createFromFormat('Y-m-d\TH:i:s',$merchant->AvailabilityDate,new DateTimeZone('UTC'));
+								$currCheckOut = DateTime::createFromFormat('Y-m-d\TH:i:s',$merchant->CheckOutDate,new DateTimeZone('UTC'));
 								$currDiff = $currCheckOut->diff($currCheckIn);
 								$hours = $currDiff->h;
 								$minutes = $currDiff->i;
@@ -365,6 +384,35 @@ foreach ($merchants as $currKey => $merchant){
 				<div class="bfi-clearfix"></div>
 				<!-- end price details -->
 				<?php } ?>
+
+<?php 
+   
+} else {  //ko disp:alternative
+?>
+<!-- merchant No resource  -->
+				<?php
+				$currStart = BFCHelper::getVar('limitstart','-1');
+				if ($currKey==0 && $currStart =='0' ) {
+				?>
+					<div class="bfi-noavailability">
+						<div class="bfi-alert bfi-alert-danger">
+							<b><?php echo sprintf( JTEXT::_('COM_BOOKINGFORCONNECTOR_SEARCH_VIEW_SEARCHRESULTS_NORESULTS_FIRST') ,$checkinstr,$checkoutstr ) ?></b>
+						</div>
+					</div>
+					<div class="bfi-check-more" data-type="merchant" data-id="<?php echo $merchant->MerchantId?>" >
+						<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_SEARCH_VIEW_SEARCHRESULTS_NORESULTS_MOREAVAILABILITY') ?>
+						<div class="bfi-check-more-slider">
+						</div>
+					</div>
+				<?php } else { ?>
+					<div class="bfi-noavailability">
+						<div class="bfi-alert bfi-alert-danger">
+							<b><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_SEARCH_VIEW_SEARCHRESULTS_NORESULTS_SPECIAL'.rand(0, 1)) ?></b>
+						</div>
+					</div>
+				<?php } ?>
+				<div class="bfi-clearfix"></div>
+<?php } ?>
 			</div>
 			<div class="bfi-discount-box" style="display:<?php echo ($merchant->PercentVariation < 0)?"block":"none"; ?>;">
 				<?php echo sprintf(JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_DISCOUNT_BOX_TEXT'), number_format($merchant->PercentVariation, 1)); ?>
@@ -504,7 +552,14 @@ function getDiscountsAjaxInformations(discountIds,obj, fn){
 
 var offersLoaded = []
 
+
 jQuery(document).ready(function() {
+	/*----load sticky for other result...----*/
+	jQuery('#bfi-list').on("cssClassChanged",function() {
+		bfiCheckOtherAvailabilityResize();
+	});
+	
+//	bfiCheckOtherAvailability()		
 	getAjaxInformations();
 
 	jQuery('.bfi-maps-static,.bfi-search-view-maps').click(function() {
@@ -533,6 +588,10 @@ jQuery(document).ready(function() {
 
 	jQuery(".bfi-discounted-price").on("click", function (e) {
 		e.preventDefault();
+		var bfi_wuiP_width= 400;
+		if(jQuery(window).width()<bfi_wuiP_width){
+			bfi_wuiP_width = jQuery(window).width()*0.7;
+		}
 		var showdiscount = function (obj, text) {
 							obj.find("i").first().switchClass("fa-spinner fa-spin","fa-question-circle")
 							obj.webuiPopover({
@@ -543,6 +602,7 @@ jQuery(document).ready(function() {
 								dismissible:true,
 								trigger:'manual',
 								type:'html',
+								width : bfi_wuiP_width,
 								style:'bfi-webuipopover'
 							});
 							obj.webuiPopover('show');
@@ -584,8 +644,24 @@ jQuery(document).ready(function() {
 					
 			bounds.extend(marker.position);
 		});
-	}
 
+	}
+	
+	/*---resize slider on list/grid view change*/
+	function bfiCheckOtherAvailabilityResize() {
+		jQuery(".bfi-check-more").each(function(){
+			var currSlider = jQuery(this).find(".bfi-check-more-slider").first();
+			if(currSlider.hasClass("slick-slider")){
+				var currSliderWidth = jQuery(this).width()-80;
+//				console.log(jQuery(this).width());
+//				console.log(currSliderWidth);
+				jQuery(currSlider).width(currSliderWidth);
+				var ncolslick = Math.round(currSliderWidth/120);
+				jQuery(currSlider).slick('slickSetOption', 'slidesToShow', ncolslick, true);
+				jQuery(currSlider).slick('slickSetOption', 'slidesToScroll', ncolslick, true);
+			}
+		});	
+	}
 
 //-->
 </script>

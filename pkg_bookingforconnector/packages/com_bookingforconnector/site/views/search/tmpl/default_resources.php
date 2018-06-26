@@ -79,8 +79,8 @@ $formAction=$url;
 
 $totalResult = $total;
 
-$checkin = BFCHelper::getStayParam('checkin', new DateTime());
-$checkout = BFCHelper::getStayParam('checkout', new DateTime());
+$checkin = BFCHelper::getStayParam('checkin', new DateTime('UTC'));
+$checkout = BFCHelper::getStayParam('checkout', new DateTime('UTC'));
 $checkin = new JDate($checkin->format('Y-m-d')); 
 $checkout = new JDate($checkout->format('Y-m-d')); 
 $checkinstr = $checkin->format("d") . " " . $checkin->format("M") . ' ' . $checkin->format("Y") ;
@@ -110,8 +110,8 @@ $totPerson = (isset($currParam)  && isset($currParam['paxes']))? $currParam['pax
 	</div>	
 	<div class="bfi-search-menu">
 		<form action="<?php echo $formAction; ?>" method="post" name="bookingforsearchForm" id="bookingforsearchFilterForm">
-				<input type="hidden" class="filterOrder" name="filter_order" value="price" />
-				<input type="hidden" class="filterOrderDirection" name="filter_order_Dir" value="asc" />
+				<input type="hidden" class="filterOrder" name="filter_order" value="<?php echo $listOrder ?>" />
+				<input type="hidden" class="filterOrderDirection" name="filter_order_Dir" value="<?php echo $listDirn ?>" />
 				<input type="hidden" name="searchid" value="<?php //echo   $searchid ?>" />
 				<input type="hidden" name="limitstart" value="0" />
 		</form>
@@ -192,21 +192,30 @@ $totPerson = (isset($currParam)  && isset($currParam['paxes']))? $currParam['pax
 			$resource->SimpleDiscountIds  = implode(',',$resource->DiscountIds);
 		}
 		
-		$rating = $resource->ResRating;
+		$hasSuperior = !empty($resource->ResRatingSubValue);
+		$rating = (int)$resource->ResRating;
 		if ($rating>9 )
 		{
 			$rating = $rating/10;
-		}
-		$ratingMrc = $resource->MrcRating;
+			$hasSuperior = ($resource->ResRating%10)>0;
+		} 
+		$hasSuperiorMrc = !empty($resource->MrcRatingSubValue);
+		$ratingMrc = (int)$resource->MrcRating;
 		if ($ratingMrc>9 )
 		{
 			$ratingMrc = $ratingMrc/10;
-		}
+			$hasSuperiorMrc = ($merchant->MrcRating%10)>0;
+		} 
+
 
 		$resourceNameTrack =  BFCHelper::string_sanitize($resourceName);
 		$merchantNameTrack =  BFCHelper::string_sanitize($merchantName);
 		$merchantCategoryNameTrack =  BFCHelper::string_sanitize($resource->MrcCategoryName);
 
+		if (!$resource->IsCatalog && $onlystay && !empty($resource->AvailabilityDate) && $resource->AvailabilityType ==3){
+			$currCheckIn = DateTime::createFromFormat('Y-m-d\TH:i:s',$resource->AvailabilityDate,new DateTimeZone('UTC'));
+			$resourceRoute .="&checkin=". $currCheckIn->format('d/m/Y');
+		}
 	?>
 	<div class="bfi-col-sm-6 bfi-item">
 		<div class="bfi-row bfi-sameheight" >
@@ -223,13 +232,19 @@ $totPerson = (isset($currParam)  && isset($currParam['paxes']))? $currParam['pax
 								<?php for($i = 0; $i < $rating; $i++) { ?>
 									<i class="fa fa-star"></i>
 								<?php } ?>	             
-							</span>
+								<?php if ($hasSuperior) { ?>
+									&nbsp;S
+								<?php } ?>
+								</span>
 							<?php if($isportal) { ?>
 								- <a href="<?php echo $routeMerchant?>" class="bfi-subitem-title eectrack" target="_blank" data-type="Merchant" data-id="<?php echo $resource->MerchantId?>" data-index="<?php echo $currKey?>" data-itemname="<?php echo $merchantNameTrack; ?>" data-category="<?php echo $merchantCategoryNameTrack; ?>" data-brand="<?php echo $merchantNameTrack; ?>"><?php echo $merchantName; ?></a>
 								<span class="bfi-item-rating">
 									<?php for($i = 0; $i < $ratingMrc; $i++) { ?>
 										<i class="fa fa-star"></i>
-									<?php } ?>	             
+									<?php } ?>
+									<?php if ($hasSuperiorMrc) { ?>
+										&nbsp;S
+									<?php } ?>						
 								</span>
 							<?php } ?>
 							
@@ -276,7 +291,7 @@ $totPerson = (isset($currParam)  && isset($currParam['paxes']))? $currParam['pax
 					<div class="bfi-col-sm-3 ">
 						<?php if (!$resource->IsCatalog && $onlystay ){ ?>
 							<div class="bfi-availability">
-							<?php if ($resource->Availability < 2){ ?>
+							<?php if ($resource->Availability > 0 && $resource->Availability < 2){ ?>
 							  <span class="bfi-availability-low"><?php echo sprintf(JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RESOURCE_LESSAVAIL') ,$resource->Availability) ?></span>
 							<?php } ?>
 							</div>
@@ -312,7 +327,7 @@ $totPerson = (isset($currParam)  && isset($currParam['paxes']))? $currParam['pax
 				<div class="bfi-clearfix bfi-hr-separ"></div>
 																<!-- end resource details -->
 
-				<?php if (!$resource->IsCatalog && $onlystay ){ ?>
+				<?php if (!$resource->IsCatalog && $onlystay && !empty($resource->AvailabilityDate)){ ?>
 				<!-- price details -->
 				<div class="bfi-row" >
 					<div class="bfi-col-sm-4 bfi-text-right ">
@@ -323,8 +338,8 @@ $totPerson = (isset($currParam)  && isset($currParam['paxes']))? $currParam['pax
 					<div class="bfi-col-sm-4 bfi-text-right ">
 							<div class="bfi-gray-highlight">
 							<?php 
-								$currCheckIn = DateTime::createFromFormat('Y-m-d\TH:i:s',$resource->AvailabilityDate);
-								$currCheckOut = DateTime::createFromFormat('Y-m-d\TH:i:s',$resource->CheckOutDate);
+								$currCheckIn = DateTime::createFromFormat('Y-m-d\TH:i:s',$resource->AvailabilityDate,new DateTimeZone('UTC'));
+								$currCheckOut = DateTime::createFromFormat('Y-m-d\TH:i:s',$resource->CheckOutDate,new DateTimeZone('UTC'));
 								$currDiff = $currCheckOut->diff($currCheckIn);
 								$hours = $currDiff->h;
 								$minutes = $currDiff->i;
@@ -541,6 +556,10 @@ jQuery(document).ready(function() {
 
 	jQuery(".bfi-discounted-price").on("click", function (e) {
 		e.preventDefault();
+		var bfi_wuiP_width= 400;
+		if(jQuery(window).width()<bfi_wuiP_width){
+			bfi_wuiP_width = jQuery(window).width()*0.7;
+		}
 		var showdiscount = function (obj, text) {
 							obj.find("i").first().switchClass("fa-spinner fa-spin","fa-question-circle")
 							obj.webuiPopover({
@@ -551,6 +570,7 @@ jQuery(document).ready(function() {
 								dismissible:true,
 								trigger:'manual',
 								type:'html',
+								width : bfi_wuiP_width,
 								style:'bfi-webuipopover'
 							});
 							obj.webuiPopover('show');

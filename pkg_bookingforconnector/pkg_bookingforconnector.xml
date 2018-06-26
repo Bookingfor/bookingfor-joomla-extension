@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <extension type="package" version="3.6" method="upgrade">
 	<name>BookingFor Connector Package</name>
-	<creationDate>2017-11-05</creationDate>
+	<creationDate>2018-05-14</creationDate>
 	<packagename>bookingforconnector</packagename>
-	<version>3.1.4</version>
+	<version>3.2.5</version>
 	<authorEmail>developer@ipertrade.com</authorEmail>
 	<authorUrl>http://www.ipertrade.com</authorUrl>
 	<url>http://www.ipertrade.com/</url>
@@ -16,11 +16,12 @@
 	<scriptfile>pkg_script.php</scriptfile>
 	<files folder="packages">
 		<file type="component" id="bookingforconnector" >com_bookingforconnector</file>
-		<file type="module" id="mod_bookingforsearch" client="site">mod_bookingforsearch</file>
+		<file type="module" id="bookingforsearch" client="site">mod_bookingforsearch</file>
 		<file type="module" id="bookingforconnector" client="site">mod_bookingforconnector</file>
 		<file type="module" id="bookingforsearchfilter" client="site">mod_bookingforsearchfilter</file>
 		<file type="module" id="bookingformerchants" client="site">mod_bookingformerchants</file>
 		<file type="module" id="bookingforcurrencyswitcher" client="site">mod_bookingforcurrencyswitcher</file>
+		<file type="module" id="bookingforlogin" client="site">mod_bookingforlogin</file>
 		<file type="plugin" id="bookingforconnector" client="site">plg_search_bookingforconnector</file>
 		<file type="plugin" id="bookingforconnectorresource" client="site">plg_search_bookingforconnectorresource</file>
 	</files>

@@ -27,7 +27,7 @@ class BookingForConnectorViewMerchantDetails extends BFCView
 		$state		= $this->get('State');
 		$item		= $this->get('Item');
 		$document 	= JFactory::getDocument();
-		$language 	= $document->getLanguage();		
+		$language 	= JFactory::getLanguage()->getTag();		
 		$params 	= $state->params;
 		$app = JFactory::getApplication();
 		$sitename = $app->get('sitename');

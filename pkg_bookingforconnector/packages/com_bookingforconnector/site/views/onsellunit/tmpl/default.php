@@ -100,9 +100,18 @@ $zoneId = $resource->ZoneId;
 
 $pricemax = round(($resource->Price + $deltaprice), 0, PHP_ROUND_HALF_UP); 
 $pricemin = round(($resource->Price - $deltaprice), 0, PHP_ROUND_HALF_DOWN); 
+
+$services = [];
+$listServices = array();
 if (!empty($resource->ServiceIdList)){
-	$services=BFCHelper::GetServicesByIds($resource->ServiceIdList, $language);
+	$listServices = explode(",", $resource->ServiceIdList);
+	$services = BFCHelper::GetServicesByIds($resource->ServiceIdList,$language);
+	$services = array_filter($services, function($p) use ($listServices) {return in_array($p->ServiceId,$listServices);});
 }
+
+//if (!empty($resource->ServiceIdList)){
+//	$services=BFCHelper::GetServicesByIds($resource->ServiceIdList, $language);
+//}
 
 //-------------------pagina per il redirect di tutte le risorsein vendita
 
@@ -197,7 +206,18 @@ $routeMerchant = JRoute::_($uriMerchant,true, -1);
 	</ul>
 </div>
 	<div class="bfi-resourcecontainer-gallery">
-		<?php  include('resource-gallery.php');  ?>
+	<?php  
+			$bfiSourceData = 'onsellunits';
+			$bfiImageData = null;
+			$bfiVideoData = null;
+			if(!empty($resource->ImageData)) {
+				$bfiImageData = $resource->ImageData;
+			}
+			if(!empty($resource->VideoData)) {
+				$bfiVideoData = $resource->VideoData;
+			}
+			BFCHelper::bfi_get_template('shared/gallery.php',array("merchant"=>$merchant,"bfiSourceData"=>$bfiSourceData,"bfiImageData"=>$bfiImageData,"bfiVideoData"=>$bfiVideoData));	
+	?>
 	</div>
 
 <div class="bfi-content">	
@@ -216,6 +236,33 @@ $routeMerchant = JRoute::_($uriMerchant,true, -1);
 					<?php } ?>
 					<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_RESOURCE_MAXPAXES') ?>: <?php echo $resource->MaxCapacityPaxes ?><br />
 				<?php } ?>
+					<?php if(isset($resource->AttachmentsString) && !empty($resource->AttachmentsString)){
+						?>
+						<div  class="bfi-attachmentfiles">
+						<?php 
+									
+						$resourceAttachments = json_decode($resource->AttachmentsString);
+						
+						foreach ($resourceAttachments as $keyAttachment=> $resourceAttachment) {
+							if ($keyAttachment>COM_BOOKINGFORCONNECTOR_MAXATTACHMENTFILES) {
+								break;
+							}
+							$resourceAttachmentName = $resourceAttachment->Name;
+							$resourceAttachmentExtension= "";
+							
+							$path_parts = pathinfo($resourceAttachmentName);
+							if(!empty( $path_parts['extension'])){
+								$resourceAttachmentExtension = $path_parts['extension'];
+								$resourceAttachmentName =  str_replace(".".$resourceAttachmentExtension, "", $resourceAttachmentName);
+							}
+							$resourceAttachmentIcon = bfi_get_file_icon($resourceAttachmentExtension);
+							?>
+							<?php echo $resourceAttachmentIcon ?> <a href="<?php echo $resourceAttachment->LinkValue ?>" target="_blank"><?php echo $resourceAttachmentName ?></a><br />
+							<?php 
+						}
+					?>
+						</div>
+					<?php } ?>
 			</div>
 					<!-- AddToAny BEGIN -->
 					<a class="bfi-btn bfi-alternative2 bfi-pull-right a2a_dd"  href="http://www.addtoany.com/share_save" ><i class="fa fa-share-alt"></i> <?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_ONSELLUNIT_SHARE') ?></a>
@@ -349,7 +396,9 @@ echo("</tr>\n");
 	</table>
 
 	<div class="bfi-clearboth"></div>
-	<?php  include(JPATH_COMPONENT.'/views/shared/merchant_small_details.php');  ?>
+<?php
+				BFCHelper::bfi_get_template('shared/merchant_small_details.php',array("resource_id"=>$resource_id,"merchant"=>$merchant,"routeMerchant"=>$routeMerchant)); 
+?>
 
 <?php if (($showResourceMap)) {?>
 <br /><br />

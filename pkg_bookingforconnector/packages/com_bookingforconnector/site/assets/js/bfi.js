@@ -1,9 +1,14 @@
 var bookingfor = new function() {
-    this.version = "3.1.4";
+    this.version = "3.2.5";
 	this.bsVersion = ( typeof jQuery.fn.typeahead !== 'undefined' ? 2 : 3 );
     this.offersLoaded = [];
+    this.adsBlocked = false;
+    this.adsBlockedChecked = false;
+    this.loadedholydays = false;
+    this.holydays = "";
+    this.holydaysTitle = "";
 
-    this.getDiscountAjaxInformations = function (discountId, hasRateplans) {
+	this.getDiscountAjaxInformations = function (discountId, hasRateplans) {
         var query = "discountId=" + discountId + "&hasRateplans=" + hasRateplans + "&language=en-gb&task=getDiscountDetails";
         jQuery.getJSON(bfi_variable.bfi_urlCheck + ((bfi_variable.bfi_urlCheck.indexOf('?') > -1)? "&" :"?") + query, function(data) {
 
@@ -36,8 +41,8 @@ var bookingfor = new function() {
       };
 
     this.getData = function (urlCheck, query, elem, name, act) {
-		query += '&simple=1';
-		if (typeof(ga) !== 'undefined') {
+		query += '&simple=1';		
+		if (typeof(ga) !== 'undefined' && !bookingfor.adsBlocked ) {
 			ga('send', 'event', 'Bookingfor', act, name);
 			ga(function(){
 				jQuery.post(bfi_variable.bfi_urlCheck, query, function(data) {
@@ -114,8 +119,13 @@ var bookingfor = new function() {
 
 	this.stripbbcode = function (str, is_xhtml) {   
 		str = (str + '').replace(/\[(\w+)[^\]]*](.*?)\[\/\1]/g, '$2');
+		str = str.replace(/(\[size\=[\d]\]|\[\/size\])+/g, '');
 		str = str.replace(/(\[ul\]|\[\/ul\]|\[ol\]|\[\/ol\])+/g, '');
 		return str;
+	};
+
+	this.parseODataDate = function(date) {
+		return new Date(parseInt(date.match(/\/Date\(([0-9]+)(?:.*)\)\//)[1]));
 	};
 
 	this.priceFormat = function (number, decimals, dec_point, thousands_sep) {   
@@ -214,15 +224,25 @@ var bookingfor = new function() {
 	  return s.join(dec);
 	};
 
+	this.getUrlParameter = function (name) {
+		name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+		var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+		var results = regex.exec(location.search);
+		return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+	};
+
 	this.updateQueryStringParameter = function (uri, key, value) {
-	  var re = new RegExp("([?&])" + key + "=.*?(&|$)", "i");
-	  var separator = uri.indexOf('?') !== -1 ? "&" : "?";
-	  if (uri.match(re)) {
-		return uri.replace(re, '$1' + key + "=" + value + '$2');
-	  }
-	  else {
-		return uri + separator + key + "=" + value;
-	  }
+	  return uri
+        .replace(new RegExp("([?&]"+key+"(?=[=&#]|$)[^#&]*|(?=#|$))"), "&"+key+"="+encodeURIComponent(value))
+        .replace(/^([^?&]+)&/, "$1?");
+//	  var re = new RegExp("([?&])" + key + "=.*?(&|$)", "i");
+//	  var separator = uri.indexOf('?') !== -1 ? "&" : "?";
+//	  if (uri.match(re)) {
+//		return uri.replace(re, '$1' + key + "=" + value + '$2');
+//	  }
+//	  else {
+//		return uri + separator + key + "=" + value;
+//	  }
 	};
 
 
@@ -287,6 +307,13 @@ var bookingfor = new function() {
 		var intDate = Number(datereformat);
 		return (intDate)
 	}
+	this.convertDateToIta = function(currDate) {
+		var month = currDate.getMonth() + 1;
+		var day = currDate.getDate();
+		var year = currDate.getFullYear();
+		var datereformat = bookingfor.pad(day,2) + '/' + bookingfor.pad(month,2) + '/' + year;
+		return (datereformat)
+	}
 
 	this.pad = function(str, max) {
 		if (!str) {
@@ -300,7 +327,7 @@ var bookingfor = new function() {
 		gotoCart = (typeof gotoCart !== 'undefined') ?  gotoCart : 0;
 		resetCart = (typeof resetCart !== 'undefined') ?  resetCart : 0;
 		bookingfor.waitBlockUI();
-//		jQuery.blockUI({�message:�''});
+//		jQuery.blockUI({ message: ''});
 		var cart = jQuery('.bfi-shopping-cart').first();
 		if (!jQuery(cart).length) {
 			cart = jQuery('.bfi-content').first();
@@ -336,11 +363,18 @@ var bookingfor = new function() {
 					}, 1000, 'easeInOutExpo', function () {
 						jQuery(this).remove();
 						//cartModel();
+						var currData = {
+							"hdnOrderData":jQuery("#hdnOrderDataCart").val(),
+							"recalculateOrder":recalculateOrder,
+							"hdnBookingType":jQuery("#hdnBookingType").val(),
+							"bfiResetCart":resetCart
+						}
 						jQuery.ajax({
 							cache: false,
 							type: 'POST',
 							url: bfi_variable.bfi_urlCheck + ((bfi_variable.bfi_urlCheck.indexOf('?') > -1)? "&" :"?") + 'task=addToCart',
-							data: 'hdnOrderData=' + jQuery("#hdnOrderDataCart").val() + "&recalculateOrder=" + recalculateOrder +  '&hdnBookingType=' + jQuery("#hdnBookingType").val() +  '&bfiResetCart=' + resetCart,
+//							data: 'hdnOrderData=' + jQuery("#hdnOrderDataCart").val() + "&recalculateOrder=" + recalculateOrder +  '&hdnBookingType=' + jQuery("#hdnBookingType").val() +  '&bfiResetCart=' + resetCart,
+							data: currData,
 							success: function (data) {
 	//							console.log(data);
 								if (gotoCart==1)
@@ -399,11 +433,18 @@ var bookingfor = new function() {
 					});
 
 			}else{
+				var currData = {
+					"hdnOrderData":jQuery("#hdnOrderDataCart").val(),
+					"recalculateOrder":recalculateOrder,
+					"hdnBookingType":jQuery("#hdnBookingType").val(),
+					"bfiResetCart":resetCart
+				}
 				jQuery.ajax({
 					cache: false,
 					type: 'POST',
 					url: bfi_variable.bfi_urlCheck + ((bfi_variable.bfi_urlCheck.indexOf('?') > -1)? "&" :"?") + 'task=addToCart',
-					data: 'hdnOrderData=' + jQuery("#hdnOrderDataCart").val() + "&recalculateOrder=" + recalculateOrder+  '&hdnBookingType=' + jQuery("#hdnBookingType").val() +  '&bfiResetCart=' + resetCart,
+//					data: 'hdnOrderData=' + jQuery("#hdnOrderDataCart").val() + "&recalculateOrder=" + recalculateOrder+  '&hdnBookingType=' + jQuery("#hdnBookingType").val() +  '&bfiResetCart=' + resetCart,
+					data: currData,
 					success: function (data) {
 		//							console.log(data);
 						if (gotoCart==1)
@@ -554,6 +595,95 @@ var bookingfor = new function() {
 		}
 	}
 
+	this.easterForYear = function(year) {
+		var a = year % 19;
+		var b = Math.floor(year / 100);
+		var c = year % 100;
+		var d = Math.floor(b / 4); 
+		var e = b % 4;
+		var f = Math.floor((b + 8) / 25);
+		var g = Math.floor((b - f + 1) / 3); 
+		var h = (19 * a + b - d - g + 15) % 30;
+		var i = Math.floor(c / 4);
+		var k = c % 4;
+		var l = (32 + 2 * e + 2 * i - h - k) % 7;
+		var m = Math.floor((a + 11 * h + 22 * l) / 451);
+		var n0 = (h + l + 7 * m + 114)
+		var n = Math.floor(n0 / 31) - 1;
+		var p = n0 % 31 + 1;
+		var date = new Date(year,n,p);
+		return date; 
+	}
+
+	this.loadHolidays = function() {
+		if (!bookingfor.loadedholydays )
+		{
+			var cultureCode = bfi_variable.bfi_cultureCode;
+			if (cultureCode.length>1)
+			{
+				cultureCode = cultureCode.substring(0, 2).toLowerCase();
+			}
+				bookingfor.holydaysTitle = ["New Year","Epiphany","Liberation","Labor Day","Republic Day","Mid-August","All saints","Immaculate Conception","Natale","St. Stephen","Easter","Easter Monday","Easter","Easter Monday"];
+			if (cultureCode== 'it')
+			{
+				bookingfor.holydaysTitle = ["Capodanno","Epifania","Liberazione","Festa dei lavoratori","Festa della Repubblica","Ferragosto","Tutti Santi","Immacolata concezione","Natale","St. Stefano","Pasqua","Lunedì dell'angelo","Pasqua","Lunedì dell'angelo"];
+			}
+				bookingfor.holydays = ["0101","0601","2504","0105","0206","1508","0111","0812","2512","2612"];
+				var date = new Date;
+				// Set the timestamp to midnight.
+				date.setHours( 0, 0, 0, 0 );
+				var currYear =  date.getFullYear();
+				var easterForCurrYear = bookingfor.easterForYear( currYear );
+				var easterForNextYear = bookingfor.easterForYear( currYear+1 );
+				
+				bookingfor.holydays.push(("0" + easterForCurrYear.getDate()).slice(-2) + "" + ("0" + (easterForCurrYear.getMonth()+1)).slice(-2)+ easterForCurrYear.getFullYear()); 
+				easterForCurrYear.setDate(easterForCurrYear.getDate() + 1);
+				bookingfor.holydays.push(("0" + easterForCurrYear.getDate()).slice(-2) + "" + ("0" + (easterForCurrYear.getMonth()+1)).slice(-2)+ easterForCurrYear.getFullYear()); 
+				bookingfor.holydays.push(("0" + easterForNextYear.getDate()).slice(-2) + "" + ("0" + (easterForNextYear.getMonth()+1)).slice(-2)+ easterForNextYear.getFullYear()); 
+				easterForNextYear.setDate(easterForNextYear.getDate() + 1);
+				bookingfor.holydays.push(("0" + easterForNextYear.getDate()).slice(-2) + "" + ("0" + (easterForNextYear.getMonth()+1)).slice(-2)+ easterForNextYear.getFullYear()); 
+			bookingfor.loadedholydays =true;
+		}
+	}
+
+
+
+	this.checkAdsBlocked = function() {
+		if (!bookingfor.adsBlockedChecked )
+		{
+			this.isAdsBlocked();
+			bookingfor.adsBlockedChecked =true;
+		}
+	}
+	this.isFetchAPIsupported = function() {
+		return 'fetch' in window;
+	}
+	this.isAdsBlocked = function() {
+		if (typeof Request != 'undefined' && bookingfor.isFetchAPIsupported() ) {
+
+			var testURL = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js'
+
+			var myInit = {
+				method: 'HEAD',
+				mode: 'no-cors'
+			};
+
+			var myRequest = new Request(testURL, myInit);
+
+			fetch(myRequest).then(function(response) {
+				return response;
+			}).then(function(response) {
+	//			console.log(response);
+	//			callback(false)
+				bookingfor.adsBlocked  = false;
+			}).catch(function(e){
+	//			console.log(e)
+	//			callback(true)
+				bookingfor.adsBlocked  = true;
+			});
+		}
+	}
+
 	this.BookNow = function() {
 			//       debugger;
 		var sendtocart = 0;
@@ -563,7 +693,7 @@ var bookingfor = new function() {
 		Order.SearchModel.MerchantId = bfi_currMerchantId;
 		Order.SearchModel.AdultCount = new Number(Order.SearchModel.adults || 0);
 		Order.SearchModel.ChildrenCount = new Number(Order.SearchModel.children || 0);
-		Order.SearchModel.SeniorCount = new Number(Order.SearchModel.seniors || 0);
+		Order.SearchModel.SeniorCount = new Number(Order.SearchModel.seniores || 0);
 		Order.SearchModel.ChildAges = [Order.SearchModel.childages1, Order.SearchModel.childages2, Order.SearchModel.childages3, Order.SearchModel.childages4, Order.SearchModel.childages5];
 		currPaxNumber = Order.SearchModel.AdultCount + Order.SearchModel.ChildrenCount + Order.SearchModel.SeniorCount;
 		currPaxAges = new Array();
@@ -723,6 +853,7 @@ var bookingfor = new function() {
 		if (Order.Resources.length > 0) {
 			FirstResourceId = Order.Resources[0].ResourceId;
 			jQuery('#frm-order').html('');
+			jQuery('#frm-order').empty();
 
                 if (bfi_variable.bfi_eecenabled==1)
                 {
@@ -739,29 +870,33 @@ var bookingfor = new function() {
 							};
 						}));
 					var currListName = currAllItems[0].list;
-					callAnalyticsEEc("addProduct", currAllItems, "addToCart", "",  {
-							"step": 1,
-							"list" : currListName
-						},
-						"Add to Cart"
-					);
-					callAnalyticsEEc("addProduct", jQuery.makeArray(jQuery.map(Order.ExtraServices, function(elm, idx) {
-							return {
-								"id": elm.PriceId + " - Service",
-								"name": elm.Name ,
-								"category": elm.Category ,
-								"brand": elm.Brand ,
-								"price": elm.TotalDiscounted,
-								"quantity": elm.CalculatedQt,
-								"variant": elm.RatePlanName.toUpperCase(),
-							};
-						})), "addToCart", "",  {
-							"step": 2,
-							"list" : currListName
-						},
-						"Add to Cart"
-					);
+					if (typeof callAnalyticsEEc !== "undefined" )
+					{
+						callAnalyticsEEc("addProduct", currAllItems, "addToCart", "",  {
+								"step": 1,
+								"list" : currListName
+							},
+							"Add to Cart"
+						);
+						callAnalyticsEEc("addProduct", jQuery.makeArray(jQuery.map(Order.ExtraServices, function(elm, idx) {
+								return {
+									"id": elm.PriceId + " - Service",
+									"name": elm.Name ,
+									"category": elm.Category ,
+									"brand": elm.Brand ,
+									"price": elm.TotalDiscounted,
+									"quantity": elm.CalculatedQt,
+									"variant": elm.RatePlanName.toUpperCase(),
+								};
+							})), "addToCart", "",  {
+								"step": 2,
+								"list" : currListName
+							},
+							"Add to Cart"
+						);
+					}
                 }
+
 				jQuery('#frm-order').prepend('<input id=\"hdnOrderDataCart\" name=\"hdnOrderData\" type=\"hidden\" value=' + "'" + JSON.stringify(Order.Resources).replace(/'/g, "$$$") + "'" + '\>');
 				jQuery('#frm-order').prepend('<input id=\"hdnBookingType\" name=\"hdnBookingType\" type=\"hidden\" value=' + "'" + jQuery('input[name="bookingType"]').val() + "'" + '\>');
 			
@@ -956,6 +1091,9 @@ jQuery(document).ready(function() {
 				}
 			});
 		});
+
+		bookingfor.checkAdsBlocked();
+		bookingfor.loadHolidays();
 
 });      
      
@@ -1265,3 +1403,57 @@ function bfi_updateQuoteService() {
 
 
 }
+/* jQuery UI dialog clickoutside */
+
+/*
+The MIT License (MIT)
+
+Copyright (c) 2013 - AGENCE WEB COHERACTIO
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software is furnished to do so,
+subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+jQuery.widget( 'ui.dialog', jQuery.ui.dialog, {
+    options: {
+        // Determine if clicking outside the dialog shall close it
+        clickOutside: false,
+        // Element (id or class) that triggers the dialog opening 
+        clickOutsideTrigger: ''
+    },
+      open: function() {
+          var clickOutsideTriggerEl = jQuery( this.options.clickOutsideTrigger ),
+              that = this;
+            if (this.options.clickOutside){
+                  // Add document wide click handler for the current dialog namespace
+                  jQuery(document).on( 'click.ui.dialogClickOutside' + that.eventNamespace, function(event){
+                      var $target = jQuery(event.target);
+                      if ( $target.closest(jQuery(clickOutsideTriggerEl)).length === 0 &&
+                           $target.closest(jQuery(that.uiDialog)).length === 0){
+                        that.close();
+                      }
+                  });
+            }
+            // Invoke parent open method
+            this._super();
+      },
+      close: function() {
+        // Remove document wide click handler for the current dialog
+        jQuery(document).off( 'click.ui.dialogClickOutside' + this.eventNamespace );
+        // Invoke parent close method 
+        this._super();
+      },  
+});

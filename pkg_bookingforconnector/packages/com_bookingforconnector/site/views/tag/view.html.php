@@ -30,7 +30,7 @@ class BookingForConnectorViewTag extends BFCView
 		$sortDirection 	= $state->get('list.direction');
 
 		$document 	= JFactory::getDocument();
-		$language 	= $document->getLanguage();
+		$language 	= JFactory::getLanguage()->getTag();
 		$app = JFactory::getApplication();
 		$sitename = $app->get('sitename');
 		

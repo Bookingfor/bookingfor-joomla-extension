@@ -195,7 +195,7 @@ $isCondominium = true;
 </div>
 <?php if ($this->pagination->get('pages.total') > 1) : ?>
 	<div class="text-center">
-		<div class="pagination">
+		<div class="pagination bfi-pagination">
 			<?php echo $this->pagination->getPagesLinks(); ?>
 		</div>
 	</div>

@@ -124,7 +124,7 @@ class plgSearchBookingforconnector extends JPlugin
 		$merchants = BFCHelper::getMerchantsSearch($text,0,$limit,$order,$direction);
 		if(!empty( $merchants  )){
 			$document 	= JFactory::getDocument();
-			$language 	= $document->getLanguage();
+			$language 	= JFactory::getLanguage()->getTag();
 			
 			/* we have to find the itemid for the target page */ 
 			$db   = JFactory::getDBO();

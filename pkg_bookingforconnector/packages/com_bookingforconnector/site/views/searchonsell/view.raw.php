@@ -36,7 +36,7 @@ class BookingForConnectorViewSearchOnSell extends BFCView
 		$typologies = $this->getModel()->getMasterTypologies();
 
 		$document 	= JFactory::getDocument();
-		$language 	= $document->getLanguage();
+		$language 	= JFactory::getLanguage()->getTag();
 		$params = $state->params;
 
 		// Check for errors.

@@ -8,6 +8,11 @@
 
 // No direct access to this file
 defined('_JEXEC') or die('Restricted access');
+$db   = JFactory::getDBO();
+$uri  = 'index.php?option=com_bookingforconnector&view=resource';
+$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uri ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
+//$itemId = ($db->getErrorNum())? 0 : intval($db->loadResult());
+$itemId = intval($db->loadResult());
 
 
 ?>
@@ -92,7 +97,7 @@ defined('_JEXEC') or die('Restricted access');
 				
 				
 				$creationDate = BFCHelper::parseJsonDate($rating->CreationDate,'Y-m-d');
-				$jdate  = new DateTime($creationDate);
+				$jdate  = new DateTime($creationDate,new DateTimeZone('UTC'));
 				$creationDateLabel = sprintf(JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RATING_DATE_LABEL'), $jdate->format('d/m/Y'));
 			}
 			$checkInDateLabel = "";
@@ -125,7 +130,7 @@ defined('_JEXEC') or die('Restricted access');
 
 					if(!empty($replydate)){
 //					$jdatereply  = new JDate(strtotime($replydate),2); // 3:20 PM, December 1st, 2012
-					$jdatereply  = DateTime::createFromFormat('Ymd', $replydate);
+					$jdatereply  = DateTime::createFromFormat('Ymd', $replydate,new DateTimeZone('UTC'));
 
 						$replydateLabel =sprintf(JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RATING_DATEREPLY_LABEL'), $jdatereply->format('d/m/Y'));
 					}
@@ -155,8 +160,12 @@ defined('_JEXEC') or die('Restricted access');
 							<?php echo JText::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RATING_RESOURCE_LABEL') ?><br />
 							 <?php 
 								$resourceName = BFCHelper::getLanguage($rating->ResourceName, $language, null, array('ln2br'=>'ln2br', 'striptags'=>'striptags')); 
+								if ($itemId<>0)
+									$route = JRoute::_($uri.'&resourceId=' . $rating->ResourceId . ':' . BFCHelper::getSlug($resourceName).'&Itemid='.$itemId );
+								else
+									$route = JRoute::_($uri.'&resourceId=' . $rating->ResourceId . ':' . BFCHelper::getSlug($resourceName));
 							 ?>
-							<a class="" href="<?php //echo $route ?>" id="nameAnchor<?php echo $rating->ResourceId?>"><?php echo  $resourceName ?></a>
+							<a class="" href="<?php echo $route ?>" id="nameAnchor<?php echo $rating->ResourceId?>"><?php echo  $resourceName ?></a>
 
 						</div>
 					<?php } ?>

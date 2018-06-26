@@ -38,11 +38,13 @@ $routeMerchant  = JRoute::_($uriMerchant.$fromsearchparam);
 
 $listsId = array();
 
-$rating = $merchant->Rating;
+$hasSuperior = !empty($merchant->RatingSubValue);
+$rating = (int)$merchant->Rating;
 if ($rating>9 )
 {
 	$rating = $rating/10;
-}
+	$hasSuperior = ($MerchantDetail->Rating%10)>0;
+} 
 
 $merchantName = BFCHelper::getLanguage($merchant->Name, $language, null, array('nobr'=>'nobr', 'striptags'=>'striptags')); 
 $indirizzo = isset($merchant->AddressData->Address)?$merchant->AddressData->Address:"";
@@ -91,6 +93,9 @@ $stato = isset($merchant->AddressData->StateName)?$merchant->AddressData->StateN
 		<span class="bfi-item-rating">
 			<?php for($i = 0; $i < $rating; $i++) { ?>
 			<i class="fa fa-star"></i>
+			<?php } ?>
+			<?php if ($hasSuperior) { ?>
+				&nbsp;S
 			<?php } ?>
 		</span>
 	</div>
@@ -162,7 +167,9 @@ $stato = isset($merchant->AddressData->StateName)?$merchant->AddressData->StateN
 	</div>
 	<?php } ?>	
 	<div class="bfi-clearboth"></div>
-	<?php  include(JPATH_COMPONENT.'/views/shared/merchant_small_details.php');  ?>
+<?php
+				BFCHelper::bfi_get_template('shared/merchant_small_details.php',array("merchant"=>$merchant,"routeMerchant"=>$routeMerchant)); 
+?>
 	</div>
 
 <script type="text/javascript">

@@ -44,8 +44,11 @@
 				<option value="1">*</option>
 				<option value="2">**</option>
 				<option value="3">***</option>
+				<option value="35">*** s</option>
 				<option value="4">****</option>
+				<option value="45">**** s</option>
 				<option value="5">*****</option>
+				<option value="55">***** s</option>
 			</field>			
 		</fieldset>
 	</fields>

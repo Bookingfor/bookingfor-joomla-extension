@@ -9,7 +9,7 @@
 defined('_JEXEC') or die('Restricted access');
 
 $document 	= JFactory::getDocument();
-$language 	= $document->getLanguage();
+$language 	= JFactory::getLanguage()->getTag();
 
 $cols = $params->get('itemspage', 4);
 $tags = $params->get('tags');
@@ -69,7 +69,14 @@ $listName = 'Merchant Highlight list';
 		<?php foreach($merchants as $mrcKey => $merchant){ ?>
 		<?php 
 		
-			$rating = $merchant->Rating;
+			$hasSuperior = !empty($merchant->RatingSubValue);
+			$rating = (int)$merchant->Rating;
+			if ($rating>9 )
+			{
+				$rating = $rating/10;
+				$hasSuperior = ($MerchantDetail->Rating%10)>0;
+			} 
+
 			$currUriMerchant = $uriMerchant. '&merchantId=' . $merchant->MerchantId . ':' . BFCHelper::getSlug($merchant->Name);
 			$merchantDescription = BFCHelper::shorten_string(BFCHelper::getLanguage($merchant->Description, $language, null, array('bbcode'=>'bbcode', 'striptags'=>'striptags')), $descmaxchars);
 
@@ -94,16 +101,19 @@ $listName = 'Merchant Highlight list';
 					<div class="bfi-row" >
 						<div class="bfi-col-md-12 bfi-item-title" style="padding: 10px!important;">
 						<a class="eectrack" href="<?php echo $routeMerchant ?>" id="nameAnchor<?php echo $merchant->MerchantId?>" data-type="Merchant" data-id="<?php echo $merchant->MerchantId?>" data-index="<?php echo $mrcKey?>" data-itemname="<?php echo $merchantNameTrack; ?>" data-brand="<?php echo $merchantNameTrack?>" data-category="<?php echo $merchantCategoryNameTrack; ?>"><?php echo  $merchant->Name ?></a> 
-						<?php if($rating > 0): ?>
+						<?php if($rating > 0){ ?>
 								<span class="bfi-item-rating">
 									<?php for($i = 0; $i < $rating; $i++) { ?>
 										<i class="fa fa-star"></i>
 									<?php } ?>	             
 								</span>
-						<?php endif; ?>
+						<?php } ?>
+						<?php if ($hasSuperior) { ?>
+							&nbsp;S
+						<?php } ?>
 						</div>
 					</div>
-					<div class="bfi-row hide" >
+					<div class="bfi-row bfi-hide" >
 						<div class="bfi_merchant-description bfi-col-md-12" style="padding-left: 10px!important;padding-right: 10px!important;">
 							<a href="<?php echo $routeMerchant ?>" id="nameAnchor<?php echo $merchant->MerchantId?>" class="eectrack" data-type="Merchant" data-id="<?php echo $merchant->MerchantId?>" data-index="<?php echo $mrcKey?>" data-itemname="<?php echo $merchantNameTrack; ?>" data-brand="<?php echo $merchantNameTrack?>" data-category="<?php echo $merchantCategoryNameTrack; ?>"><?php echo  $merchant->Name ?></a> 
 						</div>

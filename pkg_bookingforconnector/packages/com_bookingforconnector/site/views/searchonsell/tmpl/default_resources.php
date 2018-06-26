@@ -70,8 +70,8 @@ $itemIdMerchant = ($db->getErrorNum())? 0 : intval($db->loadResult());
 
 	<div class="bfi-search-menu">
 		<form action="<?php echo $formAction; ?>" method="post" name="bookingforsearchForm" id="bookingforsearchFilterForm">
-				<input type="hidden" class="filterOrder" name="filter_order" value="" />
-				<input type="hidden" class="filterOrderDirection" name="filter_order_Dir" value="" />
+				<input type="hidden" class="filterOrder" name="filter_order" value="<?php echo $listOrder ?>" />
+				<input type="hidden" class="filterOrderDirection" name="filter_order_Dir" value="<?php echo $listDirn ?>" />
 				<input type="hidden" name="searchid" value="<?php //echo   $searchid ?>" />
 				<input type="hidden" name="limitstart" value="0" />
 		</form>
@@ -242,8 +242,8 @@ $itemIdMerchant = ($db->getErrorNum())? 0 : intval($db->loadResult());
 				</div>
 				<div class="bfi-clearfix"></div>
 				<!-- end resource details -->
-				<div  class="ribbonnew bfi-hide" id="ribbonnew<?php echo $resource->ResourceId?>"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_SEARCHONSELL_VIEW_RIBBONNEW') ?></div>
 		</div>
+				<div  class="bfi-ribbonnew bfi-hide" id="ribbonnew<?php echo $resource->ResourceId?>"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_SEARCHONSELL_VIEW_RIBBONNEW') ?></div>
 	</div>
 	</div>
 		<?php 

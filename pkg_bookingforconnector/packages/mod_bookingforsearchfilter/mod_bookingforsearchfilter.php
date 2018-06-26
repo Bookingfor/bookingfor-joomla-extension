@@ -10,6 +10,8 @@ defined('_JEXEC') or die('Restricted access');
 $pathbase = JPATH_BASE . DIRECTORY_SEPARATOR . 'components' . DIRECTORY_SEPARATOR . 'com_bookingforconnector' . DIRECTORY_SEPARATOR;
 
 require_once $pathbase . 'defines.php';
+require_once $pathbase . 'helpers/BFCHelper.php';
+
 //if(BFCHelper::getVar( 'view')!=="search") return ;
 if(BFCHelper::getVar( 'view')!=="merchants" && BFCHelper::getVar( 'view')!=="search") return ;
 
@@ -17,7 +19,7 @@ if(BFCHelper::getVar( 'view')!=="merchants" && BFCHelper::getVar( 'view')!=="sea
 $moduleclass_sfx = htmlspecialchars($params->get('moduleclass_sfx'));
 
 $document		= JFactory::getDocument();
-$language 	= $document->getLanguage();
+$language 	= JFactory::getLanguage()->getTag();
 $mainframe = JFactory::getApplication();
 $db   = JFactory::getDBO();
 

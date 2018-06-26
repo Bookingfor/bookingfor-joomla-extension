@@ -29,7 +29,6 @@ $uriMerchant  = 'index.php?option=com_bookingforconnector&view=merchantdetails';
 $total = $this->pagination->total;
 
 ?>
-<h1><?php echo $activeMenu->title?></h1>
 <div class="bfi-content">
 <div class="bfi-search-menu">
 	<div class="bfi-view-changer">
@@ -47,7 +46,7 @@ $total = $this->pagination->total;
 			<?php
 		$resourceImageUrl = Juri::root() . "components/com_bookingforconnector/assets/images/defaults/default-s6.jpeg";
 		$resourceName = BFCHelper::getLanguage($resource->Name, $language, null, array('ln2br'=>'ln2br', 'striptags'=>'striptags')); 
-		$resourceDescription = BFCHelper::getLanguage($resource->Description, $language, null, array('ln2br'=>'ln2br', 'striptags'=>'striptags')); 
+		$resourceDescription = BFCHelper::getLanguage($resource->Description, $language, null, array('ln2br'=>'ln2br', 'bbcode'=>'bbcode', 'striptags'=>'striptags')); 
 		
 		$currUriMerchant = $uriMerchant. '&merchantId=' . $resource->MerchantId . ':' . BFCHelper::getSlug($resource->MrcName);
 		if ($itemIdMerchant<>0)
@@ -95,7 +94,7 @@ $total = $this->pagination->total;
 		</div>
 
 		<?php if ($this->pagination->get('pages.total') > 1) { ?>
-			<div class="pagination">
+			<div class="pagination bfi-pagination">
 				<?php echo $this->pagination->getPagesLinks(); ?>
 			</div>
 		<?php } ?>

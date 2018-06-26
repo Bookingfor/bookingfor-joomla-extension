@@ -44,11 +44,13 @@ $routeMerchant  = JRoute::_($uriMerchant.$fromsearchparam);
 
 $listsId = array();
 
-$rating = $merchant->Rating;
+$hasSuperior = !empty($merchant->RatingSubValue);
+$rating = (int)$merchant->Rating;
 if ($rating>9 )
 {
 	$rating = $rating/10;
-}
+	$hasSuperior = ($MerchantDetail->Rating%10)>0;
+} 
 
 $merchantName = BFCHelper::getLanguage($merchant->Name, $language, null, array('nobr'=>'nobr', 'striptags'=>'striptags')); 
 $indirizzo = isset($merchant->AddressData->Address)?$merchant->AddressData->Address:"";
@@ -99,6 +101,9 @@ $stato = isset($merchant->AddressData->StateName)?$merchant->AddressData->StateN
 					<?php for($i = 0; $i < $merchant->Rating; $i++) { ?>
 					<i class="fa fa-star"></i>
 					<?php } ?>
+					<?php if ($hasSuperior) { ?>
+						&nbsp;S
+					<?php } ?>
 				</span>
 			</div>
 			<div class="bfi-search-title">
@@ -148,16 +153,21 @@ $stato = isset($merchant->AddressData->StateName)?$merchant->AddressData->StateN
 			$currUriresource.='&Itemid='.$itemId;
 		$resourceRoute = JRoute::_($currUriresource.$fromsearchparam);
 	
-		$rating = $resource->Rating;
+		$hasSuperior = !empty($resource->RatingSubValue);
+		$rating = (int)$resource->Rating;
 		if ($rating>9 )
 		{
 			$rating = $rating/10;
-		}
-		$ratingMrc = $resource->MrcRating;
+			$hasSuperior = ($resource->Rating%10)>0;
+		} 
+		$hasSuperiorMrc = !empty($resource->MrcRatingSubValue);
+		$ratingMrc = (int)$resource->MrcRating ;
 		if ($ratingMrc>9 )
 		{
 			$ratingMrc = $ratingMrc/10;
-		}
+			$hasSuperiorMrc = ($resource->MrcRating %10)>0;
+		} 
+
 		if(!empty($resource->ImageUrl)){
 			$resourceImageUrl = BFCHelper::getImageUrlResized('resources',$resource->ImageUrl, 'medium');
 		}
@@ -178,6 +188,9 @@ $stato = isset($merchant->AddressData->StateName)?$merchant->AddressData->StateN
 								<?php for($i = 0; $i < $rating; $i++) { ?>
 									<i class="fa fa-star"></i>
 								<?php } ?>	             
+								<?php if ($hasSuperior) { ?>
+									&nbsp;S
+								<?php } ?>
 							</span>
 							<?php if($isportal){ ?>
 							- <a href="<?php echo $routeMerchant?>" class="bfi-subitem-title eectrack" target="_blank" data-type="Merchant" data-id="<?php echo $resource->MerchantId?>" data-index="<?php echo $currKey?>" data-itemname="<?php echo $merchantNameTrack; ?>" data-category="<?php echo $merchantCategoryNameTrack; ?>" data-brand="<?php echo $merchantNameTrack; ?>" data-list="<?php echo $analyticsListName; ?>"><?php echo $merchantName; ?></a>
@@ -185,7 +198,10 @@ $stato = isset($merchant->AddressData->StateName)?$merchant->AddressData->StateN
 							<span class="bfi-item-rating">
 								<?php for($i = 0; $i < $ratingMrc; $i++) { ?>
 									<i class="fa fa-star"></i>
-								<?php } ?>	             
+								<?php } ?>
+								<?php if ($hasSuperiorMrc) { ?>
+									&nbsp;S
+								<?php } ?>
 							</span>
 						</div>
 						<div class="bfi-item-address">
@@ -233,7 +249,7 @@ $stato = isset($merchant->AddressData->StateName)?$merchant->AddressData->StateN
 </div>
 
 <?php if ($this->pagination->get('pages.total') > 1) { ?>
-	<div class="pagination">
+	<div class="pagination bfi-pagination">
 		<?php echo $this->pagination->getPagesLinks(); ?>
 	</div>
 <?php } ?>
@@ -405,5 +421,7 @@ jQuery(document).ready(function() {
 </div>
 <?php } ?>
 	<div class="bfi-clearboth"></div>
-	<?php  include(JPATH_COMPONENT.'/views/shared/merchant_small_details.php');  ?>
+<?php
+				BFCHelper::bfi_get_template('shared/merchant_small_details.php',array("merchant"=>$merchant,"routeMerchant"=>$routeMerchant)); 
+?>
 </div>

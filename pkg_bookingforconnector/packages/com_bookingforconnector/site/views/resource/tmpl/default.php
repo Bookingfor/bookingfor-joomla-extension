@@ -41,7 +41,7 @@ $rating_text = array('merchants_reviews_text_value_0' => JTEXT::_('COM_BOOKINGFO
 
 $resourceName = BFCHelper::getLanguage($resource->Name, $language, null, array('nobr'=>'nobr', 'striptags'=>'striptags')); 
 $merchantName = BFCHelper::getLanguage($merchant->Name, $language, null, array('nobr'=>'nobr', 'striptags'=>'striptags')); 
-$resourceDescription = BFCHelper::getLanguage($resource->Description, $language, null, array('ln2br'=>'ln2br', 'bbcode'=>'bbcode', 'striptags'=>'striptags'));
+$resourceDescription = BFCHelper::getLanguage($resource->Description, $language, null, array('striptags'=>'striptags', 'bbcode'=>'bbcode','ln2br'=>'ln2br'));
 
 
 $resourceLat = null;
@@ -88,13 +88,22 @@ $stato = isset($resource->StateName)?$resource->StateName:"";
 //	$resourceRules = BFCHelper::getLanguage($resource->Rules, $language, null, array('ln2br'=>'ln2br', 'striptags'=>'striptags'));
 //}
 
+
+$services = [];
+$listServices = array();
 if (!empty($resource->ServiceIdList)){
-	$services=BFCHelper::GetServicesByIds($resource->ServiceIdList, $language);
+	$listServices = explode(",", $resource->ServiceIdList);
+	$services = BFCHelper::GetServicesByIds($resource->ServiceIdList,$language);
+	$services = array_filter($services, function($p) use ($listServices) {return in_array($p->ServiceId,$listServices);});
 }
 
-$this->document->setTitle($resourceName . ' - ' . $merchant->Name);
-$this->document->setDescription( BFCHelper::getLanguage($resource->Description, $this->language));
+//if (!empty($resource->ServiceIdList)){
+//	$services=BFCHelper::GetServicesByIds($resource->ServiceIdList, $language);
+//}
 
+//$this->document->setTitle($resourceName . ' - ' . $merchant->Name);
+//$this->document->setDescription( BFCHelper::getLanguage($resource->Description, $language, null, array( 'nobr'=>'nobr', 'bbcode'=>'bbcode', 'striptags'=>'striptags')) ;);
+//
 $db   = JFactory::getDBO();
 $uri  = 'index.php?option=com_bookingforconnector&view=resource';
 $db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uri ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
@@ -117,6 +126,7 @@ if ($itemId<>0){
 }
 $resourceRoute = JRoute::_($currUriresource);
 $routeRating = JRoute::_($currUriresource.'&layout=rating');				
+$routeRatings = JRoute::_($currUriresource.'&layout=ratings&tmpl=component&format=raw');				
 
 $currUriMerchant = $uriMerchant. '&merchantId=' . $resource->MerchantId . ':' . BFCHelper::getSlug($resource->MerchantName);
 if ($itemIdMerchant<>0){
@@ -130,13 +140,14 @@ $reviewavg = 0;
 $reviewcount = 0;
 $showReview = false;
 
-$summaryRatings = 0;
+$summaryRatings = null;
 
 if ($merchant->RatingsContext != NULL && $merchant->RatingsContext > 0) {
 	$showReview = true;
 	if ($merchant->RatingsContext ==1 && !empty($merchant->Avg)) {
 		$reviewavg =  isset($merchant->Avg) ? $merchant->Avg->Average : 0;
 		$reviewcount =  isset($merchant->Avg) ? $merchant->Avg->Count : 0;
+		$summaryRatings = $merchant->Avg;
 	}
 	if ($merchant->RatingsContext ==2 || $merchant->RatingsContext ==3 ) {
 		$summaryRatings = BFCHelper::getResourceRatingAverage($merchant->MerchantId,$resource->ResourceId);
@@ -229,7 +240,18 @@ if ($merchant->RatingsContext != NULL && $merchant->RatingsContext > 0) {
 	</ul>
 </div>
 <div class="bfi-resourcecontainer-gallery bfi-hideonextra">
-	<?php  include('resource-gallery.php');  ?>
+	<?php  
+			$bfiSourceData = 'resources';
+			$bfiImageData = null;
+			$bfiVideoData = null;
+			if(!empty($resource->ImageData)) {
+				$bfiImageData = $resource->ImageData;
+			}
+			if(!empty($resource->VideoData)) {
+				$bfiVideoData = $resource->VideoData;
+			}
+				BFCHelper::bfi_get_template('shared/gallery.php',array("merchant"=>$merchant,"bfiSourceData"=>$bfiSourceData,"bfiImageData"=>$bfiImageData,"bfiVideoData"=>$bfiVideoData));	
+	?>
 </div>
 
 
@@ -287,6 +309,34 @@ if ($merchant->RatingsContext != NULL && $merchant->RatingsContext > 0) {
 					</tr>
 				</table>
 				<?php } ?>
+				<?php if(isset($resource->AttachmentsString) && !empty($resource->AttachmentsString)){
+					?>
+					<div  class="bfi-attachmentfiles">
+					<?php 
+								
+					$resourceAttachments = json_decode($resource->AttachmentsString);
+					
+					foreach ($resourceAttachments as $keyAttachment=> $resourceAttachment) {
+					    if ($keyAttachment>COM_BOOKINGFORCONNECTOR_MAXATTACHMENTFILES) {
+					        break;
+					    }
+						$resourceAttachmentName = $resourceAttachment->Name;
+						$resourceAttachmentExtension= "";
+						
+						$path_parts = pathinfo($resourceAttachmentName);
+						if(!empty( $path_parts['extension'])){
+							$resourceAttachmentExtension = $path_parts['extension'];
+							$resourceAttachmentName =  str_replace(".".$resourceAttachmentExtension, "", $resourceAttachmentName);
+						}
+						$resourceAttachmentIcon = bfi_get_file_icon($resourceAttachmentExtension);
+						?>
+					    <?php echo $resourceAttachmentIcon ?> <a href="<?php echo $resourceAttachment->LinkValue ?>" target="_blank"><?php echo $resourceAttachmentName ?></a><br />
+					    <?php 
+					}
+				?>
+					</div>
+				<?php } ?>
+
 			</div>
 					<!-- AddToAny BEGIN -->
 					<a class="bfi-btn bfi-alternative2 bfi-pull-right a2a_dd"  href="http://www.addtoany.com/share_save" ><i class="fa fa-share-alt"></i> <?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_ONSELLUNIT_SHARE') ?></a>
@@ -302,15 +352,17 @@ if ($merchant->RatingsContext != NULL && $merchant->RatingsContext > 0) {
 				<?php 
 				$resourceId = $resource->ResourceId;
 				$condominiumId = 0;
-
-				include(JPATH_COMPONENT.'/views/shared/search_details.php'); //merchant temp ?>
+				BFCHelper::bfi_get_template('shared/search_details.php',array("resource"=>$resource,"merchant"=>$merchant,"resourceId"=>$resourceId,"condominiumId"=>$condominiumId,"currencyclass"=>$currencyclass));	
+				?>
 					
 
 			</div>
 		<?php } ?>
 
 	<div class="bfi-clearboth"></div>
-	<?php  include(JPATH_COMPONENT.'/views/shared/merchant_small_details.php');  ?>
+<?php
+				BFCHelper::bfi_get_template('shared/merchant_small_details.php',array("resource_id"=>$resource_id,"merchant"=>$merchant,"routeMerchant"=>$routeMerchant)); 
+?>
 
 <?php if (($showResourceMap)) {?>
 	<div class="bfi-content-map bfi-hideonextra">
@@ -374,21 +426,18 @@ if ($merchant->RatingsContext != NULL && $merchant->RatingsContext > 0) {
 <?php if ($showReview){?>
 	<div class="bfi-ratingslist bfi-hideonextra">
 	<?php
-		$ratings = null;
-		if ($merchant->RatingsContext ==1){
-//			$modelmerchant =  new BookingForConnectorModelMerchantDetails;
-			$summaryRatings = BFCHelper::getRatingByMerchantId($merchant->MerchantId);
-			$ratings = BFCHelper::getMerchantRatings(0,5,$merchant->MerchantId);
-		}else{
-//			$summaryRatings = $model->getRatingAverageFromService($merchant->MerchantId,$resource->ResourceId);
-			$ratings = BFCHelper::getResourceRatings(0,5,$resource->ResourceId);
-		}
-//		if ( false !== ( $temp_message = get_transient( 'temporary_message' ) )) :
-//			echo $temp_message;
-//			delete_transient( 'temporary_message' );
-//		endif;
+//	$ratings = null;
+//	if(!empty( $reviewcount )){
+//		if ($merchant->RatingsContext ==1){
+//			$ratings = BFCHelper::getMerchantRatings(0,5,$merchant->MerchantId);
+//		}else{
+//			$ratings = BFCHelper::getResourceRatings(0,5,$resource->ResourceId);
+//		}
+//		
+//	}
+//	include('resource-ratings.php');
+
 	?>
-		<?php include('resource-ratings.php'); ?>
 	</div>
 <?php } ?>
 
@@ -420,6 +469,11 @@ if ($merchant->RatingsContext != NULL && $merchant->RatingsContext > 0) {
 			}, 1000);
 
 		<?php }  ?>	
+<?php if ($showReview){?>
+		jQuery.get( "<?php echo $routeRatings ?>", function( data ) {
+			jQuery( ".bfi-ratingslist " ).html( data );
+		});
+<?php } ?>
 
 	});
 	function bfiGoToTop() {

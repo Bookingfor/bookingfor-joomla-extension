@@ -20,16 +20,21 @@ require_once $pathbase . '/helpers/wsQueryHelper.php';
 class BookingForConnectorModelSearch extends JModelList
 {
 	private $urlSearch = null;
+	private $urlSearchResult = null;
 	private $urlMasterTypologies = null;
+	private $urlGetOtherAvailability = null;
+
 	private $helper = null;
 	private $currentOrdering = null;
 	private $currentDirection = null;
 	private $count = null;
+	private $availableCount = null;
+
 	private $currentData = null;
 	private $params = null;
 	private $itemPerPage = null;
 	private $direction = null;
-	
+
 	public function __construct($config = array())
 	{
 		parent::__construct($config);
@@ -37,6 +42,7 @@ class BookingForConnectorModelSearch extends JModelList
 		$this->urlMasterTypologies = '/GetMasterTypologies';
 		$this->urlSearchResult = '/SearchResult';
 		$this->urlSearch = '/SearchAllLiteNew';
+		$this->urlGetAlternativeDates = '/GetAlternativeDates';
 	}
 	
 	public function applyDefaultFilter(&$options) {
@@ -63,6 +69,12 @@ class BookingForConnectorModelSearch extends JModelList
 		$availabilitytype = $params['availabilitytype'];
 		$itemtypes = $params['itemtypes'];
 		$groupresulttype = $params['groupresulttype'];
+		$merchantResults = $params['merchantResults'];
+		if (isset($merchantResults) ) {
+			if ($merchantResults==1 ) { //onbly for merchants 
+				$groupresulttype = $merchantResults ;
+			}
+		}
 
 		$cultureCode = $params['cultureCode'];
 		
@@ -73,6 +85,9 @@ class BookingForConnectorModelSearch extends JModelList
 		}
 		$resourceName = $params['resourceName'].'';
 		$refid = $params['refid'].'';
+
+		$variationPlanIds = isset($params['variationPlanIds']) ? $params['variationPlanIds'] : '';
+		
 		if (!empty($refid) or !empty($resourceName))  {
 			$options['data']['calculate'] = 0;
 			$options['data']['checkAvailability'] = 0;
@@ -84,11 +99,19 @@ class BookingForConnectorModelSearch extends JModelList
 				$options['data']['resourceName'] = '\''. $resourceName.'\'';
 			}
 		}else{
-		
+			
 			$onlystay = $params['onlystay'];
-				
 			$options['data']['calculate'] = $onlystay;
-			$options['data']['checkAvailability'] = $onlystay;
+
+//			$options['data']['checkAvailability'] = 0;
+			$bookableonly = $params['bookableonly'];
+			if(empty($onlystay )){
+				$options['data']['checkAvailability'] = 0;
+			}
+			if(!empty($bookableonly )){
+				$options['data']['calculate'] = $bookableonly;
+				$options['data']['checkAvailability'] = $bookableonly;
+			}
 			
 			if (isset($params['locationzone']) ) {
 				$locationzone = $params['locationzone'];
@@ -99,6 +122,9 @@ class BookingForConnectorModelSearch extends JModelList
 
 			if (!empty($merchantCategoryId) && $merchantCategoryId > 0) {
 				$options['data']['merchantCategoryIds'] = '\'' .$merchantCategoryId.'\'';
+			}
+			if (!empty($variationPlanIds)) {
+				$options['data']['variationPlanIds'] = '\'' .$variationPlanIds.'\'';
 			}
 			
 			if(empty($duration)){
@@ -221,6 +247,7 @@ class BookingForConnectorModelSearch extends JModelList
 //filters[rooms]:
 //filters[paymodes]:			
 		if(!empty( $filters )){
+			$groupresulttypefilter = $merchantResults ;
 			if(!empty( $filters['price'] )){
 				$options['data']['priceRange'] = BFCHelper::getQuotedString($filters['price']) ;
 			}
@@ -228,8 +255,8 @@ class BookingForConnectorModelSearch extends JModelList
 				$options['data']['masterTypeIds'] = BFCHelper::getQuotedString(str_replace("|",",",$filters['resourcescategories'])) ;
 			}
 			if(!empty( $filters['rating'] )){
-				if (isset($groupresulttype) ) {
-					if ($groupresulttype==1 ) { //onbly for merchants 
+				if (isset($groupresulttypefilter) ) {
+					if ($groupresulttypefilter==1 ) { //onbly for merchants 
 						$options['data']['mrcRatingIds'] = BFCHelper::getQuotedString(str_replace("|",",",$filters['rating'])) ;
 					}else{
 						$options['data']['resRatingIds'] = BFCHelper::getQuotedString(str_replace("|",",",$filters['rating'])) ;
@@ -238,9 +265,21 @@ class BookingForConnectorModelSearch extends JModelList
 					$options['data']['ratingIds'] = BFCHelper::getQuotedString(str_replace("|",",",$filters['rating'])) ;
 				}
 			}
+			if(!empty( $filters['tags'] )){
+				if (isset($groupresulttypefilter) ) {
+					if ($groupresulttypefilter==1 ) { //onbly for merchants 
+						$options['data']['merchantTagsIds'] = BFCHelper::getQuotedString(str_replace("|",",",$filters['tags'])) ;
+					}else{
+						$options['data']['tagids'] = BFCHelper::getQuotedString(str_replace("|",",",$filters['tags'])) ;
+					}
+				}else{
+					$options['data']['tagids'] = BFCHelper::getQuotedString(str_replace("|",",",$filters['tags'])) ;
+				}
+			}
+			
 			if(!empty( $filters['avg'] )){
-				if (isset($groupresulttype) ) {
-					if ($groupresulttype==1 ) { //onbly for merchants 
+				if (isset($groupresulttypefilter) ) {
+					if ($groupresulttypefilter==1 ) { //onbly for merchants 
 						$options['data']['mrcAvgs'] = BFCHelper::getQuotedString(str_replace("|",",",$filters['avg'])) ;
 					}else{
 						$options['data']['resAvgs'] = BFCHelper::getQuotedString(str_replace("|",",",$filters['avg'])) ;
@@ -267,9 +306,9 @@ class BookingForConnectorModelSearch extends JModelList
 			if(!empty( $filters['offers'] )){
 				$options['data']['discountedPriceOnly'] = 1 ;
 			}
-			if(!empty( $filters['tags'] )){
-				$options['data']['tagids'] = BFCHelper::getQuotedString(str_replace("|",",",$filters['tags'])) ;
-			}
+//			if(!empty( $filters['tags'] )){
+//				$options['data']['tagids'] = BFCHelper::getQuotedString(str_replace("|",",",$filters['tags'])) ;
+//			}
 			if(!empty( $filters['rooms'] )){
 				$options['data']['bedRooms'] = BFCHelper::getQuotedString(str_replace("|",",",$filters['rooms'])) ;
 			}
@@ -284,7 +323,9 @@ class BookingForConnectorModelSearch extends JModelList
 					$options['data']['freeDeposit'] = 1 ;
 				}
 			}
-
+			if(!empty( $filters['checkAvailability'] )){
+				$options['data']['checkAvailability'] = 1 ;
+			}
 		}
 
 		
@@ -292,7 +333,91 @@ class BookingForConnectorModelSearch extends JModelList
 //			$options['data']['$filter'] = $filter;
 	}
 
-	
+	public function GetAlternativeDates($checkin, $duration, $paxes, $paxages, $merchantId, $condominiumId, $resourceId, $cultureCode, $points, $userid, $tagids,
+			$merchantsList, $availabilityTypes, $itemTypeIds, $domainLabel, $merchantCategoryIds = null, $masterTypeIds = null, $merchantTagsIds = null
+		){
+
+		if (empty($cultureCode)){
+			$cultureCode = JFactory::getLanguage()->getTag();
+		}
+		$options = array(
+			'path' => $this->urlGetAlternativeDates,
+			'data' => array(
+				'$format' => 'json',
+				'cultureCode' => BFCHelper::getQuotedString($cultureCode),
+			)
+		);
+		if(empty($duration)){
+			$duration = 0;
+		}
+		if ((isset($checkin))) {
+			$options['data']['checkin'] = '\'' . $checkin . '\'';
+			$options['data']['duration'] = $duration;
+		}
+		if ((!empty($paxes))) {
+			$options['data']['paxes'] = $paxes;
+		}
+		if ((!empty($paxages))) {
+			$options['data']['paxages'] = '\'' . $paxages . '\'';
+		}
+		if ((!empty($merchantId))) {
+			$options['data']['merchantId'] = $merchantId;
+		}
+		if ((!empty($condominiumId))) {
+			$options['data']['condominiumId'] = $condominiumId;
+		}
+		if ((!empty($resourceId))) {
+			$options['data']['resourceId'] = $resourceId;
+		}
+		if ((!empty($points))) {
+			$options['data']['points'] = '\'' . $points . '\'';
+		}
+		if ((!empty($userid))) {
+			$options['data']['userid'] = '\'' . $userid . '\'';
+		}
+		if ((!empty($tagids))) {
+			$options['data']['tagids'] = '\'' . $tagids . '\'';
+		}
+		if ((!empty($merchantsList))) {
+			$options['data']['merchantsList'] = '\'' . $merchantsList . '\'';
+		}
+		if ((isset($availabilityTypes) && $availabilityTypes!='')) {
+			$options['data']['availabilityTypes'] = '\'' . $availabilityTypes . '\'';
+		}
+		if ((isset($itemTypeIds) && $itemTypeIds!='')) {
+			$options['data']['itemTypeIds'] = '\'' . $itemTypeIds . '\'';
+		}
+		if ((!empty($domainLabel))) {
+			$options['data']['domainLabel'] = '\'' . $domainLabel . '\'';
+		}
+		if ((!empty($merchantCategoryIds))) {
+			$options['data']['merchantCategoryIds'] = '\'' . $merchantCategoryIds . '\'';
+		}
+		if ((!empty($masterTypeIds))) {
+			$options['data']['masterTypeIds'] = '\'' . $masterTypeIds . '\'';
+		}
+		if ((!empty($merchantTagsIds))) {
+			$options['data']['merchantTagsIds'] = '\'' . $merchantTagsIds . '\'';
+		}		
+		$url = $this->helper->getQuery($options);
+		
+		$alternativeDates = null;
+		
+		$r = $this->helper->executeQuery($url);
+		if (isset($r)) {
+			$res = json_decode($r);
+//			$typologies = $res->d->results ?: $res->d;
+			if (!empty($res->d->GetAlternativeDates)){
+				$alternativeDates = $res->d->GetAlternativeDates;
+			}elseif(!empty($res->d)){
+				$alternativeDates = $res->d;
+			}
+		}
+		
+		return $alternativeDates;
+
+	}
+
 	public function getSearchResults($start, $limit, $ordering, $direction, $ignorePagination = false, $jsonResult = false) {
 
 		$this->currentOrdering = $ordering;
@@ -327,7 +452,9 @@ class BookingForConnectorModelSearch extends JModelList
 				'data' => array(
 						'$format' => 'json',
 						'topRresult' => 0,
-						'lite' => 1
+						'lite' => 1,
+						'getAllResults' => 1
+
 				)
 			);
 			
@@ -339,6 +466,11 @@ class BookingForConnectorModelSearch extends JModelList
 				if (isset($limit) && $limit > 0) {
 					$options['data']['topRresult'] = $limit;
 				}
+			}
+
+			$currUser = BFCHelper::getSession('bfiUser',null, 'bfi-User');
+			if($currUser!=null && !empty($currUser->CustomerId)) {
+								$options['data']['userid'] = '\'' . $currUser->CustomerId . '\'';
 			}
 
 			$this->applyDefaultFilter($options);
@@ -376,6 +508,7 @@ class BookingForConnectorModelSearch extends JModelList
 
 		if(isset($results->ItemsCount)){
 			$this->count = $results->ItemsCount;
+			$this->availableCount = $results->AvailableItemsCount;
 			$resultsItems = json_decode($results->ItemsString);
 		}
 
@@ -389,7 +522,7 @@ class BookingForConnectorModelSearch extends JModelList
 					$val->MerchantId = $result->MerchantId; 
 					$val->XGooglePos = $result->MrcLat;
 					$val->YGooglePos = $result->MrcLng;
-					$val->MerchantName = BFCHelper::getSlug($result->MrcName);
+					$val->MerchantName = BFCHelper::string_sanitize($result->MrcName);
 				}
 				elseif ($condominiumsResults){
 					$val->Resource = new StdClass;
@@ -397,7 +530,7 @@ class BookingForConnectorModelSearch extends JModelList
 					$val->Resource->ResourceId = $result->ResourceId;
 					$val->Resource->XGooglePos = $result->ResLat;
 					$val->Resource->YGooglePos = $result->ResLng;
-					$val->Resource->ResourceName = BFCHelper::getSlug($result->ResName);
+					$val->Resource->ResourceName = BFCHelper::string_sanitize($result->ResName);
 					$val->Resource->Price = $result->Price;
 				}
 				else { 
@@ -405,7 +538,7 @@ class BookingForConnectorModelSearch extends JModelList
 					$val->Resource->ResourceId = $result->ResourceId;
 					$val->Resource->XGooglePos = $result->ResLat;
 					$val->Resource->YGooglePos = $result->ResLng;
-					$val->Resource->ResourceName = BFCHelper::getSlug($result->ResName);
+					$val->Resource->ResourceName = BFCHelper::string_sanitize($result->ResName);
 					$val->Resource->Price = $result->Price;
 				}
 				$arr[] = $val;
@@ -425,10 +558,21 @@ class BookingForConnectorModelSearch extends JModelList
 		}
 		else{
 			$this->retrieveItems();
+			return $this->count;
 		}
-
+	}
+	public function getTotalAvailable()
+	{
+		if ($this->availableCount !== null){
+			return $this->availableCount;
+		}
+		else{
+			$this->retrieveItems();
+			return $this->availableCount;
+		}
 	}
 	
+
 	public function getMasterTypologiesFromService($onlyEnabled = true, $language='') {
 		$options = array(
 				'path' => $this->urlMasterTypologies,
@@ -471,7 +615,7 @@ class BookingForConnectorModelSearch extends JModelList
 		
 	protected function populateState($ordering = NULL, $direction = NULL) {
 //(in_array(BFCHelper::getInt('merchantCategoryId'), BFCHelper::getCategoryMerchantResults(BFCHelper::getVar('cultureCode')), true))
-		$ci = BFCHelper::getStayParam('checkin', new DateTime());
+		$ci = BFCHelper::getStayParam('checkin', new DateTime('UTC'));
 //		$isMerchantResults = false;
 //		if( (in_array(BFCHelper::getInt('masterTypeId'), BFCHelper::getTypologiesMerchantResults(), true) || (in_array(BFCHelper::getInt('merchantCategoryId'), BFCHelper::getCategoryMerchantResults(), true))){
 //			$isMerchantResults = true;
@@ -485,7 +629,7 @@ class BookingForConnectorModelSearch extends JModelList
 
 		if (BFCHelper::getInt('newsearch') ==1) {						
 			$condominiumsResults = BFCHelper::getVar('condominiumsResults');
-			$merchantResults = (!empty(BFCHelper::getInt('merchantCategoryId')) && in_array(BFCHelper::getInt('merchantCategoryId'), BFCHelper::getCategoryMerchantResults(BFCHelper::getVar('cultureCode')), false));
+			$merchantResults = BFCHelper::getVar('merchantResults'); // (!empty(BFCHelper::getInt('merchantCategoryId')) && in_array(BFCHelper::getInt('merchantCategoryId'), BFCHelper::getCategoryMerchantResults(BFCHelper::getVar('cultureCode')), false));
 			if ($condominiumsResults) {
 				$merchantResults = false;
 			}
@@ -493,7 +637,7 @@ class BookingForConnectorModelSearch extends JModelList
 			$bookableonly = BFCHelper::getVar('bookableonly');
 //			$filters = BFCHelper::getVar('filters');
 			$filters = BFCHelper::getArray('filters');
-			
+						
 			if(empty($filters )){
 				$filters =array();
 			}
@@ -510,7 +654,7 @@ class BookingForConnectorModelSearch extends JModelList
 	$availabilitytype =  isset($_REQUEST['availabilitytype']) ? $_REQUEST['availabilitytype'] : 1;
 			$currParam = array(
 				'searchid' => BFCHelper::getVar('searchid',uniqid('', true)),
-				'checkin' => BFCHelper::getStayParam('checkin', new DateTime()),
+				'checkin' => BFCHelper::getStayParam('checkin', new DateTime('UTC')),
 				'checkout' => BFCHelper::getStayParam('checkout', $ci->modify(BFCHelper::$defaultDaysSpan)),
 				'duration' => BFCHelper::getStayParam('duration'),
 				'paxages' => BFCHelper::getStayParam('paxages'),
@@ -534,15 +678,16 @@ class BookingForConnectorModelSearch extends JModelList
 				'tags' => BFCHelper::getVar('tags'),
 				'filters' => $filters,
 				'bookableonly' => BFCHelper::getVar('bookableonly'),
-		'stateIds' => isset($_REQUEST['stateIds']) ? $_REQUEST['stateIds'] : '',
-		'regionIds' => isset($_REQUEST['regionIds']) ? $_REQUEST['regionIds'] : '',
-		'cityIds' => isset($_REQUEST['cityIds']) ? $_REQUEST['cityIds'] : '',
-		'itemtypes' => isset($_REQUEST['itemtypes']) ? $_REQUEST['itemtypes'] : '',
+				'stateIds' => isset($_REQUEST['stateIds']) ? $_REQUEST['stateIds'] : '',
+				'regionIds' => isset($_REQUEST['regionIds']) ? $_REQUEST['regionIds'] : '',
+				'cityIds' => isset($_REQUEST['cityIds']) ? $_REQUEST['cityIds'] : '',
+				'itemtypes' => isset($_REQUEST['itemtypes']) ? $_REQUEST['itemtypes'] : '',
+				'variationPlanIds' => isset($_REQUEST['variationPlanId']) ? $_REQUEST['variationPlanId'] : '',
 				'newsearch' => 1
 
 			);
 			$this->setState('params', $currParam);	
-								
+																
 		} else { // try to get params from session 
 			$pars = BFCHelper::getSearchParamsSession();
 
@@ -553,14 +698,14 @@ class BookingForConnectorModelSearch extends JModelList
 				}
 
 				$filters = BFCHelper::getArray('filters');
-								
+				$merchantResults = BFCHelper::getVar('merchantResults', $pars['merchantResults']);				
 				$currParam = array(
 					'searchid' =>  BFCHelper::getVar('searchid',uniqid('', true)),
 					'checkin' => $pars['checkin'],
 					'checkout' => $pars['checkout'],
 					'duration' => $pars['duration'],
 					'masterTypeId' => $pars['masterTypeId'],
-					'merchantResults' => $pars['merchantResults'],//$merchantResults,
+					'merchantResults' => $merchantResults,
 					'merchantCategoryId' => $pars['merchantCategoryId'],
 					'merchantId' => $pars['merchantId'],
 					'paxes' => $pars['paxes'],
@@ -583,14 +728,14 @@ class BookingForConnectorModelSearch extends JModelList
 					'cityIds' => isset($_REQUEST['cityIds']) ? $_REQUEST['cityIds'] : '',
 					'itemtypes' => isset($_REQUEST['itemtypes']) ? $_REQUEST['itemtypes'] : '',
 					'availabilitytype' =>  isset($_REQUEST['availabilitytype']) ? $_REQUEST['availabilitytype'] : 1,
-
+					'variationPlanIds' => isset($_REQUEST['variationPlanId']) ? $_REQUEST['variationPlanId'] : '',
 					//		'availabilitytype' => $availabilitytype,
 					'newsearch' => BFCHelper::getVar('newsearch', "0")
 				);
 			} catch (Exception $e) {
 				
 				$condominiumsResults = BFCHelper::getVar('condominiumsResults');
-				$merchantResults = (!empty(BFCHelper::getVar('merchantCategoryId')) && in_array(BFCHelper::getInt('merchantCategoryId'), BFCHelper::getCategoryMerchantResults(BFCHelper::getVar('cultureCode')), false));
+				$merchantResults = BFCHelper::getVar('merchantResults'); //(!empty(BFCHelper::getVar('merchantCategoryId')) && in_array(BFCHelper::getInt('merchantCategoryId'), BFCHelper::getCategoryMerchantResults(BFCHelper::getVar('cultureCode')), false));
 				if ($condominiumsResults) {
 					$merchantResults = false;
 				}
@@ -613,7 +758,7 @@ class BookingForConnectorModelSearch extends JModelList
 				}
 				$currParam = array(
 					'searchid' =>  BFCHelper::getVar('searchid',uniqid('', true)),
-					'checkin' => BFCHelper::getStayParam('checkin', new DateTime()),
+					'checkin' => BFCHelper::getStayParam('checkin', new DateTime('UTC')),
 					'checkout' => BFCHelper::getStayParam('checkout', $ci->modify(BFCHelper::$defaultDaysSpan)),
 					'duration' => BFCHelper::getStayParam('duration'),
 					'paxages' => BFCHelper::getStayParam('paxages'),
@@ -642,6 +787,7 @@ class BookingForConnectorModelSearch extends JModelList
 					'cityIds' => isset($_REQUEST['cityIds']) ? $_REQUEST['cityIds'] : '',
 					'itemtypes' => isset($_REQUEST['itemtypes']) ? $_REQUEST['itemtypes'] : '',
 					'availabilitytype' =>  isset($_REQUEST['availabilitytype']) ? $_REQUEST['availabilitytype'] : 1,
+					'variationPlanIds' => isset($_REQUEST['variationPlanId']) ? $_REQUEST['variationPlanId'] : '',
 					'newsearch' => 1
 
 				);

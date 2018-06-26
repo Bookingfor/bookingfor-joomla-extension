@@ -11,7 +11,7 @@
 	<copyright>Copyright (c)2006-2017 Ipertrade s.r.l.</copyright>
      <license>http://www.gnu.org/copyleft/gpl.html GNU/GPL</license>
 	<!--  The version string is recorded in the components table -->
-	<version>3.1.4</version>
+	<version>3.2.5</version>
 	<!-- The description is optional and defaults to the name -->
 	<description>Simple module for BookingFor Search</description>
  
@@ -54,6 +54,37 @@
 					<option value="1">JYES</option>
 				</field>
 				<field
+					name="fixedontop"
+					type="radio"
+					default="0"
+					label="MOD_BOOKINGFORSEARCH_DEFAULTVALUE_FIXEDONTOP_LABEL" class="btn-group btn-group-yesno"
+					description="MOD_BOOKINGFORSEARCH_DEFAULTVALUE_FIXEDONTOP_DESC"
+					showon="showdirection:1"
+					>
+					<option value="0">JNO</option>
+					<option value="1">JYES</option>
+				</field>
+				<field
+					name="fixedontopcorrection"
+					type="text"
+					default="0" 
+					label="MOD_BOOKINGFORSEARCH_DEFAULTVALUE_FIXEDONTOP_TOP_LABEL"
+					description="MOD_BOOKINGFORSEARCH_DEFAULTVALUE_FIXEDONTOP_TOP_DESC"
+					showon="fixedontop:1[AND]showdirection:1"
+					>
+				</field>
+				<field
+					name="fixedonbottom"
+					type="radio"
+					default="0"
+					label="MOD_BOOKINGFORSEARCH_DEFAULTVALUE_FIXEDONBOTTOM_LABEL" class="btn-group btn-group-yesno"
+					description="MOD_BOOKINGFORSEARCH_DEFAULTVALUE_FIXEDONBOTTOM_DESC"
+					showon="showdirection:1"
+					>
+					<option value="0">JNO</option>
+					<option value="1">JYES</option>
+				</field>
+				<field
 					name="tablistSelected"
 					type="list"
 					multiple="multiple"
@@ -61,20 +92,39 @@
 					description="MOD_BOOKINGFOR_TABLIST_DESC"
 					class = "required"
 					>
-					<option value="0">MOD_BOOKINGFOR_TABLIST_BOOKING</option>
-<!-- 					<option value="1">MOD_BOOKINGFOR_TABLIST_SERVICES</option> -->
-					<option value="2">MOD_BOOKINGFOR_TABLIST_ACTIVITIES</option>
+					<option value="0">MOD_BOOKINGFOR_TABLIST_1</option>
+ 					<option value="1">MOD_BOOKINGFOR_TABLIST_2</option> 
+					<option value="2">MOD_BOOKINGFOR_TABLIST_3</option>
+					<option value="4">MOD_BOOKINGFOR_TABLIST_4</option>
 					<option value="3">MOD_BOOKINGFOR_TABLIST_REALESTATE</option>
 				</field>
 				
 				<field name="spacerbooking" type="spacer" default="" label="MOD_BOOKINGFOR_TABLIST_BOOKING_SEP" showon="tablistSelected:0"  class="text-uppercase"/>
 
 				<field
+					name="tabnamebooking"
+					type="text"
+					default="MOD_BOOKINGFOR_TABLIST_BOOKING" 
+					label="MOD_BOOKINGFOR_TABNAME_LABEL"
+					description="MOD_BOOKINGFOR_TABNAME_DESC"
+					showon="tablistSelected:0"
+					>
+				</field>
+				<field
+					name="tabiconbooking"
+					type="fontawesomeicon"
+					default="fa fa-suitcase" 
+					label="MOD_BOOKINGFOR_TABICON_LABEL"
+					description="MOD_BOOKINGFOR_TABICON_DESC"
+					showon="tablistSelected:0"
+					>
+				</field>
+				<field
 					name="merchantcategoriesbooking"
 					type="merchantcategories"
 					multiple="multiple"
-					label="MOD_BOOKINGFOR_MERCHANTCATEGORIESBOOKING_LABEL"
-					description="MOD_BOOKINGFOR_MERCHANTCATEGORIESBOOKING_DESC"
+					label="MOD_BOOKINGFOR_MERCHANTCATEGORIES_LABEL"
+					description="MOD_BOOKINGFOR_MERCHANTCATEGORIE_DESC"
 					showon="tablistSelected:0"
 					>
 				</field>
@@ -82,8 +132,8 @@
 					name="unitcategoriesbooking"
 					type="mastertypologies"
 					multiple="multiple"
-					label="MOD_BOOKINGFOR_UNITCATEGORIESBOOKING_LABEL"
-					description="MOD_BOOKINGFOR_UNITCATEGORIESBOOKING_DESC"
+					label="MOD_BOOKINGFOR_UNITCATEGORIES_LABEL"
+					description="MOD_BOOKINGFOR_UNITCATEGORIES_DESC"
 					showon="tablistSelected:0"
 					>
 				</field>
@@ -126,13 +176,107 @@
 					<option value="2">MOD_BOOKINGFORSEARCH_CONDOMINIUM</option>
 				</field>
 
+				<field name="spacerservices" type="spacer" default="" label="MOD_BOOKINGFOR_TABLIST_SERVICES_SEP" showon="tablistSelected:1"  class="text-uppercase"/>
+				<field
+					name="tabnameservices"
+					type="text"
+					default="MOD_BOOKINGFOR_TABLIST_SERVICES" 
+					label="MOD_BOOKINGFOR_TABNAME_LABEL"
+					description="MOD_BOOKINGFOR_TABNAME_DESC"
+					showon="tablistSelected:1"
+					>
+				</field>
+				<field
+					name="tabiconservices"
+					type="fontawesomeicon"
+					default="fa fa-calendar" 
+					label="MOD_BOOKINGFOR_TABICON_LABEL"
+					description="MOD_BOOKINGFOR_TABICON_DESC"
+					showon="tablistSelected:1"
+					>
+				</field>
+				<field
+					name="merchantcategoriesservices"
+					type="merchantcategories"
+					multiple="multiple"
+					label="MOD_BOOKINGFOR_MERCHANTCATEGORIES_LABEL"
+					description="MOD_BOOKINGFOR_MERCHANTCATEGORIES_DESC"
+					showon="tablistSelected:1"
+					>
+				</field>
+				<field
+					name="unitcategoriesservices"
+					type="mastertypologies"
+					multiple="multiple"
+					label="MOD_BOOKINGFOR_UNITCATEGORIES_LABEL"
+					description="MOD_BOOKINGFOR_UNITCATEGORIES_DESC"
+					showon="tablistSelected:1"
+					>
+				</field>
+				<field
+					name="availabilitytypesservices"
+					type="list"
+					multiple="multiple"
+					default="2,3"
+					label="MOD_BOOKINGFOR_SHOWSELECTOR_LABEL"
+					description="MOD_BOOKINGFOR_SHOWSELECTOR_DESC"
+					showon="tablistSelected:1"
+					>
+					<option value="1">MOD_BOOKINGFORSEARCH_NIGHT</option>
+					<option value="0">MOD_BOOKINGFORSEARCH_DAYS</option>
+					<option value="2">MOD_BOOKINGFORSEARCH_UNITTIMES</option>
+					<option value="3">MOD_BOOKINGFORSEARCH_TIMESLOT</option>
+				</field>
+				<field
+					name="itemtypesservices"
+					type="list"
+					multiple="multiple"
+					default="1"
+					label="MOD_BOOKINGFOR_ITEMSTYPE_LABEL"
+					description="MOD_BOOKINGFOR_ITEMSTYPE_DESC"
+					showon="tablistSelected:1"
+					>
+					<option value="0">MOD_BOOKINGFORSEARCH_RESOURCE</option>
+					<option value="1">MOD_BOOKINGFORSEARCH_SERVICE</option>
+				</field>
+				<field
+					name="groupbyservices"
+					type="list"
+					default="0"
+					label="MOD_BOOKINGFOR_GROUPBY_LABEL"
+					description="MOD_BOOKINGFOR_GROUPBY_DESC"
+					showon="tablistSelected:1"
+					>
+					<option value="0">MOD_BOOKINGFORSEARCH_RESOURCE</option>
+					<option value="1">MOD_BOOKINGFORSEARCH_MERCHANT</option>
+					<option value="2">MOD_BOOKINGFORSEARCH_CONDOMINIUM</option>
+				</field>
+
 				<field name="spaceractivities" type="spacer" default="" label="MOD_BOOKINGFOR_TABLIST_ACTIVITIES_SEP" showon="tablistSelected:2"  class="text-uppercase"/>
+				<field
+					name="tabnameactivities"
+					type="text"
+					default="MOD_BOOKINGFOR_TABLIST_ACTIVITIES" 
+					label="MOD_BOOKINGFOR_TABNAME_LABEL"
+					description="MOD_BOOKINGFOR_TABNAME_DESC"
+					showon="tablistSelected:2"
+					>
+				</field>
+				<field
+					name="tabiconactivities"
+					type="fontawesomeicon"
+					default="fa fa-calendar" 
+					label="MOD_BOOKINGFOR_TABICON_LABEL"
+					description="MOD_BOOKINGFOR_TABICON_DESC"
+					showon="tablistSelected:2"
+					>
+				</field>
 				<field
 					name="merchantcategoriesactivities"
 					type="merchantcategories"
 					multiple="multiple"
-					label="MOD_BOOKINGFOR_MERCHANTCATEGORIESACTIVITIES_LABEL"
-					description="MOD_BOOKINGFOR_MERCHANTCATEGORIESACTIVITIES_DESC"
+					label="MOD_BOOKINGFOR_MERCHANTCATEGORIES_LABEL"
+					description="MOD_BOOKINGFOR_MERCHANTCATEGORIES_DESC"
 					showon="tablistSelected:2"
 					>
 				</field>
@@ -140,8 +284,8 @@
 					name="unitcategoriesactivities"
 					type="mastertypologies"
 					multiple="multiple"
-					label="MOD_BOOKINGFOR_UNITCATEGORIESACTIVITIES_LABEL"
-					description="MOD_BOOKINGFOR_UNITCATEGORIESACTIVITIES_DESC"
+					label="MOD_BOOKINGFOR_UNITCATEGORIES_LABEL"
+					description="MOD_BOOKINGFOR_UNITCATEGORIES_DESC"
 					showon="tablistSelected:2"
 					>
 				</field>
@@ -183,7 +327,84 @@
 					<option value="1">MOD_BOOKINGFORSEARCH_MERCHANT</option>
 					<option value="2">MOD_BOOKINGFORSEARCH_CONDOMINIUM</option>
 				</field>
-				<field name="spacer" type="spacer" default="" label="MOD_BOOKINGFOR_VISIBILITY_HEADING" showon="tablistSelected:0[OR]tablistSelected:2" />
+
+				<field name="spacerothers" type="spacer" default="" label="MOD_BOOKINGFOR_TABLIST_OTHERS_SEP" showon="tablistSelected:4"  class="text-uppercase"/>
+				<field
+					name="tabnameothers"
+					type="text"
+					default="MOD_BOOKINGFOR_TABLIST_OTHERS" 
+					label="MOD_BOOKINGFOR_TABNAME_LABEL"
+					description="MOD_BOOKINGFOR_TABNAME_DESC"
+					showon="tablistSelected:4"
+					>
+				</field>
+				<field
+					name="tabiconothers"
+					type="fontawesomeicon"
+					default="fa fa-calendar" 
+					label="MOD_BOOKINGFOR_TABICON_LABEL"
+					description="MOD_BOOKINGFOR_TABICON_DESC"
+					showon="tablistSelected:4"
+					>
+				</field>
+				<field
+					name="merchantcategoriesothers"
+					type="merchantcategories"
+					multiple="multiple"
+					label="MOD_BOOKINGFOR_MERCHANTCATEGORIES_LABEL"
+					description="MOD_BOOKINGFOR_MERCHANTCATEGORIES_DESC"
+					showon="tablistSelected:4"
+					>
+				</field>
+				<field
+					name="unitcategoriesothers"
+					type="mastertypologies"
+					multiple="multiple"
+					label="MOD_BOOKINGFOR_UNITCATEGORIES_LABEL"
+					description="MOD_BOOKINGFOR_UNITCATEGORIES_DESC"
+					showon="tablistSelected:4"
+					>
+				</field>
+				<field
+					name="availabilitytypesothers"
+					type="list"
+					multiple="multiple"
+					default="2,3"
+					label="MOD_BOOKINGFOR_SHOWSELECTOR_LABEL"
+					description="MOD_BOOKINGFOR_SHOWSELECTOR_DESC"
+					showon="tablistSelected:4"
+					>
+					<option value="1">MOD_BOOKINGFORSEARCH_NIGHT</option>
+					<option value="0">MOD_BOOKINGFORSEARCH_DAYS</option>
+					<option value="2">MOD_BOOKINGFORSEARCH_UNITTIMES</option>
+					<option value="3">MOD_BOOKINGFORSEARCH_TIMESLOT</option>
+				</field>
+				<field
+					name="itemtypesothers"
+					type="list"
+					multiple="multiple"
+					default="1"
+					label="MOD_BOOKINGFOR_ITEMSTYPE_LABEL"
+					description="MOD_BOOKINGFOR_ITEMSTYPE_DESC"
+					showon="tablistSelected:4"
+					>
+					<option value="0">MOD_BOOKINGFORSEARCH_RESOURCE</option>
+					<option value="1">MOD_BOOKINGFORSEARCH_SERVICE</option>
+				</field>
+				<field
+					name="groupbyothers"
+					type="list"
+					default="0"
+					label="MOD_BOOKINGFOR_GROUPBY_LABEL"
+					description="MOD_BOOKINGFOR_GROUPBY_DESC"
+					showon="tablistSelected:4"
+					>
+					<option value="0">MOD_BOOKINGFORSEARCH_RESOURCE</option>
+					<option value="1">MOD_BOOKINGFORSEARCH_MERCHANT</option>
+					<option value="2">MOD_BOOKINGFORSEARCH_CONDOMINIUM</option>
+				</field>
+
+				<field name="spacer" type="spacer" default="" label="MOD_BOOKINGFOR_VISIBILITY_HEADING" showon="tablistSelected:0[OR]tablistSelected:1[OR]tablistSelected:2[OR]tablistSelected:4" />
 
 				<field
 					name="showSearchText"
@@ -191,7 +412,7 @@
 					default="0"
 					label="MOD_BOOKINGFOR_SHOWSEARCHTEXT_LABEL" class="btn-group btn-group-yesno"
 					description="MOD_BOOKINGFOR_SHOWSEARCHTEXT_DESC"
-					showon="tablistSelected:0[OR]tablistSelected:2"
+					showon="tablistSelected:0[OR]tablistSelected:1[OR]tablistSelected:2[OR]tablistSelected:4"
 					>
 					<option value="0">JNO</option>
 					<option value="1">JYES</option>
@@ -202,7 +423,7 @@
 					default="0"
 					label="MOD_BOOKINGFOR_SHOWLOCATION_LABEL" class="btn-group btn-group-yesno"
 					description="MOD_BOOKINGFOR_SHOWLOCATION_DESC"
-					showon="tablistSelected:0[OR]tablistSelected:2[AND]showSearchText:0"
+					showon="showSearchText:0"
 					>
 					<option value="0">JNO</option>
 					<option value="1">JYES</option>
@@ -213,7 +434,7 @@
 					default="1"
 					label="MOD_BOOKINGFOR_SHOWACCOMODATIONS_LABEL" class="btn-group btn-group-yesno"
 					description="MOD_BOOKINGFOR_SHOWACCOMODATIONS_DESC"
-					showon="tablistSelected:0[OR]tablistSelected:2[AND]showSearchText:0"
+					showon="showSearchText:0"
 					>
 					<option value="0">JNO</option>
 					<option value="1">JYES</option>
@@ -225,7 +446,7 @@
 					default="0"
 					label="MOD_BOOKINGFOR_SHOWMAPICON_LABEL" class="btn-group btn-group-yesno"
 					description="MOD_BOOKINGFOR_SHOWMAPICON_DESC"
-					showon="tablistSelected:0[OR]tablistSelected:2"
+					
 					>
 					<option value="0">JNO</option>
 					<option value="1">JYES</option>
@@ -236,7 +457,7 @@
 					default="1"
 					label="MOD_BOOKINGFOR_SHOWDATERANGE_LABEL" class="btn-group btn-group-yesno"
 					description="MOD_BOOKINGFOR_SHOWDATERANGE_DESC"
-					showon="tablistSelected:0[OR]tablistSelected:2"
+					showon="tablistSelected:0[OR]tablistSelected:1[OR]tablistSelected:2[OR]tablistSelected:4"
 					>
 					<option value="0">JNO</option>
 					<option value="1">JYES</option>
@@ -248,7 +469,7 @@
 					label="MOD_BOOKINGFOR_DEFAULTVALUE_STARTDATE_LABEL"
 					description="MOD_BOOKINGFOR_DEFAULTVALUE_STARTDATE_DESC"
 					format="%d-%m-%Y"
-					showon="showDateRange:1[AND]tablistSelected:0[OR]tablistSelected:2"
+					showon="showDateRange:1[AND]tablistSelected:0[OR]tablistSelected:1[OR]tablistSelected:0[OR]tablistSelected:4"
 					>
 				</field>
 				<field
@@ -258,7 +479,7 @@
 					label="MOD_BOOKINGFOR_DEFAULTVALUE_ENDDATE_LABEL"
 					description="MOD_BOOKINGFOR_DEFAULTVALUE_ENDDATE_DESC"
 					format="%d-%m-%Y"
-					showon="showDateRange:1[AND]tablistSelected:0[OR]tablistSelected:2"
+					showon="showDateRange:1[AND]tablistSelected:0[OR]tablistSelected:1[OR]tablistSelected:0[OR]tablistSelected:4"
 					>
 				</field>
 				<field
@@ -267,7 +488,7 @@
 					multiple="multiple"
 					label="MOD_BOOKINGFOR_BLOCKMONTHS_LABEL"
 					description="MOD_BOOKINGFOR_BLOCKMONTHS_DESC"
-					showon="showDateRange:1[AND]tablistSelected:0[OR]tablistSelected:2"
+					showon="showDateRange:1[AND]tablistSelected:0[OR]tablistSelected:1[OR]tablistSelected:0[OR]tablistSelected:4"
 					>
 					<option value="1">JANUARY</option>
 					<option value="2">FEBRUARY</option>
@@ -289,7 +510,7 @@
 					multiple="multiple"
 					label="MOD_BOOKINGFOR_BLOCKDAYS_LABEL"
 					description="MOD_BOOKINGFOR_BLOCKDAYS_DESC"
-					showon="showDateRange:1[AND]tablistSelected:0[OR]tablistSelected:2"
+					showon="showDateRange:1[AND]tablistSelected:0[OR]tablistSelected:1[OR]tablistSelected:0[OR]tablistSelected:4"
 					>
 					<option value="1">MONDAY</option>
 					<option value="2">TUESDAY</option>
@@ -305,7 +526,7 @@
 					default="1"
 					label="MOD_BOOKINGFOR_ONLYSTAY_LABEL" class="btn-group btn-group-yesno"
 					description="MOD_BOOKINGFOR_ONLYSTAY_DESC"
-					showon="tablistSelected:100[AND]tablistSelected:0[OR]tablistSelected:2"
+					showon="tablistSelected:100[AND]tablistSelected:0[OR]tablistSelected:1[OR]tablistSelected:0[OR]tablistSelected:4"
 					>
 					<option value="0">JNO</option>
 					<option value="1">JYES</option>
@@ -316,7 +537,7 @@
 					default="1"
 					label="MOD_BOOKINGFOR_SHOWADULT_LABEL" class="btn-group btn-group-yesno"
 					description="MOD_BOOKINGFOR_SHOWADULT_DESC"
-					showon="tablistSelected:0[OR]tablistSelected:2"
+					showon="tablistSelected:0[OR]tablistSelected:1[OR]tablistSelected:0[OR]tablistSelected:4"
 					>
 					<option value="0">JNO</option>
 					<option value="1">JYES</option>
@@ -327,7 +548,7 @@
 					default="1"
 					label="MOD_BOOKINGFOR_SHOWCHILDREN_LABEL" class="btn-group btn-group-yesno"
 					description="MOD_BOOKINGFOR_SHOWCHILDREN_DESC"
-					showon="tablistSelected:0[OR]tablistSelected:2"
+					showon="tablistSelected:0[OR]tablistSelected:1[OR]tablistSelected:0[OR]tablistSelected:4"
 					>
 					<option value="0">JNO</option>
 					<option value="1">JYES</option>
@@ -338,7 +559,7 @@
 					default="1"
 					label="MOD_BOOKINGFOR_SHOWSENIOR_LABEL" class="btn-group btn-group-yesno"
 					description="MOD_BOOKINGFOR_SHOWSENIOR_DESC"
-					showon="tablistSelected:0[OR]tablistSelected:2"
+					showon="tablistSelected:0[OR]tablistSelected:1[OR]tablistSelected:0[OR]tablistSelected:4"
 					>
 					<option value="0">JNO</option>
 					<option value="1">JYES</option>
@@ -349,12 +570,22 @@
 					default="1"
 					label="MOD_BOOKINGFOR_SHOWONLINEBOOKING_LABEL" class="btn-group btn-group-yesno"
 					description="MOD_BOOKINGFOR_SHOWONLINEBOOKING_DESC"
-					showon="tablistSelected:0[OR]tablistSelected:2"
+					showon="tablistSelected:0[OR]tablistSelected:1[OR]tablistSelected:0[OR]tablistSelected:4"
 					>
 					<option value="0">JNO</option>
 					<option value="1">JYES</option>
 				</field>
 				<field name="spacerrealestate" type="spacer" default="" label="MOD_BOOKINGFOR_TABLIST_REALESTATE_SEP" showon="tablistSelected:3"  class="text-uppercase"/>
+
+				<field
+					name="tabiconrealestate"
+					type="fontawesomeicon"
+					default="fa fa-home" 
+					label="MOD_BOOKINGFOR_TABICON_LABEL"
+					description="MOD_BOOKINGFOR_TABICON_DESC"
+					showon="tablistSelected:3"
+					>
+				</field>
 				<field
 					name="merchantcategoriesrealestate"
 					type="merchantcategories"

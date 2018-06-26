@@ -31,7 +31,10 @@ jQuery(function($)
 				,changeMonth: true
 				,changeYear: true
 				,dateFormat: "dd/mm/yy"
-				,beforeShow: function(input, inst) {$('#ui-datepicker-div').addClass('notranslate');}
+				,beforeShow: function(input, inst) {
+					$('#ui-datepicker-div').addClass('notranslate');
+					setTimeout(function() {bfiCalendarCheck()}, 1);
+					}
 				, minDate: '+0d', onSelect: function(dateStr) { $("#formCheckMode").validate().element(this); }
 			})};
 			checkInCheckMode();

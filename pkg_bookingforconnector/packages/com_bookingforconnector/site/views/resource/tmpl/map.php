@@ -17,7 +17,7 @@ $language = $this->language;
 $resourceName = BFCHelper::getLanguage($resource->Name, $this->language, null, array('ln2br'=>'ln2br', 'striptags'=>'striptags')); 
 
 $this->document->setTitle($resourceName . ' - ' . $merchant->Name);
-$this->document->setDescription( BFCHelper::getLanguage($resource->Description, $this->language));
+$this->document->setDescription( BFCHelper::getLanguage($resource->Description, $language, null, array( 'nobr'=>'nobr', 'bbcode'=>'bbcode', 'striptags'=>'striptags')) ;);
 
 $db   = JFactory::getDBO();
 $uri  = 'index.php?option=com_bookingforconnector&view=resource';

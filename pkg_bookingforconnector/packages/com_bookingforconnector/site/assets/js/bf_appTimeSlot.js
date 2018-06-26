@@ -17,13 +17,14 @@ function initDatepickerTimeSlot() {
         firstDay: 1,
 		beforeShow: function( input, inst){
 			jQuery(this).attr("disabled", true);
+			jQuery(this).attr("readonly", true); 
 			jQuery(inst.dpDiv).addClass('bfi-calendar');
-			jQuery(inst.dpDiv).attr('data-before',"");
-			jQuery(inst.dpDiv).removeClass("bfi-checkin");
-			jQuery(inst.dpDiv).removeClass("bfi-checkout");
 			setTimeout(function() {
-				jQuery("#ui-datepicker-div div.bfi-title").remove();
-				jQuery("#ui-datepicker-div").prepend( "<div class=\"bfi-title\">Check-in</div>" );
+				bfiCalendarCheck();
+				jQuery("#ui-datepicker-div").addClass("bfi-checkin");
+				jQuery("#ui-datepicker-div").removeClass("bfi-checkout");
+				jQuery("#ui-datepicker-div div.bfi-title-arrow").remove();
+				jQuery("#ui-datepicker-div").prepend( "<div class=\"bfi-title-arrow\">"+"Checkin"+"</div>" );
 			}, 1);
 
 		}
@@ -180,6 +181,9 @@ function bfi_selecttimeslot(currEl){
         var listDays = jQuery.map(copyarray, function (n, i) {
             return (n.StartDate);
         });
+//		console.log(copyarray);
+//		console.log(listDays);
+
         listDays = jQuery.unique(listDays);
         var listDaysunique = listDays.filter(function (elem, index, self) {
             return index == self.indexOf(elem);
@@ -187,7 +191,7 @@ function bfi_selecttimeslot(currEl){
         for (var i = 0; i < offset; i++)
             listDaysunique.pop();
         var datereformat = year + '' + bookingfor.pad(month,2) + '' + bookingfor.pad(day,2);
-        if (jQuery.inArray(Number(datereformat), listDaysunique) != -1) {
+		if (jQuery.inArray(Number(datereformat), listDaysunique) != -1) {
             return [true, 'greenDay'];
         }
         return [false, 'redDay'];

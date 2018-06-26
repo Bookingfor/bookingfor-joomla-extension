@@ -41,6 +41,81 @@ class BookingForConnectorController extends JControllerLegacy
 
 		return $this;
 	}
+	function bfilogin(){
+		$return = "0";
+		$email = BFCHelper::getVar('email');
+		$password = BFCHelper::getVar('password');
+		$twoFactorAuthCode = BFCHelper::getVar('twoFactorAuthCode');
+		$deviceCodeAuthCode = BFCHelper::GetTwoFactorCookie();		
+		$return =  BFCHelper::getLoginTwoFactor($email, $password, $twoFactorAuthCode,$deviceCodeAuthCode);		
+		echo json_encode($return);      
+		$app = JFactory::getApplication();
+		$app->close();
+	}
+
+	function bfilogout(){
+//		BFCHelper::DeleteTwoFactorCookie();
+		BFCHelper::setSession('bfiUser', null, 'bfi-User');
+		$return = "-1";
+		echo json_encode($return);      
+		$app = JFactory::getApplication();
+		$app->close();
+	}
+	function bficookie(){
+
+//echo "<pre>_COOKIE ";
+//echo print_r($_COOKIE);
+//echo "</pre>";
+
+	}
+	function bficurrUser(){
+			$currUser = BFCHelper::getSession('bfiUser',null, 'bfi-User');
+//echo "<pre>currUser: ";
+//echo print_r($currUser);
+//echo "</pre>";
+
+	}
+
+	function GetAlternativeDates(){
+//		$exampleData = '[{"StartDate":"2018-02-26T00:00:00","EndDate":"2018-02-27T00:00:00","PaxAges":"18:0|18:0","BestValue":68.00,"Duration":1},{"StartDate":"2018-02-27T00:00:00","EndDate":"2018-02-28T00:00:00","PaxAges":"18:0|18:0","BestValue":68.00,"Duration":1},{"StartDate":"2018-02-28T00:00:00","EndDate":"2018-03-01T00:00:00","PaxAges":"18:0|18:0","BestValue":68.00,"Duration":1},{"StartDate":"2018-03-01T00:00:00","EndDate":"2018-03-02T00:00:00","PaxAges":"18:0|18:0","BestValue":68.00,"Duration":1},{"StartDate":"2018-03-02T00:00:00","EndDate":"2018-03-03T00:00:00","PaxAges":"18:0|18:0","BestValue":68.00,"Duration":1},{"StartDate":"2018-03-03T00:00:00","EndDate":"2018-03-04T00:00:00","PaxAges":"18:0|18:0","BestValue":68.00,"Duration":1},{"StartDate":"2018-03-04T00:00:00","EndDate":"2018-03-05T00:00:00","PaxAges":"18:0|18:0","BestValue":68.00,"Duration":1},{"StartDate":"2018-03-05T00:00:00","EndDate":"2018-03-06T00:00:00","PaxAges":"18:0|18:0","BestValue":68.00,"Duration":1},{"StartDate":"2018-03-06T00:00:00","EndDate":"2018-03-07T00:00:00","PaxAges":"18:0|18:0","BestValue":68.00,"Duration":1},{"StartDate":"2018-03-07T00:00:00","EndDate":"2018-03-08T00:00:00","PaxAges":"18:0|18:0","BestValue":68.00,"Duration":1},{"StartDate":"2018-02-25T00:00:00","EndDate":"2018-02-27T00:00:00","PaxAges":"18:0|18:0","BestValue":136.00,"Duration":2},{"StartDate":"2018-02-26T00:00:00","EndDate":"2018-02-28T00:00:00","PaxAges":"18:0|18:0","BestValue":136.00,"Duration":2},{"StartDate":"2018-02-27T00:00:00","EndDate":"2018-03-01T00:00:00","PaxAges":"18:0|18:0","BestValue":136.00,"Duration":2},{"StartDate":"2018-02-28T00:00:00","EndDate":"2018-03-02T00:00:00","PaxAges":"18:0|18:0","BestValue":136.00,"Duration":2},{"StartDate":"2018-03-01T00:00:00","EndDate":"2018-03-03T00:00:00","PaxAges":"18:0|18:0","BestValue":136.00,"Duration":2},{"StartDate":"2018-03-02T00:00:00","EndDate":"2018-03-04T00:00:00","PaxAges":"18:0|18:0","BestValue":136.00,"Duration":2},{"StartDate":"2018-03-03T00:00:00","EndDate":"2018-03-05T00:00:00","PaxAges":"18:0|18:0","BestValue":136.00,"Duration":2},{"StartDate":"2018-03-04T00:00:00","EndDate":"2018-03-06T00:00:00","PaxAges":"18:0|18:0","BestValue":136.00,"Duration":2},{"StartDate":"2018-03-05T00:00:00","EndDate":"2018-03-07T00:00:00","PaxAges":"18:0|18:0","BestValue":136.00,"Duration":2},{"StartDate":"2018-03-06T00:00:00","EndDate":"2018-03-08T00:00:00","PaxAges":"18:0|18:0","BestValue":136.00,"Duration":2},{"StartDate":"2018-02-24T00:00:00","EndDate":"2018-02-27T00:00:00","PaxAges":"18:0|18:0","BestValue":204.00,"Duration":3},{"StartDate":"2018-02-25T00:00:00","EndDate":"2018-02-28T00:00:00","PaxAges":"18:0|18:0","BestValue":204.00,"Duration":3},{"StartDate":"2018-02-26T00:00:00","EndDate":"2018-03-01T00:00:00","PaxAges":"18:0|18:0","BestValue":204.00,"Duration":3},{"StartDate":"2018-02-27T00:00:00","EndDate":"2018-03-02T00:00:00","PaxAges":"18:0|18:0","BestValue":204.00,"Duration":3},{"StartDate":"2018-02-28T00:00:00","EndDate":"2018-03-03T00:00:00","PaxAges":"18:0|18:0","BestValue":204.00,"Duration":3},{"StartDate":"2018-03-01T00:00:00","EndDate":"2018-03-04T00:00:00","PaxAges":"18:0|18:0","BestValue":204.00,"Duration":3},{"StartDate":"2018-03-02T00:00:00","EndDate":"2018-03-05T00:00:00","PaxAges":"18:0|18:0","BestValue":204.00,"Duration":3},{"StartDate":"2018-03-03T00:00:00","EndDate":"2018-03-06T00:00:00","PaxAges":"18:0|18:0","BestValue":204.00,"Duration":3},{"StartDate":"2018-03-04T00:00:00","EndDate":"2018-03-07T00:00:00","PaxAges":"18:0|18:0","BestValue":204.00,"Duration":3},{"StartDate":"2018-03-05T00:00:00","EndDate":"2018-03-08T00:00:00","PaxAges":"18:0|18:0","BestValue":204.00,"Duration":3},{"StartDate":"2018-02-24T00:00:00","EndDate":"2018-02-28T00:00:00","PaxAges":"18:0|18:0","BestValue":272.00,"Duration":4},{"StartDate":"2018-02-25T00:00:00","EndDate":"2018-03-01T00:00:00","PaxAges":"18:0|18:0","BestValue":272.00,"Duration":4},{"StartDate":"2018-02-26T00:00:00","EndDate":"2018-03-02T00:00:00","PaxAges":"18:0|18:0","BestValue":272.00,"Duration":4},{"StartDate":"2018-02-27T00:00:00","EndDate":"2018-03-03T00:00:00","PaxAges":"18:0|18:0","BestValue":272.00,"Duration":4},{"StartDate":"2018-02-28T00:00:00","EndDate":"2018-03-04T00:00:00","PaxAges":"18:0|18:0","BestValue":272.00,"Duration":4},{"StartDate":"2018-03-01T00:00:00","EndDate":"2018-03-05T00:00:00","PaxAges":"18:0|18:0","BestValue":272.00,"Duration":4},{"StartDate":"2018-03-02T00:00:00","EndDate":"2018-03-06T00:00:00","PaxAges":"18:0|18:0","BestValue":272.00,"Duration":4},{"StartDate":"2018-03-03T00:00:00","EndDate":"2018-03-07T00:00:00","PaxAges":"18:0|18:0","BestValue":272.00,"Duration":4},{"StartDate":"2018-03-04T00:00:00","EndDate":"2018-03-08T00:00:00","PaxAges":"18:0|18:0","BestValue":272.00,"Duration":4},{"StartDate":"2018-03-05T00:00:00","EndDate":"2018-03-09T00:00:00","PaxAges":"18:0|18:0","BestValue":272.00,"Duration":4},{"StartDate":"2018-02-24T00:00:00","EndDate":"2018-03-01T00:00:00","PaxAges":"18:0|18:0","BestValue":340.00,"Duration":5},{"StartDate":"2018-02-25T00:00:00","EndDate":"2018-03-02T00:00:00","PaxAges":"18:0|18:0","BestValue":340.00,"Duration":5},{"StartDate":"2018-02-26T00:00:00","EndDate":"2018-03-03T00:00:00","PaxAges":"18:0|18:0","BestValue":340.00,"Duration":5},{"StartDate":"2018-02-27T00:00:00","EndDate":"2018-03-04T00:00:00","PaxAges":"18:0|18:0","BestValue":340.00,"Duration":5},{"StartDate":"2018-02-28T00:00:00","EndDate":"2018-03-05T00:00:00","PaxAges":"18:0|18:0","BestValue":340.00,"Duration":5},{"StartDate":"2018-03-01T00:00:00","EndDate":"2018-03-06T00:00:00","PaxAges":"18:0|18:0","BestValue":340.00,"Duration":5},{"StartDate":"2018-03-02T00:00:00","EndDate":"2018-03-07T00:00:00","PaxAges":"18:0|18:0","BestValue":340.00,"Duration":5},{"StartDate":"2018-03-03T00:00:00","EndDate":"2018-03-08T00:00:00","PaxAges":"18:0|18:0","BestValue":340.00,"Duration":5},{"StartDate":"2018-03-04T00:00:00","EndDate":"2018-03-09T00:00:00","PaxAges":"18:0|18:0","BestValue":340.00,"Duration":5},{"StartDate":"2018-03-05T00:00:00","EndDate":"2018-03-10T00:00:00","PaxAges":"18:0|18:0","BestValue":340.00,"Duration":5},{"StartDate":"2018-02-24T00:00:00","EndDate":"2018-03-02T00:00:00","PaxAges":"18:0|18:0","BestValue":408.00,"Duration":6},{"StartDate":"2018-02-25T00:00:00","EndDate":"2018-03-03T00:00:00","PaxAges":"18:0|18:0","BestValue":408.00,"Duration":6},{"StartDate":"2018-02-26T00:00:00","EndDate":"2018-03-04T00:00:00","PaxAges":"18:0|18:0","BestValue":408.00,"Duration":6},{"StartDate":"2018-02-27T00:00:00","EndDate":"2018-03-05T00:00:00","PaxAges":"18:0|18:0","BestValue":408.00,"Duration":6},{"StartDate":"2018-02-28T00:00:00","EndDate":"2018-03-06T00:00:00","PaxAges":"18:0|18:0","BestValue":408.00,"Duration":6},{"StartDate":"2018-03-01T00:00:00","EndDate":"2018-03-07T00:00:00","PaxAges":"18:0|18:0","BestValue":408.00,"Duration":6},{"StartDate":"2018-03-02T00:00:00","EndDate":"2018-03-08T00:00:00","PaxAges":"18:0|18:0","BestValue":408.00,"Duration":6},{"StartDate":"2018-03-03T00:00:00","EndDate":"2018-03-09T00:00:00","PaxAges":"18:0|18:0","BestValue":408.00,"Duration":6},{"StartDate":"2018-03-04T00:00:00","EndDate":"2018-03-10T00:00:00","PaxAges":"18:0|18:0","BestValue":408.00,"Duration":6},{"StartDate":"2018-03-05T00:00:00","EndDate":"2018-03-11T00:00:00","PaxAges":"18:0|18:0","BestValue":408.00,"Duration":6},{"StartDate":"2018-02-24T00:00:00","EndDate":"2018-03-03T00:00:00","PaxAges":"18:0|18:0","BestValue":476.00,"Duration":7},{"StartDate":"2018-02-25T00:00:00","EndDate":"2018-03-04T00:00:00","PaxAges":"18:0|18:0","BestValue":476.00,"Duration":7},{"StartDate":"2018-02-26T00:00:00","EndDate":"2018-03-05T00:00:00","PaxAges":"18:0|18:0","BestValue":476.00,"Duration":7},{"StartDate":"2018-02-27T00:00:00","EndDate":"2018-03-06T00:00:00","PaxAges":"18:0|18:0","BestValue":476.00,"Duration":7},{"StartDate":"2018-02-28T00:00:00","EndDate":"2018-03-07T00:00:00","PaxAges":"18:0|18:0","BestValue":476.00,"Duration":7},{"StartDate":"2018-03-01T00:00:00","EndDate":"2018-03-08T00:00:00","PaxAges":"18:0|18:0","BestValue":476.00,"Duration":7},{"StartDate":"2018-03-02T00:00:00","EndDate":"2018-03-09T00:00:00","PaxAges":"18:0|18:0","BestValue":476.00,"Duration":7},{"StartDate":"2018-03-03T00:00:00","EndDate":"2018-03-10T00:00:00","PaxAges":"18:0|18:0","BestValue":476.00,"Duration":7},{"StartDate":"2018-03-04T00:00:00","EndDate":"2018-03-11T00:00:00","PaxAges":"18:0|18:0","BestValue":476.00,"Duration":7},{"StartDate":"2018-03-05T00:00:00","EndDate":"2018-03-12T00:00:00","PaxAges":"18:0|18:0","BestValue":476.00,"Duration":7},{"StartDate":"2018-02-24T00:00:00","EndDate":"2018-03-04T00:00:00","PaxAges":"18:0|18:0","BestValue":544.00,"Duration":8},{"StartDate":"2018-02-25T00:00:00","EndDate":"2018-03-05T00:00:00","PaxAges":"18:0|18:0","BestValue":544.00,"Duration":8},{"StartDate":"2018-02-26T00:00:00","EndDate":"2018-03-06T00:00:00","PaxAges":"18:0|18:0","BestValue":544.00,"Duration":8},{"StartDate":"2018-02-27T00:00:00","EndDate":"2018-03-07T00:00:00","PaxAges":"18:0|18:0","BestValue":544.00,"Duration":8},{"StartDate":"2018-02-28T00:00:00","EndDate":"2018-03-08T00:00:00","PaxAges":"18:0|18:0","BestValue":544.00,"Duration":8},{"StartDate":"2018-03-01T00:00:00","EndDate":"2018-03-09T00:00:00","PaxAges":"18:0|18:0","BestValue":544.00,"Duration":8},{"StartDate":"2018-03-02T00:00:00","EndDate":"2018-03-10T00:00:00","PaxAges":"18:0|18:0","BestValue":544.00,"Duration":8},{"StartDate":"2018-03-03T00:00:00","EndDate":"2018-03-11T00:00:00","PaxAges":"18:0|18:0","BestValue":544.00,"Duration":8},{"StartDate":"2018-03-04T00:00:00","EndDate":"2018-03-12T00:00:00","PaxAges":"18:0|18:0","BestValue":544.00,"Duration":8},{"StartDate":"2018-03-05T00:00:00","EndDate":"2018-03-13T00:00:00","PaxAges":"18:0|18:0","BestValue":544.00,"Duration":8},{"StartDate":"2018-02-24T00:00:00","EndDate":"2018-03-05T00:00:00","PaxAges":"18:0|18:0","BestValue":612.00,"Duration":9},{"StartDate":"2018-02-25T00:00:00","EndDate":"2018-03-06T00:00:00","PaxAges":"18:0|18:0","BestValue":612.00,"Duration":9},{"StartDate":"2018-02-26T00:00:00","EndDate":"2018-03-07T00:00:00","PaxAges":"18:0|18:0","BestValue":612.00,"Duration":9},{"StartDate":"2018-02-27T00:00:00","EndDate":"2018-03-08T00:00:00","PaxAges":"18:0|18:0","BestValue":612.00,"Duration":9},{"StartDate":"2018-02-28T00:00:00","EndDate":"2018-03-09T00:00:00","PaxAges":"18:0|18:0","BestValue":612.00,"Duration":9},{"StartDate":"2018-03-01T00:00:00","EndDate":"2018-03-10T00:00:00","PaxAges":"18:0|18:0","BestValue":612.00,"Duration":9},{"StartDate":"2018-03-02T00:00:00","EndDate":"2018-03-11T00:00:00","PaxAges":"18:0|18:0","BestValue":612.00,"Duration":9},{"StartDate":"2018-03-03T00:00:00","EndDate":"2018-03-12T00:00:00","PaxAges":"18:0|18:0","BestValue":612.00,"Duration":9},{"StartDate":"2018-03-04T00:00:00","EndDate":"2018-03-13T00:00:00","PaxAges":"18:0|18:0","BestValue":612.00,"Duration":9},{"StartDate":"2018-03-05T00:00:00","EndDate":"2018-03-14T00:00:00","PaxAges":"18:0|18:0","BestValue":612.00,"Duration":9},{"StartDate":"2018-02-24T00:00:00","EndDate":"2018-03-06T00:00:00","PaxAges":"18:0|18:0","BestValue":680.00,"Duration":10},{"StartDate":"2018-02-25T00:00:00","EndDate":"2018-03-07T00:00:00","PaxAges":"18:0|18:0","BestValue":680.00,"Duration":10},{"StartDate":"2018-02-26T00:00:00","EndDate":"2018-03-08T00:00:00","PaxAges":"18:0|18:0","BestValue":680.00,"Duration":10},{"StartDate":"2018-02-27T00:00:00","EndDate":"2018-03-09T00:00:00","PaxAges":"18:0|18:0","BestValue":680.00,"Duration":10},{"StartDate":"2018-02-28T00:00:00","EndDate":"2018-03-10T00:00:00","PaxAges":"18:0|18:0","BestValue":680.00,"Duration":10},{"StartDate":"2018-03-01T00:00:00","EndDate":"2018-03-11T00:00:00","PaxAges":"18:0|18:0","BestValue":680.00,"Duration":10},{"StartDate":"2018-03-02T00:00:00","EndDate":"2018-03-12T00:00:00","PaxAges":"18:0|18:0","BestValue":680.00,"Duration":10},{"StartDate":"2018-03-03T00:00:00","EndDate":"2018-03-13T00:00:00","PaxAges":"18:0|18:0","BestValue":680.00,"Duration":10},{"StartDate":"2018-03-04T00:00:00","EndDate":"2018-03-14T00:00:00","PaxAges":"18:0|18:0","BestValue":680.00,"Duration":10},{"StartDate":"2018-03-05T00:00:00","EndDate":"2018-03-15T00:00:00","PaxAges":"18:0|18:0","BestValue":680.00,"Duration":10},{"StartDate":"2018-02-24T00:00:00","EndDate":"2018-03-07T00:00:00","PaxAges":"18:0|18:0","BestValue":748.00,"Duration":11},{"StartDate":"2018-02-25T00:00:00","EndDate":"2018-03-08T00:00:00","PaxAges":"18:0|18:0","BestValue":748.00,"Duration":11},{"StartDate":"2018-02-26T00:00:00","EndDate":"2018-03-09T00:00:00","PaxAges":"18:0|18:0","BestValue":748.00,"Duration":11},{"StartDate":"2018-02-27T00:00:00","EndDate":"2018-03-10T00:00:00","PaxAges":"18:0|18:0","BestValue":748.00,"Duration":11},{"StartDate":"2018-02-28T00:00:00","EndDate":"2018-03-11T00:00:00","PaxAges":"18:0|18:0","BestValue":748.00,"Duration":11},{"StartDate":"2018-03-01T00:00:00","EndDate":"2018-03-12T00:00:00","PaxAges":"18:0|18:0","BestValue":748.00,"Duration":11},{"StartDate":"2018-03-02T00:00:00","EndDate":"2018-03-13T00:00:00","PaxAges":"18:0|18:0","BestValue":748.00,"Duration":11},{"StartDate":"2018-03-03T00:00:00","EndDate":"2018-03-14T00:00:00","PaxAges":"18:0|18:0","BestValue":748.00,"Duration":11},{"StartDate":"2018-03-04T00:00:00","EndDate":"2018-03-15T00:00:00","PaxAges":"18:0|18:0","BestValue":748.00,"Duration":11},{"StartDate":"2018-03-05T00:00:00","EndDate":"2018-03-16T00:00:00","PaxAges":"18:0|18:0","BestValue":748.00,"Duration":11},{"StartDate":"2018-02-24T00:00:00","EndDate":"2018-03-08T00:00:00","PaxAges":"18:0|18:0","BestValue":816.00,"Duration":12},{"StartDate":"2018-02-25T00:00:00","EndDate":"2018-03-09T00:00:00","PaxAges":"18:0|18:0","BestValue":816.00,"Duration":12},{"StartDate":"2018-02-26T00:00:00","EndDate":"2018-03-10T00:00:00","PaxAges":"18:0|18:0","BestValue":816.00,"Duration":12},{"StartDate":"2018-02-27T00:00:00","EndDate":"2018-03-11T00:00:00","PaxAges":"18:0|18:0","BestValue":816.00,"Duration":12},{"StartDate":"2018-02-28T00:00:00","EndDate":"2018-03-12T00:00:00","PaxAges":"18:0|18:0","BestValue":816.00,"Duration":12},{"StartDate":"2018-03-01T00:00:00","EndDate":"2018-03-13T00:00:00","PaxAges":"18:0|18:0","BestValue":816.00,"Duration":12},{"StartDate":"2018-03-02T00:00:00","EndDate":"2018-03-14T00:00:00","PaxAges":"18:0|18:0","BestValue":816.00,"Duration":12},{"StartDate":"2018-03-03T00:00:00","EndDate":"2018-03-15T00:00:00","PaxAges":"18:0|18:0","BestValue":816.00,"Duration":12},{"StartDate":"2018-03-04T00:00:00","EndDate":"2018-03-16T00:00:00","PaxAges":"18:0|18:0","BestValue":816.00,"Duration":12},{"StartDate":"2018-03-05T00:00:00","EndDate":"2018-03-17T00:00:00","PaxAges":"18:0|18:0","BestValue":816.00,"Duration":12},{"StartDate":"2018-02-24T00:00:00","EndDate":"2018-03-09T00:00:00","PaxAges":"18:0|18:0","BestValue":884.00,"Duration":13},{"StartDate":"2018-02-25T00:00:00","EndDate":"2018-03-10T00:00:00","PaxAges":"18:0|18:0","BestValue":884.00,"Duration":13},{"StartDate":"2018-02-26T00:00:00","EndDate":"2018-03-11T00:00:00","PaxAges":"18:0|18:0","BestValue":884.00,"Duration":13},{"StartDate":"2018-02-27T00:00:00","EndDate":"2018-03-12T00:00:00","PaxAges":"18:0|18:0","BestValue":884.00,"Duration":13},{"StartDate":"2018-02-28T00:00:00","EndDate":"2018-03-13T00:00:00","PaxAges":"18:0|18:0","BestValue":884.00,"Duration":13},{"StartDate":"2018-03-01T00:00:00","EndDate":"2018-03-14T00:00:00","PaxAges":"18:0|18:0","BestValue":884.00,"Duration":13},{"StartDate":"2018-03-02T00:00:00","EndDate":"2018-03-15T00:00:00","PaxAges":"18:0|18:0","BestValue":884.00,"Duration":13},{"StartDate":"2018-03-03T00:00:00","EndDate":"2018-03-16T00:00:00","PaxAges":"18:0|18:0","BestValue":884.00,"Duration":13},{"StartDate":"2018-03-04T00:00:00","EndDate":"2018-03-17T00:00:00","PaxAges":"18:0|18:0","BestValue":884.00,"Duration":13},{"StartDate":"2018-03-05T00:00:00","EndDate":"2018-03-18T00:00:00","PaxAges":"18:0|18:0","BestValue":884.00,"Duration":13},{"StartDate":"2018-02-24T00:00:00","EndDate":"2018-03-10T00:00:00","PaxAges":"18:0|18:0","BestValue":952.00,"Duration":14},{"StartDate":"2018-02-25T00:00:00","EndDate":"2018-03-11T00:00:00","PaxAges":"18:0|18:0","BestValue":952.00,"Duration":14},{"StartDate":"2018-02-26T00:00:00","EndDate":"2018-03-12T00:00:00","PaxAges":"18:0|18:0","BestValue":952.00,"Duration":14},{"StartDate":"2018-02-27T00:00:00","EndDate":"2018-03-13T00:00:00","PaxAges":"18:0|18:0","BestValue":952.00,"Duration":14},{"StartDate":"2018-02-28T00:00:00","EndDate":"2018-03-14T00:00:00","PaxAges":"18:0|18:0","BestValue":952.00,"Duration":14},{"StartDate":"2018-03-01T00:00:00","EndDate":"2018-03-15T00:00:00","PaxAges":"18:0|18:0","BestValue":952.00,"Duration":14},{"StartDate":"2018-03-02T00:00:00","EndDate":"2018-03-16T00:00:00","PaxAges":"18:0|18:0","BestValue":952.00,"Duration":14},{"StartDate":"2018-03-03T00:00:00","EndDate":"2018-03-17T00:00:00","PaxAges":"18:0|18:0","BestValue":952.00,"Duration":14},{"StartDate":"2018-03-04T00:00:00","EndDate":"2018-03-18T00:00:00","PaxAges":"18:0|18:0","BestValue":952.00,"Duration":14},{"StartDate":"2018-03-05T00:00:00","EndDate":"2018-03-19T00:00:00","PaxAges":"18:0|18:0","BestValue":952.00,"Duration":14}]';
+//		$return = $exampleData;
+//		$return = json_encode($exampleData);
+		$checkin = BFCHelper::getVar('checkin');
+		$duration = BFCHelper::getVar('duration');
+		$paxes = BFCHelper::getVar('paxes');
+		$paxages = BFCHelper::getVar('paxages');
+		$merchantId = BFCHelper::getVar('merchantId');
+		$condominiumId = BFCHelper::getVar('condominiumId');
+		$resourceId = BFCHelper::getVar('resourceId');
+		$cultureCode = BFCHelper::getVar('cultureCode');
+		$points = BFCHelper::getVar('points');
+		$userid = BFCHelper::getVar('userid');
+		$tagids = BFCHelper::getVar('tagids');
+		$merchantsList = BFCHelper::getVar('merchantsList');
+		$availabilityTypes = BFCHelper::getVar('availabilityTypes');
+		$itemTypeIds = BFCHelper::getVar('itemTypeIds');
+		$domainLabel = BFCHelper::getVar('domainLabel');
+		$merchantCategoryIds = BFCHelper::getVar('merchantCategoryIds');
+		$masterTypeIds = BFCHelper::getVar('masterTypeIds');
+		$merchantTagsIds = BFCHelper::getVar('merchantTagsIds');
+		$return = BFCHelper::GetAlternativeDates($checkin, $duration, $paxes, $paxages, $merchantId, $condominiumId, $resourceId, $cultureCode, $points, $userid, $tagids, $merchantsList, $availabilityTypes, $itemTypeIds, $domainLabel, $merchantCategoryIds, $masterTypeIds, $merchantTagsIds);
+		echo json_encode($return);      
+		// use die() because in IIS $mainframe->close() raise a 500 error 
+		$app = JFactory::getApplication();
+		$app->close();
+		//$mainframe->close();
+	}
+
+
+	function listDateCheckin(){
+		$resourceId=BFCHelper::getVar( 'resourceId');
+		date_default_timezone_set('UTC');		
+		$startDate = DateTime::createFromFormat('d/m/Y',date("d/m/Y"),new DateTimeZone('UTC'));
+		$return = BFCHelper::getCheckInDates($resourceId ,$startDate);
+		echo $return;      
+		$app = JFactory::getApplication();
+		$app->close();
+	}
 
 	function listDate(){
 //		global $mainframe;
@@ -54,7 +129,7 @@ class BookingForConnectorController extends JControllerLegacy
 //		JModel::addIncludePath(JPATH_ROOT. DIRECTORY_SEPARATOR .'components' . DIRECTORY_SEPARATOR . 'com_bookingforconnector'. DIRECTORY_SEPARATOR . 'models', 'BookingForConnectorModel');
 //		$model = JModel::getInstance('Resource', 'BookingForConnectorModel');
 //		$return .= $model->getCheckOutDatesFromService($resourceId ,$ci);
-		$checkin = DateTime::createFromFormat('Ymd',$ci);
+		$checkin = DateTime::createFromFormat('Ymd',$ci,new DateTimeZone('UTC'));
 		$return = BFCHelper::getCheckOutDates($resourceId ,$checkin);
 		
 		echo $return;      
@@ -65,276 +140,7 @@ class BookingForConnectorController extends JControllerLegacy
 		//$mainframe->close();
 	}
 
-	function updateCCdataOrder(){
-		$formData = BFCHelper::getArray('form');
-		if(empty($formData)){
-		}
-		$ccdata = null;
-		$ccdata = json_encode(BFCHelper::getCCardData($formData));
-		$ccdata = BFCHelper::encrypt($ccdata);
-		$orderId=BFCHelper::getVar('OrderId');
-		$order = BFCHelper::updateCCdata(
-				$orderId,        
-				$ccdata, 
-				null
-                );
-		$redirect = $formData['Redirect'];
-		$redirecterror = $formData['Redirecterror'];
-		if (empty($order)){
-			$order ="";
-			$redirect = $redirecterror;
-		}
-		$app = JFactory::getApplication();
-		$app->redirect($redirect, false);
-		$app->close();
-	}
 
-	function sendOrder(){ //Prenotazione risorsa (orderA)
-//		$formData = BFCHelper::getArray('form');
-		$formData = BFCHelper::getArray('form');
-
-		if(empty($formData)){
-		}
-		$customer = BFCHelper::getCustomerData($formData);
-
-		$suggestedStay = json_decode($formData['staysuggested']);
-		$req = json_decode($formData['stayrequest'], true);
-		
-		$redirect = $formData['Redirect'];
-		$redirecterror = $formData['Redirecterror'];
-
-		$isgateway = $formData['isgateway'];
-
-		// eta persone 
-//		$otherData = "paxages:". str_replace("]", "" ,str_replace("[", "" , implode($req['paxages'], ',') ));
-		$otherData = "paxages:". str_replace("]", "" ,str_replace("[", "" , $req['paxages'] ))
-					."|"."checkin_eta_hour:".$formData['checkin_eta_hour'];
-//					."|"."pageurl:".$formData['pageurl']
-//					."|"."title:".$formData['title']
-//					."|"."accettazione:".$formData['confirmprivacy'];
-		
-		$ccdata = null;
-		if (BFCHelper::canAcquireCCData($formData)) { 
-			$ccdata = json_encode(BFCHelper::getCCardData($formData));
-			$ccdata = BFCHelper::encrypt($ccdata);
-//			$ccdata = BFCHelper::getCCardData($formData);
-			}
-		$orderData =  BFCHelper::prepareOrderData($formData, $customer, $suggestedStay, $otherData, $ccdata);
-		$orderData['pricetype'] = $req['pricetype'];
-		$orderData['label'] = $formData['label'];
-		$orderData['checkin_eta_hour'] = $formData['checkin_eta_hour'];
-
-		$processOrder = null;
-		if(!empty($isgateway) && ($isgateway =="true" ||$isgateway =="1")){
-			$processOrder=false;
-		}
-
-		$order = BFCHelper::setOrder(
-                $orderData['customerData'], 
-                $orderData['suggestedStay'], 
-                $orderData['creditCardData'], 
-                $orderData['otherNoteData'], 
-                $orderData['merchantId'], 
-                $orderData['orderType'], 
-                $orderData['userNotes'], 
-                $orderData['label'], 
-                $orderData['cultureCode'], 
-				$processOrder,
-				$orderData['pricetype']
-                );
-
-		if (empty($order)){
-			$order ="";
-			$redirect = $redirecterror;
-		}
-		if (!empty($order)){
-			if(!empty($isgateway) && ($isgateway =="true" ||$isgateway =="1")){
-			$redirect = JRoute::_('index.php?view=payment&orderId=' . $order->OrderId);
-
-			}else{
-				$numAdults = 0;
-				$persons= explode("|", $suggestedStay->Paxes);
-				foreach($persons as $person) {
-					$totper = explode(":", $person);
-					$numAdults += (int)$totper[1];
-				}
-				$act = "OrderResource";
-				if(!empty($order->OrderType) && strtolower($order->OrderType) =="b"){
-					$act = "QuoteRequest";
-				}
-
-				$startDate = DateTime::createFromFormat('Y-m-d',BFCHelper::parseJsonDate($order->StartDate,'Y-m-d'));
-				$endDate = DateTime::createFromFormat('Y-m-d',BFCHelper::parseJsonDate($order->EndDate,'Y-m-d'));
-				
-				if(strpos($redirect, "?")=== false){
-					$redirect = $redirect . '?';
-				}else{
-					$redirect = $redirect . '&';
-				}
-
-				$redirect = $redirect . 'act=' . $act  
-				 . '&orderid=' . $order->OrderId 
-				 . '&merchantid=' . $order->MerchantId 
-				 . '&OrderType=' . $order->OrderType 
-				 . '&OrderTypeId=' . $order->OrderTypeId 
-				 . '&totalamount=' . ($order->TotalAmount *100)
-				 . '&startDate=' . $startDate->format('Y-m-d')
-				 . '&endDate=' . $endDate->format('Y-m-d')
-				 . '&numAdults=' . $numAdults
-				;
-			}
-//			$urlredirpayment = JRoute::_('index.php?view=payment&orderId=' . $order->OrderId);
-//			$redirect = JRoute::_('index.php?view=payment&orderId=' . $order->OrderId);
-		}
-//		echo json_encode($return);      
-		$app = JFactory::getApplication();
-		$app->redirect($redirect, false);
-		$app->close();
-
-	}
-
-	function sendRequestOnSell(){  //Richiesta informazioni Vendita a scalare
-		$formData = BFCHelper::getArray('form');
-//		$cultureCode = BFCHelper::getVar('cultureCode');
-		$customerData = FormHelper::getCustomerData($formData);
-//		$customerData['Culture'] = $cultureCode;
-//		$customerData['UserCulture'] = $cultureCode;
-		
-		$searchData = 'MasterUnitCategoryId:'. BFCHelper::getInt('MasterUnitCategoryId') .'|' .
-				'UnitCategoryId:'. BFCHelper::getInt('unitCategoryId') .'|' .
-				'Points:'. BFCHelper::getVar('Points') .'|' .
-				'ContractType:'.  BFCHelper::getInt('contractTypeId') .'|' .
-				'MinPrice:'. BFCHelper::getInt('pricemin') .'|' .
-				'MaxPrice:'. BFCHelper::getInt('pricemax') .'|' .
-				'LocationID:'. BFCHelper::getInt('zoneId') .'|' .
-				'MinArea:'. BFCHelper::getInt('areamin') .'|' .
-				'MaxArea:'. BFCHelper::getInt('areamax') .'|' .
-				'MinPaxes:'. BFCHelper::getInt('MinPaxes') .'|' .
-				'MaxPaxes:'. BFCHelper::getInt('MaxPaxes') .'|' .
-				'MinBaths:'. BFCHelper::getInt('bathsmin') .'|' .
-				'MaxBaths:'. BFCHelper::getInt('bathsmax') .'|' .
-				'MinRooms:'. BFCHelper::getInt('roomsmin') .'|' .
-				'MaxRooms:'. BFCHelper::getInt('roomsmax') .'|' .
-				'MinBedRooms:'. BFCHelper::getInt('bedroomsmin') .'|' .
-				'MaxBedRooms:'. BFCHelper::getInt('bedroomsmax') .'|' .
-				'maxReplies:'. BFCHelper::getInt('maxReplies') .'|' .
-				'note:'. str_replace("|", " " , str_replace(":", " " ,BFCHelper::getVar('notes')));
-
-		$merchantId = BFCHelper::getVar('merchantId');
-		$orderType = $formData['orderType'];
-		$label = BFCHelper::getVar('label');
-		$processRequest = BFCHelper::getVar('processRequest');
-		if($orderType=='i'){
-		$searchData = 'MasterUnitCategoryId:'. BFCHelper::getInt('MasterUnitCategoryId') .'|' .
-				'UnitCategoryId:'. BFCHelper::getInt('unitCategoryId') .'|' .
-				'Points:'. BFCHelper::getVar('Points') .'|' .
-				'ContractType:'.  BFCHelper::getInt('contractTypeId') .'|' .
-				'MinPrice:'. BFCHelper::getInt('pricemin') .'|' .
-				'MaxPrice:'. BFCHelper::getInt('pricemin') .'|' .
-				'LocationID:'. BFCHelper::getInt('zoneId') .'|' .
-				'MinArea:'. BFCHelper::getInt('areamin') .'|' .
-				'MaxArea:'. BFCHelper::getInt('areamin') .'|' .
-				'MinPaxes:'. BFCHelper::getInt('MinPaxes') .'|' .
-				'MaxPaxes:'. BFCHelper::getInt('MinPaxes') .'|' .
-				'MinBaths:'. BFCHelper::getInt('bathsmin') .'|' .
-				'MaxBaths:'. BFCHelper::getInt('bathsmax') .'|' .
-				'MinRooms:'. BFCHelper::getInt('roomsmin') .'|' .
-				'MaxRooms:'. BFCHelper::getInt('roomsmin') .'|' .
-				'MinBedRooms:'. BFCHelper::getInt('bedroomsmin') .'|' .
-				'MaxBedRooms:'. BFCHelper::getInt('bedroomsmax') .'|' .
-				'maxReplies:'. BFCHelper::getInt('maxReplies') .'|' .
-				'note:'. str_replace("|", " " , str_replace(":", " " ,BFCHelper::getVar('notes')));
-
-		}
-
-		$return = BFCHelper::sendRequestOnSell($customerData, $searchData, $merchantId, $orderType, $label, $cultureCode, $processRequest);	
-		if (empty($return)){
-			$return ="";
-		}
-		$app = JFactory::getApplication();
-		if (empty($redirect)){
-			echo json_encode($return);      
-		}else{
-			$app->redirect($redirect, false);
-		}
-		$app->close();
-	}
-
-	function sendSimpleRequestOnSell(){
-		$formData = BFCHelper::getArray('form');
-		$cultureCode = BFCHelper::getVar('cultureCode');
-		$customerData = FormHelper::getCustomerData($formData);
-		$customerData['Culture'] = $cultureCode;
-		$customerData['UserCulture'] = $cultureCode;
-// create otherData (string)
-		$otherData = "pageurl:".$formData['pageurl']
-					."|"."title:".$formData['title']
-					."|"."accettazione:".$formData['confirmprivacy'];
-			
-		$orderData =  BFCHelper::prepareOrderData($formData, $customerData, null, $otherData, null);
-
-				$merchantId = BFCHelper::getVar('merchantId');
-				$type = BFCHelper::getVar('type');
-				$label = BFCHelper::getVar('label');
-		$orderData['processOrder'] = BFCHelper::getVar('processRequest');
-		$orderData['orderType'] = $type;
-
-		$return = BFCHelper::setInfoRequest(
-					$orderData['customerData'], 
-					$orderData['suggestedStay'],
-					$orderData['otherNoteData'], 
-					$orderData['merchantId'], 
-					$orderData['orderType'], 
-					$orderData['userNotes'], 
-					$orderData['label'], 
-					$orderData['cultureCode'],
-					$orderData['processOrder']
-					);
-		if (isset($return)){
-			echo $return->InfoRequestId;      
-		}
-//		echo $return;      
-		$app = JFactory::getApplication();
-		$app->close();
-	}
-
-	function sendAlertOnSell(){
-		$formData = BFCHelper::getArray('form');
-
-		$cultureCode = BFCHelper::getVar('cultureCode');
-		$customerData = FormHelper::getCustomerData($formData);
-		$customerData['Culture'] = $cultureCode;
-		$customerData['UserCulture'] = $cultureCode;
-		$searchData = array(
-				'MasterUnitCategoryId' =>BFCHelper::getInt('MasterUnitCategoryId'),
-				'UnitCategoryId' => BFCHelper::getInt('unitCategoryId'),
-				'Points' => BFCHelper::getVar('Points'),
-				'ContractType' =>  BFCHelper::getInt('contractTypeId'),
-				'MinPrice' => BFCHelper::getInt('pricemin'),
-				'MaxPrice' => BFCHelper::getInt('pricemax'),
-				'LocationID' => BFCHelper::getInt('zoneId'),
-				'MinArea' => BFCHelper::getInt('areamin'),
-				'MaxArea' => BFCHelper::getInt('areamax'),
-				'MinPaxes' => BFCHelper::getInt('MinPaxes'),
-				'MaxPaxes' => BFCHelper::getInt('MaxPaxes'),
-				'MinBaths' => BFCHelper::getInt('bathsmin'),
-				'MaxBaths' => BFCHelper::getInt('bathsmax'),
-				'MinRooms' => BFCHelper::getInt('roomsmin'),
-				'MaxRooms' => BFCHelper::getInt('roomsmax'),
-				'MinBedRooms' => BFCHelper::getInt('bedroomsmin'),
-				'MaxBedRooms' => BFCHelper::getInt('bedroomsmax')
-		);
-		$merchantId = BFCHelper::getVar('merchantId');
-		$type = BFCHelper::getVar('type');
-		$label = BFCHelper::getVar('label');
-		$processAlert = BFCHelper::getVar('processAlert');
-		$enabled = BFCHelper::getVar('enabled');
-
-		$return = BFCHelper::setAlertOnSell($customerData, $searchData, $merchantId, $type, $label, $cultureCode, $processAlert, $enabled);	
-		echo $return;      
-		$app = JFactory::getApplication();
-		$app->close();
-	}
 
 	function sendContact(){ //Richiesta informazioni Merchant (infoRequestA)
 		$formData = BFCHelper::getArray('form');
@@ -355,20 +161,23 @@ class BookingForConnectorController extends JControllerLegacy
 		// create otherData (string)
 		$numAdults = BFCHelper::getOptionsFromSelect($formData,'Totpersons');
 		
-		$otherData = "persone:".$numAdults."|"
-			."accettazione:".BFCHelper::getOptionsFromSelect($formData,'accettazione');
+		$otherData = "persone:".$numAdults
+			."|"."accettazione:".BFCHelper::getOptionsFromSelect($formData,'accettazione')
+			."|"."optinemail:".(isset($formData['optinemail'])?$formData['optinemail']:'')
+			."|".BFCHelper::bfi_get_clientdata();
+
 		// create SuggestedStay
 		$startDate = null;
 		$endDate = null;
 
 		if ($formData['CheckIn'] != null && $formData['CheckOut'] != null) {
 			
-			$startDate = DateTime::createFromFormat('d/m/Y',$formData['CheckIn']);
-			$endDate = DateTime::createFromFormat('d/m/Y',$formData['CheckOut']);
+			$startDate = DateTime::createFromFormat('d/m/Y',$formData['CheckIn'],new DateTimeZone('UTC'));
+			$endDate = DateTime::createFromFormat('d/m/Y',$formData['CheckOut'],new DateTimeZone('UTC'));
 			
 			$sStay = array(
-						'CheckIn' => DateTime::createFromFormat('d/m/Y',$formData['CheckIn'])->format('Y-m-d\TH:i:sO'),
-						'CheckOut' => DateTime::createFromFormat('d/m/Y',$formData['CheckOut'])->format('Y-m-d\TH:i:sO')
+						'CheckIn' => DateTime::createFromFormat('d/m/Y',$formData['CheckIn'],new DateTimeZone('UTC'))->format('Y-m-d\TH:i:sO'),
+						'CheckOut' => DateTime::createFromFormat('d/m/Y',$formData['CheckOut'],new DateTimeZone('UTC'))->format('Y-m-d\TH:i:sO')
 					);
 
 			$suggestedStay = new stdClass(); 
@@ -446,18 +255,20 @@ class BookingForConnectorController extends JControllerLegacy
 		$suggestedStay = null;
 		$redirect = $formData['Redirect'];
 		// create otherData (string)
-		$otherData = "persone:".BFCHelper::getOptionsFromSelect($formData,'Totpersons')."|"
-			."accettazione:".BFCHelper::getOptionsFromSelect($formData,'accettazione');
+		$otherData = "persone:".BFCHelper::getOptionsFromSelect($formData,'Totpersons')
+			."|"."accettazione:".BFCHelper::getOptionsFromSelect($formData,'accettazione')
+					."|"."optinemail:".(isset($formData['optinemail'])?$formData['optinemail']:'')
+			."|".BFCHelper::bfi_get_clientdata();
 		$numAdults = BFCHelper::getOptionsFromSelect($formData,'Totpersons');
 		// create SuggestedStay
 		$startDate = null;
 		$endDate = null;
 			if (!empty($formData['CheckIn']) && !empty($formData['CheckOut'])) {
-				$startDate = DateTime::createFromFormat('d/m/Y',$formData['CheckIn']);
-				$endDate = DateTime::createFromFormat('d/m/Y',$formData['CheckOut']);
+				$startDate = DateTime::createFromFormat('d/m/Y',$formData['CheckIn'],new DateTimeZone('UTC'));
+				$endDate = DateTime::createFromFormat('d/m/Y',$formData['CheckOut'],new DateTimeZone('UTC'));
 					$sStay = array(
-								'CheckIn' => DateTime::createFromFormat('d/m/Y',$formData['CheckIn'])->format('Y-m-d\TH:i:sO'),
-								'CheckOut' => DateTime::createFromFormat('d/m/Y',$formData['CheckOut'])->format('Y-m-d\TH:i:sO'),
+								'CheckIn' => DateTime::createFromFormat('d/m/Y',$formData['CheckIn'],new DateTimeZone('UTC'))->format('Y-m-d\TH:i:sO'),
+								'CheckOut' => DateTime::createFromFormat('d/m/Y',$formData['CheckOut'],new DateTimeZone('UTC'))->format('Y-m-d\TH:i:sO'),
 								'UnitId' => $formData['resourceId']
 							);
 
@@ -466,7 +277,7 @@ class BookingForConnectorController extends JControllerLegacy
 					{ 
 						$suggestedStay->$key = $value; 
 					}
-					$otherData .= "|" . "CheckIn:" . DateTime::createFromFormat('d/m/Y',$formData['CheckIn'])->format('Y-m-d') . "|" ."CheckOut:" . DateTime::createFromFormat('d/m/Y',$formData['CheckOut'])->format('Y-m-d') . "|" . "UnitId:" . $formData['resourceId'];
+					$otherData .= "|" . "CheckIn:" . DateTime::createFromFormat('d/m/Y',$formData['CheckIn'],new DateTimeZone('UTC'))->format('Y-m-d') . "|" ."CheckOut:" . DateTime::createFromFormat('d/m/Y',$formData['CheckOut'])->format('Y-m-d') . "|" . "UnitId:" . $formData['resourceId'];
 				}else{
 			if (!empty($formData['resourceId']))  {
 					$sStay = array(
@@ -564,6 +375,11 @@ class BookingForConnectorController extends JControllerLegacy
 				$otherData["accettazione:"] = "accettazione:" . BFCHelper::getOptionsFromSelect($formData,'accettazione');
 		}
 		
+		if (!empty($formData['optinemail']))  {
+				$otherData["optinemail:"] = "optinemail:" . BFCHelper::getOptionsFromSelect($formData,'optinemail');
+		}
+
+					$otherData["clientdata:"] = BFCHelper::bfi_get_clientdata();
 				
 
 		$orderData =  BFCHelper::prepareOrderData($formData, $customer, $suggestedStay, implode("|",$otherData), null);
@@ -612,161 +428,6 @@ class BookingForConnectorController extends JControllerLegacy
 
 	}
 
-	function sendOffer(){ //Richiesta informazioni pacchetto (in divenire) (infoRequestE)
-		$formData = BFCHelper::getArray('form');
-
-		$customer = BFCHelper::getCustomerData($formData);
-		$suggestedStay = null;
-		$paxages = BFCHelper::getStayParam('paxages');
-		$redirect = $formData['Redirect'];
-		$redirecterror = $formData['Redirecterror'];
-
-		// create otherData (string)
-		$otherData = 'offerId:'.$formData['offerId']."|"		
-					."persone:".$formData['persons']."|"
-					."accettazione:".BFCHelper::getOptionsFromSelect($formData,'accettazione')."|"
-					."paxages:". implode(',',$paxages)."|"
-					."checkin_eta_hour:".$formData['checkin_eta_hour'];
-		
-		// create SuggestedStay
-		$startDate = null;
-		$endDate = null;
-		if (!empty($formData['CheckIn']) && !empty($formData['CheckOut'])) {
-				$startDate = DateTime::createFromFormat('d/m/Y',$formData['CheckIn']);
-				$endDate = DateTime::createFromFormat('d/m/Y',$formData['CheckOut']);
-					$sStay = array(
-								'CheckIn' => DateTime::createFromFormat('d/m/Y',$formData['CheckIn'])->format('Y-m-d\TH:i:sO'),
-								'CheckOut' => DateTime::createFromFormat('d/m/Y',$formData['CheckOut'])->format('Y-m-d\TH:i:sO'),
-								'UnitId' => $formData['resourceId']
-							);
-
-					$suggestedStay = new stdClass(); 
-					foreach ($sStay as $key => $value) 
-					{ 
-						$suggestedStay->$key = $value; 
-					}
-					$otherData .= "|" . "CheckIn:" . DateTime::createFromFormat('d/m/Y',$formData['CheckIn'])->format('Y-m-d') . "|" ."CheckOut:" . DateTime::createFromFormat('d/m/Y',$formData['CheckOut'])->format('Y-m-d') . "|" . "UnitId:" . $formData['resourceId'];
-		}else{
-			if (!empty($formData['resourceId']))  {
-					$sStay = array(
-								'UnitId' => $formData['resourceId']
-							);
-
-					$suggestedStay = new stdClass(); 
-					foreach ($sStay as $key => $value) 
-					{ 
-						$suggestedStay->$key = $value; 
-					}
-					$otherData .= "|" . "UnitId:" . $formData['resourceId'];
-				}
-		}
-
-		$orderData =  BFCHelper::prepareOrderData($formData, $customer, $suggestedStay, $otherData, null);
-
-		$orderData['processOrder'] = true;
-		$orderData['label'] = $this->formlabel;
-		$orderData['checkin_eta_hour'] = $formData['checkin_eta_hour'];
-
-		$return = BFCHelper::setOrder(
-					$orderData['customerData'], 
-					$orderData['suggestedStay'], 
-					$orderData['creditCardData'], 
-					$orderData['otherNoteData'],
-					$orderData['merchantId'], 
-					$orderData['orderType'], 
-					$orderData['userNotes'], 
-					$orderData['label'], 
-					$orderData['cultureCode'], 
-					true,
-					null
-					);	
-
-		if (empty($return)){
-			$return ="";
-			$redirect = $redirecterror;
-		}
-		if (!empty($return)){
-
-				if(strpos($redirect, "?")=== false){
-					$redirect = $redirect . '?';
-				}else{
-					$redirect = $redirect . '&';
-				}
-				$redirect = $redirect . 'act=ContactPackage&orderid=' . $return->OrderId 
-				 . '&merchantid=' . $return->MerchantId 
-				 . '&OrderType=' . $return->OrderType 
-				 . '&OrderTypeId=' . $return->OrderTypeId;
-//				 . '&RequestType=' . $return->RequestType
-				
-		}
-		echo json_encode($return);      
-		$app = JFactory::getApplication();
-		$app->redirect($redirect, false);
-		$app->close();
-
-	}
-
-	function sendScalarRequest(){
-		$formData = BFCHelper::getArray('form');
-
-		$customer = BFCHelper::getCustomerData($formData);
-
-		$redirect = $formData['Redirect'];
-
-// create otherData (string)
-		$otherData = "adulti:".BFCHelper::getOptionsFromSelect($formData,'TotPersons')."|"
-			."bambini:".BFCHelper::getOptionsFromSelect($formData,'Totchildrens')."|"
-			."etabambini:".$formData['ChildrenAge']."|"
-			."tipologiastruttura:".BFCHelper::getOptionsFromSelect($formData,'merchantcategory')."|"
-			."trattamento:".BFCHelper::getOptionsFromSelect($formData,'treatments')."|"
-			."maxrisposte:".BFCHelper::getOptionsFromSelect($formData,'Maxresponse')."|"
-			."accettazione:".BFCHelper::getOptionsFromSelect($formData,'accettazione');
-
-		$suggestedStay = null;
-		// create SuggestedStay
-				if ($formData['CheckIn'] != null && $formData['CheckOut'] != null) {
-					$sStay = array(
-								'CheckIn' => DateTime::createFromFormat('d/m/Y',$formData['CheckIn'])->format('Y-m-d\TH:i:sO'),
-								'CheckOut' => DateTime::createFromFormat('d/m/Y',$formData['CheckOut'])->format('Y-m-d\TH:i:sO')
-							);
-
-					$suggestedStay = new stdClass(); 
-					foreach ($sStay as $key => $value) 
-					{ 
-						$suggestedStay->$key = $value; 
-					}
-					$otherData .= "|" . "CheckIn:" . DateTime::createFromFormat('d/m/Y',$formData['CheckIn'])->format('Y-m-d') ."|" ."CheckOut:" . DateTime::createFromFormat('d/m/Y',$formData['CheckOut'])->format('Y-m-d');
-				}
-					
-		$orderData =  BFCHelper::prepareOrderData($formData, $customer, $suggestedStay, $otherData, null);
-
-		$orderData['processOrder'] = true;
-		$orderData['label'] = $this->formlabel;
-
-		$order = BFCHelper::setOrder(
-			$orderData['customerData'], 
-			$orderData['suggestedStay'], 
-			$orderData['creditCardData'], 
-			$orderData['otherNoteData'], 
-			$orderData['merchantId'], 
-			$orderData['orderType'], 
-			$orderData['userNotes'], 
-			$orderData['label'], 
-			$orderData['cultureCode']);
-		/*if (isset($order))
-			$thankYouMessage = "Grazie";
-		else
-		$thankYouMessage = "Errore invio dati";*/
-
-		if (empty($order)){
-			$order ="";
-		}
-		echo json_encode($order);      
-		$app = JFactory::getApplication();
-		$app->redirect($redirect, false);
-		$app->close();
-	}
-
 	function sendRating(){
 		$formData = BFCHelper::getArray('form');		
 		$name=BFCHelper::getVar('name');
@@ -800,6 +461,9 @@ class BookingForConnectorController extends JControllerLegacy
 		$redirect = BFCHelper::getVar('Redirect'); 
 		$redirecterror =  BFCHelper::getVar('Redirecterror'); 
 
+		$otherData = "optinemail:".(isset($formData['optinemail'])?$formData['optinemail']:'')
+			."|".BFCHelper::bfi_get_clientdata();
+
 		if (empty($resourceId)){
 			$resourceId = null;
 		}
@@ -812,7 +476,7 @@ class BookingForConnectorController extends JControllerLegacy
 				$orderId = null;
 			}
 		}
-		$return = BFCHelper::setRating($name, $city, $typologyid, $email, $nation, $merchantId,$value1, $value2, $value3, $value4, $value5, $totale, $pregi, $difetti, $userId, $cultureCode, $checkin, $resourceId, $orderId, $label);	
+		$return = BFCHelper::setRating($name, $city, $typologyid, $email, $nation, $merchantId,$value1, $value2, $value3, $value4, $value5, $totale, $pregi, $difetti, $userId, $cultureCode, $checkin, $resourceId, $orderId, $label, $otherData);	
 		if ($return < 1){
 			$return ="";
 			$redirect = $redirecterror;
@@ -914,15 +578,6 @@ class BookingForConnectorController extends JControllerLegacy
 		$listsId=BFCHelper::getVar('resourcesId');
 		$language=BFCHelper::getVar('language');
 		$return = BFCHelper::GetResourcesByIds($listsId,$language);
-		echo $return;      
-		$app = JFactory::getApplication();
-		$app->close();
-	
-	}
-	function GetResourcesCalculateByIds(){
-		$listsId=BFCHelper::getVar('resourcesId');
-		$language=BFCHelper::getVar('language');
-		$return = BFCHelper::GetResourcesCalculateByIds($listsId,$language);
 		echo $return;      
 		$app = JFactory::getApplication();
 		$app->close();
@@ -1127,7 +782,7 @@ class BookingForConnectorController extends JControllerLegacy
 		if ($availabilitytype ==2 ) // product TimePeriod
 		{
 			$duration = isset($_REQUEST['duration'])?$_REQUEST['duration']:null; 
-			$checkIn = DateTime::createFromFormat("YmdHis", $_REQUEST['CheckInTime']);
+			$checkIn = DateTime::createFromFormat("YmdHis", $_REQUEST['CheckInTime'],new DateTimeZone('UTC'));
 		}
 		
 		if(!isset($duration)){
@@ -1184,6 +839,12 @@ class BookingForConnectorController extends JControllerLegacy
  		
 		$customer = BFCHelper::getCustomerData($formData);
 
+		$language = isset($_REQUEST['language']) ? $_REQUEST['language'] : '' ;
+		if(empty( $language )){
+			$language = JFactory::getLanguage()->getTag();
+		}
+		
+ 
 		$userNotes = $formData['note'];
 		$cultureCode = $formData['cultureCode'];
 		$merchantId = $formData['merchantId'];
@@ -1217,17 +878,22 @@ class BookingForConnectorController extends JControllerLegacy
 		$redirecterror = $formData['Redirecterror'];
 		$isgateway = $formData['isgateway'];
 
-
 //		$otherData = "paxages:". str_replace("]", "" ,str_replace("[", "" , $req['paxages'] ))
 //					."|"."checkin_eta_hour:".$formData['checkin_eta_hour'];
-		$otherData = "checkin_eta_hour:".$formData['checkin_eta_hour'];
+//		$otherData = "checkin_eta_hour:".$formData['checkin_eta_hour'];
+		$otherData = "checkin_eta_hour:".$formData['checkin_eta_hour']
+					."|"."optinemail:".(isset($formData['optinemail'])?$formData['optinemail']:'')
+					."|".BFCHelper::bfi_get_clientdata();
+
+
+
 //		$customerDatas = array($customerData);
 
 		$ccdata = null;
 //		if (BFCHelper::canAcquireCCData($formData)) { 
 		$ccdata = BFCHelper::getCCardData($formData);
 		if (!empty($ccdata)) {
-			$ccdata = BFCHelper::encrypt(json_encode($ccdata));
+			$ccdata = BFCHelper::encrypt(json_encode($ccdata),$label.$customer['Email'] );
 		}
 //			}
 		$orderData = array(
@@ -1256,7 +922,6 @@ class BookingForConnectorController extends JControllerLegacy
 		if(!empty($isgateway) && ($isgateway =="true" ||$isgateway =="1")){
 			$processOrder=false;
 		}
-
 
 		$order = BFCHelper::setOrder(
                 $orderData['customerData'], 
@@ -1316,8 +981,8 @@ class BookingForConnectorController extends JControllerLegacy
 					$act = "QuoteRequest";
 				}
 
-				$startDate = DateTime::createFromFormat('Y-m-d',BFCHelper::parseJsonDate($order->StartDate,'Y-m-d'));
-				$endDate = DateTime::createFromFormat('Y-m-d',BFCHelper::parseJsonDate($order->EndDate,'Y-m-d'));
+				$startDate = DateTime::createFromFormat('Y-m-d',BFCHelper::parseJsonDate($order->StartDate,'Y-m-d'),new DateTimeZone('UTC'));
+				$endDate = DateTime::createFromFormat('Y-m-d',BFCHelper::parseJsonDate($order->EndDate,'Y-m-d'),new DateTimeZone('UTC'));
 				
 				if(strpos($redirect, "?")=== false){
 					$redirect = $redirect . '?';
@@ -1371,40 +1036,40 @@ class BookingForConnectorController extends JControllerLegacy
 		$app->close();
 	}
 
-	function DeleteFromCart(){
-		$return = null;
-		$CartOrderId = stripslashes(BFCHelper::getVar("bfi_CartOrderId"));
-		$language = isset($_REQUEST['language']) ? $_REQUEST['language'] : '' ;
-		$redirect = JURI::root();
-		BFCHelper::setSession('hdnBookingType', '', 'bfi-cart');
-		BFCHelper::setSession('hdnOrderData', '', 'bfi-cart');
-		if(!empty($CartOrderId)){
-			$tmpUserId = BFCHelper::bfi_get_userId();
-			$currCart = BFCHelper::DeleteFromCartByExternalUser($tmpUserId, $language, $CartOrderId);
-//WP->			$cartdetails_page = get_post( bfi_get_page_id( 'cartdetails' ) );
-//			$url_cart_page = get_permalink( $cartdetails_page->ID );
-//			wp_redirect($url_cart_page);
-//			exit;
-			$redirect = JRoute::_('index.php?option=com_bookingforconnector&view=cart');
-
-//			if(!empty($currCart)){
-//				$return = json_encode($currCart);
-//			}
-		}
-		$app = JFactory::getApplication();
-		$app->redirect($redirect, false);
-		$app->close();
-
-//WP->		$base_url = get_site_url();
-//		if(defined('ICL_LANGUAGE_CODE') &&  class_exists('SitePress')){
-//				global $sitepress;
-//				if($sitepress->get_current_language() != $sitepress->get_default_language()){
-//					$base_url = "/" .ICL_LANGUAGE_CODE;
-//				}
+//	function DeleteFromCart(){
+//		$return = null;
+//		$CartOrderId = stripslashes(BFCHelper::getVar("bfi_CartOrderId"));
+//		$language = isset($_REQUEST['language']) ? $_REQUEST['language'] : '' ;
+//		$redirect = JURI::root();
+//		BFCHelper::setSession('hdnBookingType', '', 'bfi-cart');
+//		BFCHelper::setSession('hdnOrderData', '', 'bfi-cart');
+//		if(!empty($CartOrderId)){
+//			$tmpUserId = BFCHelper::bfi_get_userId();
+//			$currCart = BFCHelper::DeleteFromCartByExternalUser($tmpUserId, $language, $CartOrderId);
+////WP->			$cartdetails_page = get_post( bfi_get_page_id( 'cartdetails' ) );
+////			$url_cart_page = get_permalink( $cartdetails_page->ID );
+////			wp_redirect($url_cart_page);
+////			exit;
+//			$redirect = JRoute::_('index.php?option=com_bookingforconnector&view=cart');
+//
+////			if(!empty($currCart)){
+////				$return = json_encode($currCart);
+////			}
 //		}
-//		wp_redirect($base_url);
-//		exit;
-	}
+//		$app = JFactory::getApplication();
+//		$app->redirect($redirect, false);
+//		$app->close();
+//
+////WP->		$base_url = get_site_url();
+////		if(defined('ICL_LANGUAGE_CODE') &&  class_exists('SitePress')){
+////				global $sitepress;
+////				if($sitepress->get_current_language() != $sitepress->get_default_language()){
+////					$base_url = "/" .ICL_LANGUAGE_CODE;
+////				}
+////		}
+////		wp_redirect($base_url);
+////		exit;
+//	}
 
 	function addDiscountCodesToCart(){		
 		$bficoupons = BFCHelper::getVar("bficoupons");

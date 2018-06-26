@@ -82,6 +82,7 @@ class BookingForConnectorModelCondominium extends JModelList
 	}	
 
 	public function getResourceFromService($resourceId='') {
+		$cultureCode = JFactory::getLanguage()->getTag();
 		if(empty($resourceId)){
 			$params = $this->getState('params');
 			$resourceId = $params['resourceId'];
@@ -91,6 +92,7 @@ class BookingForConnectorModelCondominium extends JModelList
 				'data' => array(
 					'Id' => $resourceId,
 					'$format' => 'json',
+					'cultureCode' => BFCHelper::getQuotedString($cultureCode),
 //					'$expand' => 'Merchant,Services'
 					//'$expand' => 'Merchant/MerchantType,OnSellUnit/Services'
 				)

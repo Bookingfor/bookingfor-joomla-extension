@@ -31,7 +31,7 @@ class BookingForConnectorViewOnSellUnitBase extends BFCView
 		//$item		= $this->get('Item');
 
 		//$document 	= JFactory::getDocument();
-		//$language 	= $document->getLanguage();
+		//$language 	= JFactory::getLanguage()->getTag();
 
 		//$document->addScript('//jquery-ui.googlecode.com/svn/tags/legacy/ui/i18n/ui.datepicker-' . substr($language,0,2) . '.js');
 		
@@ -64,12 +64,11 @@ class BookingForConnectorViewOnSellUnitBase extends BFCView
 		if (!empty($resource)){
 				$mainframe = JFactory::getApplication();
 				$pathway   = $mainframe->getPathway();
-				// resetto il pathway				
-//				$pathway->setPathway(null);
-				$count = count($pathway);
+				$items   = $pathway->getPathWay();
+				$count = count($items);
 				$newPathway = array();
 				if($count>1){
-					$newPathway = array_pop($pathway);
+					$newPathway = array_pop($items);
 				}
 				$pathway->setPathway($newPathway);
 

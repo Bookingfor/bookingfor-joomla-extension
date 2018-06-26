@@ -95,7 +95,7 @@ jimport('joomla.utilities.date');
 				
 				
 				$creationDate = BFCHelper::parseJsonDate($rating->CreationDate,'Y-m-d');
-				$jdate  = new DateTime($creationDate);
+				$jdate  = new DateTime($creationDate,new DateTimeZone('UTC'));
 				$creationDateLabel = sprintf(JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RATING_DATE_LABEL'), $jdate->format('d/m/Y'));
 			}
 			$checkInDateLabel = "";
@@ -127,7 +127,7 @@ jimport('joomla.utilities.date');
 
 
 					if(!empty($replydate)){
-						$jdatereply  = DateTime::createFromFormat('Ymd', $replydate);
+						$jdatereply  = DateTime::createFromFormat('Ymd', $replydate,new DateTimeZone('UTC'));
 						$replydateLabel =sprintf(JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RATING_DATEREPLY_LABEL'), $jdatereply->format('d/m/Y'));
 					}
 				} else{

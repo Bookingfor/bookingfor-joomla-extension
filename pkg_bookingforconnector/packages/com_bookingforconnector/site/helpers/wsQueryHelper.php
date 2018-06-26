@@ -21,19 +21,14 @@ class wsQueryHelper {
 	
 	public function __construct($serviceUri, $apikey)
 	{
-//		$this->serviceUri = $serviceUri;
-//		$this->apikey = $apikey;
-
-		JLoader::import('joomla.application.component.helper');
-		$config = JComponentHelper::getParams('com_bookingforconnector');
-//		$this->serviceUri = $config->get('wsurl', '');
 		$this->serviceUri = COM_BOOKINGFORCONNECTOR_WSURL;		
-		$this->apikey = $config->get('apikey', '');
-		$this->formlabel = $config->get('formlabel', '');
-		$this->useproxy = $config->get('useproxy', 0);
-		$this->urlproxy = $config->get('urlproxy', '');
-		$this->usegzip = $config->get('usegzip', 1);
-
+		$this->apikey = COM_BOOKINGFORCONNECTOR_API_KEY;
+		$this->formlabel = '';
+		$this->useproxy = COM_BOOKINGFORCONNECTOR_USEPROXY;
+		$this->urlproxy = COM_BOOKINGFORCONNECTOR_URLPROXY;
+		$this->usegzip = 1;
+		$this->cachetime = COM_BOOKINGFORCONNECTOR_CACHETIME; // 1 hour default
+		$this->cachedir = COM_BOOKINGFORCONNECTOR_CACHEDIR;
 	}
 	
 	public function addFilter(&$filterbase, $filter, $operator) {
@@ -42,78 +37,94 @@ class wsQueryHelper {
 				$filterbase .= ' ' . $operator . ' ';
 			$filterbase .= $filter;
 		}
-		return $this; // makes calls chainable
+		return $this;
 	}
 		
-	public function executeQuery($url, $method = 'GET', $setApiKey = true) {
+	public function executeQuery($url, $method = 'GET', $setApiKey = true, $skip_cache=TRUE) {
 
 		if (isset($url)) {
-			$body = array(); 
-			$isInPost = false;
-			if (isset($method) && strtoupper($method) === "POST" ) {
-				$isInPost = true;
-				$urlParsed = explode("?",$url);
-				$url = $urlParsed[0];
-				if ($setApiKey) {
-					$url .='?s=' . uniqid('', true) . '&apikey='.$this->apikey;
-				}
-				if (isset($urlParsed[1])) {
-					$body = $urlParsed[1];
-				}
-			}
-
-			$ch = curl_init($url);
-
-			if($this->useproxy ==1 && !empty($this->urlproxy)){
-				curl_setopt($ch, CURLOPT_PROXY, $this->urlproxy); /*-------fiddler------*/
-			}
-			if($this->usegzip ==1){
-				curl_setopt($ch,CURLOPT_ENCODING,'gzip');
-			}
 			
-//			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT ,0); 
-//			curl_setopt($ch, CURLOPT_TIMEOUT, 400); //timeout in seconds				
-			curl_setopt($ch, CURLOPT_URL, $url);
-			curl_setopt($ch, CURLOPT_HEADER, false);
-			curl_setopt($ch, CURLOPT_HTTPGET, true);
-			curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-			if ($isInPost){
-				curl_setopt ($ch, CURLOPT_POST, true);
-				curl_setopt ($ch, CURLOPT_POSTFIELDS, $body);
-			} 
-			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-			curl_setopt($ch, CURLOPT_FRESH_CONNECT, TRUE);
-			curl_setopt($ch,CURLOPT_TIMEOUT,360);
-			curl_setopt($ch,CURLOPT_CONNECTTIMEOUT,0);
-//			curl_setopt ($ch, CURLOPT_USERAGENT, "Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.1; WOW64; Trident/6.0)");
+			if ( ! is_dir($this->cachedir)) {
+				mkdir($this->cachedir, 0755, true);
+			}
+			$hash = md5($url);
+			$bfifile = $this->cachedir ."/bfi_$hash.cache";
 			
-			$http_codes = parse_ini_file("httpcode.ini");
-			$r = curl_exec($ch);
-			if(!curl_errno($ch)) {
-				$info = curl_getinfo($ch);
-				$this->infomsg = 'Took ' . $info['total_time'] . ' seconds to send a request <!-- to ' . $info['url'] . ' -->' ;
-				if ($info['http_code'] >= 500 && $info['http_code'] <600){
-					$this->errmsg = $http_codes[$info['http_code']];
-				}
-				if ($info['http_code'] >= 400 && $info['http_code'] <500){
-					$this->errmsg = $http_codes[$info['http_code']];
-				}
-//				echo "<pre>";
-//				echo print_r($info);
-//				echo "</pre>";
-				
-//				 echo '<!--Took ' . $info['total_time'] . ' seconds to send a request to ' . $info['url'] . '-->';
-				}else {
-//				echo '<!--Curl error: ' . curl_error($ch) . '-->';
-				$this->errmsg = curl_error($ch);
+			$mtime = 0;
+			if (file_exists($bfifile)) {
+				$mtime = filemtime($bfifile);
+			}
+			$bfifiletimemod = $mtime + $this->cachetime;			
+			
+			if ($bfifiletimemod < time() || $skip_cache) {
+					$body = array(); 
+					$isInPost = false;
+					if (isset($method) && strtoupper($method) === "POST" ) {
+						$isInPost = true;
+						$urlParsed = explode("?",$url);
+						$url = $urlParsed[0];
+						if ($setApiKey) {
+							$url .='?s=' . uniqid('', true) . '&apikey='.$this->apikey;
+						}
+						if (isset($urlParsed[1])) {
+							$body = $urlParsed[1];
+						}
+					}
+
+					$ch = curl_init($url);
+
 					if($this->useproxy ==1 && !empty($this->urlproxy)){
-						$this->errmsg .= " ;proxy enabled: check proxy ";
+					curl_setopt($ch, CURLOPT_PROXY, $this->urlproxy);
+					}
+					if($this->usegzip ==1){
+						curl_setopt($ch,CURLOPT_ENCODING,'gzip');
+					}
+					
+					curl_setopt($ch, CURLOPT_URL, $url);
+					curl_setopt($ch, CURLOPT_HEADER, false);
+					curl_setopt($ch, CURLOPT_HTTPGET, true);
+					curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+					if ($isInPost){
+						curl_setopt ($ch, CURLOPT_POST, true);
+						curl_setopt ($ch, CURLOPT_POSTFIELDS, $body);
+					} 
+					curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+					curl_setopt($ch, CURLOPT_FRESH_CONNECT, TRUE);
+					curl_setopt($ch,CURLOPT_TIMEOUT,360);
+					curl_setopt($ch,CURLOPT_CONNECTTIMEOUT,0);
+					
+					$ipClient = BFCHelper::bfi_get_client_ip();
+					curl_setopt( $ch, CURLOPT_HTTPHEADER, array("REMOTE_ADDR: $ipClient", "X_FORWARDED_FOR: $ipClient"));	
+					
+					$http_codes = parse_ini_file("httpcode.ini");
+					$r = curl_exec($ch);
+					if(!curl_errno($ch)) {
+						$info = curl_getinfo($ch);
+						$this->infomsg = 'Took ' . $info['total_time'] . ' seconds to send a request <!-- to ' . $info['url'] . ' -->' ;
+						if ($info['http_code'] >= 500 && $info['http_code'] <600){
+							$this->errmsg = $http_codes[$info['http_code']];
+						}
+						if ($info['http_code'] >= 400 && $info['http_code'] <500){
+							$this->errmsg = $http_codes[$info['http_code']];
+						}
+		//				echo "<pre>";
+		//				echo print_r($info);
+		//				echo "</pre>";
+						
+		//				 echo '<!--Took ' . $info['total_time'] . ' seconds to send a request to ' . $info['url'] . '-->';
+						if ($r && !$skip_cache) {
+						file_put_contents($bfifile, $r);
+						}
+					}else {
+	//				echo '<!--Curl error: ' . curl_error($ch) . '-->';
+					$this->errmsg = curl_error($ch);
+						if($this->useproxy ==1 && !empty($this->urlproxy)){
+							$this->errmsg .= " ;proxy enabled: check proxy ";
+						 }
 					 }
-				 }
-/* */
-
-			//curl_close ($ch);
-
+			} else {
+				$r = file_get_contents($bfifile);
+			}
 			return $r;
 		}
 		return null;
@@ -143,8 +154,6 @@ class wsQueryHelper {
 		$query = str_ireplace('%27', '\'', $query);
 		$query = str_ireplace('__27__', '\'\'', $query);
 		$query = str_ireplace('__1013__', '%0D%0A', $query);
-//		$query = str_ireplace('__27__', '%27', $query);
-		//$query = str_ireplace('fake_String_To_Replace', '', $query);
 		if (stripos($url,'?') === false) {
 			$url .= '?';
 		} else {
@@ -170,9 +179,6 @@ class wsQueryHelper {
 			} else {
 				$newData[$key] = $elem;
 			}
-//			if (empty($elem)){
-//				$newData[$key] = "fake_String_To_Replace";
-//			}
 		}
 		return $newData;
 	}

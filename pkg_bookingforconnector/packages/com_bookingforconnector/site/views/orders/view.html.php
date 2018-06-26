@@ -15,7 +15,6 @@ class BookingForConnectorViewOrders extends BFCView
 	protected $item = null;
 	protected $items = null;
 	protected $pagination = null;
-	protected $params = null;
 	protected $language = null;
 	protected $actionform = null;
 	
@@ -32,13 +31,13 @@ class BookingForConnectorViewOrders extends BFCView
 
 		$state		= $this->get('State');
 		$params = $state->params;
-		$language 	= $document->getLanguage();
-				
-		$this->assignRef('state', $state);		
-		$this->assignRef('params', $params);
-		$this->assignRef('language', $language);		
-		$this->assignRef('sitename', $sitename);
-		$this->assignRef('config', $config);
+		$language 	= JFactory::getLanguage()->getTag();
+							
+		$this->state = $state;		
+		$this->currparams = $params;
+		$this->language = $language;		
+		$this->sitename = $sitename;		
+		$this->config = $config;		
 
 		
 		// Display the view

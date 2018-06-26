@@ -23,7 +23,7 @@ $currency_text = array('978' => JTEXT::_('MOD_BOOKINGFORCURRENCYSWITCHER_978'), 
 						'826' => JTEXT::_('MOD_BOOKINGFORCURRENCYSWITCHER_826') //Pound sterling                         
 					);
 
-if($showcurrencyswitcher){
+if($showcurrencyswitcher && !empty($currencyExchanges)){
 ?>
 	<div class="bfi-currency-switcher">
 		<div class="bfi-currency-switcher-selected bfi_<?php echo $currentCurrency ?>">&nbsp;</div>
@@ -72,13 +72,13 @@ jQuery(document).ready(function() {
 	}
   ?>
 <a href="<?php echo $url_cart_page ?>" class="bfi-shopping-cart"><i class="fa fa-shopping-cart "></i> <span class="bfibadge" style="<?php echo (COM_BOOKINGFORCONNECTOR_SHOWBADGE) ?"":"display:none"; ?>"><?php echo ($currentCartsItems>0) ?$currentCartsItems:"";
-	 ?></span><?php echo JText::_('COM_BOOKINGFORCONNECTOR_ORDERS_VIEW_CART') ?></a>
+	 ?></span><span class="bfi-shopping-cart-text"><?php echo JText::_('COM_BOOKINGFORCONNECTOR_ORDERS_VIEW_CART') ?></span></a>
 	<div class="bfi-hide bfimodalcart">
 		<div class="bfi-title"><?php echo JText::_('COM_BOOKINGFORCONNECTOR_ORDERS_VIEW_CART') ?></div>
 		<div class="bfi-body"></div>
 		<div class="bfi-footer">
 			<span class="bfi-btn bfi-alternative" onclick="jQuery('.bfi-shopping-cart').webuiPopover('destroy');"><?php echo JText::_('COM_BOOKINGFORCONNECTOR_ORDERS_VIEW_CART_CONTINUE') ?></span>
-			<span onclick="javascript:window.location.assign('<?php echo $url_cart_page ?>')" class="bfi-btn">Checkout</span>
+			<span onclick="javascript:window.location.assign('<?php echo $url_cart_page ?>')" class="bfi-btn"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_ORDERS_VIEW_CART_CHECKOUT')  ?></span>
 		</div>
 	</div><!-- /.modal -->
   <?php 

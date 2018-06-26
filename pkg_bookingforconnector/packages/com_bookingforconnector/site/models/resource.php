@@ -1015,7 +1015,12 @@ class BookingForConnectorModelResource extends JModelList
 		if (!empty($condominiumId)) {
 			$options['data']['condominiumId'] = $condominiumId ;
 		}
-			
+
+		$currUser = BFCHelper::getSession('bfiUser',null, 'bfi-User');
+		if($currUser!=null && !empty($currUser->CustomerId)) {
+			$options['data']['userid'] = '\'' . $currUser->CustomerId . '\'';
+		}
+
 		$url = $this->helper->getQuery($options);
 		
 		$lstResult = new stdClass;
@@ -1075,6 +1080,11 @@ class BookingForConnectorModelResource extends JModelList
 		}
 		if(!empty($getAllResults)){
 			$options['data']['exploded'] = $getAllResults ? 1: 0;
+		}
+
+		$currUser = BFCHelper::getSession('bfiUser',null, 'bfi-User');
+		if($currUser!=null && !empty($currUser->CustomerId)) {
+			$options['data']['userid'] = '\'' . $currUser->CustomerId . '\'';
 		}
 			
 		$url = $this->helper->getQuery($options);
@@ -1529,7 +1539,7 @@ class BookingForConnectorModelResource extends JModelList
 			$resourceId = $params['resourceId'];
 		}
 		if ($year==null) {
-			$now = new DateTime();
+			$now = new DateTime('UTC');
 			$year = $now->format('Y');
 		}
 				
@@ -1726,8 +1736,8 @@ class BookingForConnectorModelResource extends JModelList
 			}
 			$dateparsed = BFCHelper::parseJsonDate($dateReturn->GetStartDateByMerchantId,"");
 			//if ($dateparsed>$startDate) $startDate = $dateparsed;
-			$d1 =DateTime::createFromFormat('d/m/Y',$dateparsed);
-			$d2 =DateTime::createFromFormat('d/m/Y',$startDate);
+			$d1 =DateTime::createFromFormat('d/m/Y',$dateparsed,new DateTimeZone('UTC'));
+			$d2 =DateTime::createFromFormat('d/m/Y',$startDate,new DateTimeZone('UTC'));
 			if ($d1>$d2) {
 				$startDate = $dateparsed;
 			}
@@ -1787,7 +1797,7 @@ class BookingForConnectorModelResource extends JModelList
 			$resourceId = $params['resourceId'];
 		}
 		if ($ci==null) {
-			$ci =  new DateTime();
+			$ci =  new DateTime('UTC');
 		}
 		//$ci = $params['checkin'];
 		
@@ -1838,7 +1848,7 @@ class BookingForConnectorModelResource extends JModelList
 			$resourceId = $params['resourceId'];
 		}
 		if ($ci==null) {
-			$ci =  new DateTime();
+			$ci =  new DateTime('UTC');
 		}
 		//$ci = $params['checkin'];
 		$options = array(
@@ -1881,7 +1891,7 @@ class BookingForConnectorModelResource extends JModelList
 		}
 		if ($checkIn==null) {
 			//$defaultDate = DateTime::createFromFormat('d/m/Y',BFCHelper::getStartDate());
-			$checkIn =  BFCHelper::getStayParam('checkin', DateTime::createFromFormat('d/m/Y',BFCHelper::getStartDate()));
+			$checkIn =  BFCHelper::getStayParam('checkin', DateTime::createFromFormat('d/m/Y',BFCHelper::getStartDate(),new DateTimeZone('UTC')));
 		}
 		if ($checkOut==null) {
 			$checkOut =   BFCHelper::getStayParam('checkout', $checkIn->modify(BFCHelper::$defaultDaysSpan));
@@ -1961,32 +1971,33 @@ class BookingForConnectorModelResource extends JModelList
 	}
 
 	protected function populateState($ordering = NULL, $direction = NULL) {
-		//$ci = clone BFCHelper::getStayParam('checkin', new DateTime());
+		//$ci = clone BFCHelper::getStayParam('checkin', new DateTime('UTC'));
 
 		//recupero la prima data disponibile per la risorsa se riesco altrimenti recupero la prima data disponibile
 		$resourceId = BFCHelper::getInt('resourceId');
-		if(!empty($resourceId)){
-			$dates = $this->getCheckInDatesFromService($resourceId,null);
-			if (($pos = strpos($dates, ','))!==false)
-				$dates = explode(",",$dates);
-			
-			if (is_array($dates)){
-				$tmpDate1 = array_values($dates);
-				$tmpDate = array_shift($tmpDate1);
-				$defaultDate = DateTime::createFromFormat('Ymd',$tmpDate);
-//				$defaultDate = DateTime::createFromFormat('Ymd',array_shift(array_values($dates)));
-			}elseif($dates != ''){
-				$defaultDate = DateTime::createFromFormat('Ymd',$dates);
-			}
-		}
-		if (!isset($defaultDate)){
-			$defaultDate = DateTime::createFromFormat('d/m/Y',BFCHelper::getStartDate());
-		}
-
-
-		if(new DateTime() >$defaultDate){
-			$defaultDate =  new DateTime();
-		}
+//		if(!empty($resourceId)){
+//			$dates = $this->getCheckInDatesFromService($resourceId,null);
+//			if (($pos = strpos($dates, ','))!==false)
+//				$dates = explode(",",$dates);
+//			
+//			if (is_array($dates)){
+//				$tmpDate1 = array_values($dates);
+//				$tmpDate = array_shift($tmpDate1);
+//				$defaultDate = DateTime::createFromFormat('Ymd',$tmpDate);
+////				$defaultDate = DateTime::createFromFormat('Ymd',array_shift(array_values($dates)));
+//			}elseif($dates != ''){
+//				$defaultDate = DateTime::createFromFormat('Ymd',$dates);
+//			}
+//		}
+//		if (!isset($defaultDate)){
+//			$defaultDate = DateTime::createFromFormat('d/m/Y',BFCHelper::getStartDate());
+//		}
+//
+//
+//		if(new DateTime('UTC') >$defaultDate){
+//			$defaultDate =  new DateTime('UTC');
+//		}
+		$defaultDate =  new DateTime('UTC');
 		$ci = clone BFCHelper::getStayParam('checkin', $defaultDate);
 		$defaultRequest =  array(
 			'resourceId' => BFCHelper::getInt('resourceId'),
@@ -2009,42 +2020,42 @@ class BookingForConnectorModelResource extends JModelList
 //		echo print_r($defaultRequest);
 //		echo "</pre>";
 				
-		$stayrequest = BFCHelper::getVar('stayrequest');
-		
-		// support for rsforms!
-		if ($stayrequest == null || $stayrequest == '') {
-			$form = BFCHelper::getVar('form');
-			$stayrequest = htmlspecialchars_decode($form['stayrequest'], ENT_COMPAT);
-		}
-
-		if ($stayrequest != null && $stayrequest != '') {
-			try {
-				$params = json_decode($stayrequest);
-				$stayCheckin = DateTime::createFromFormat('d/m/Y',$params->checkin);
-				if(new DateTime() <$stayCheckin){
-					$defaultRequest = array(
-						'resourceId' => $params->resourceId,
-						'checkin' => DateTime::createFromFormat('d/m/Y',$params->checkin),
-						'checkout' => DateTime::createFromFormat('d/m/Y',$params->checkout),
-						'duration' => $params->duration,
-						'paxages' => $params->paxages,
-						'extras' => $params->extras,
-						'packages' => $params->packages,
-						'pricetype' => $params->pricetype,
-						'rateplanId' => $params->rateplanId,
-						'variationPlanId' => $params->variationPlanId,
-						'state' => $params->state,
-						'gotCalculator' => false,
-						'fromExtForm' => true,
-						'hasRateplans' => false,
-						'paxes' => count($params->paxages)
-					);
-				}
-
-			} catch (Exception $e) {
-				
-			}
-		}
+//		$stayrequest = BFCHelper::getVar('stayrequest');
+//		
+//		// support for rsforms!
+//		if ($stayrequest == null || $stayrequest == '') {
+//			$form = BFCHelper::getVar('form');
+//			$stayrequest = htmlspecialchars_decode($form['stayrequest'], ENT_COMPAT);
+//		}
+//
+//		if ($stayrequest != null && $stayrequest != '') {
+//			try {
+//				$params = json_decode($stayrequest);
+//				$stayCheckin = DateTime::createFromFormat('d/m/Y',$params->checkin);
+//				if(new DateTime('UTC') <$stayCheckin){
+//					$defaultRequest = array(
+//						'resourceId' => $params->resourceId,
+//						'checkin' => DateTime::createFromFormat('d/m/Y',$params->checkin),
+//						'checkout' => DateTime::createFromFormat('d/m/Y',$params->checkout),
+//						'duration' => $params->duration,
+//						'paxages' => $params->paxages,
+//						'extras' => $params->extras,
+//						'packages' => $params->packages,
+//						'pricetype' => $params->pricetype,
+//						'rateplanId' => $params->rateplanId,
+//						'variationPlanId' => $params->variationPlanId,
+//						'state' => $params->state,
+//						'gotCalculator' => false,
+//						'fromExtForm' => true,
+//						'hasRateplans' => false,
+//						'paxes' => count($params->paxages)
+//					);
+//				}
+//
+//			} catch (Exception $e) {
+//				
+//			}
+//		}
 
 		$this->setState('params', $defaultRequest);
 
@@ -2097,12 +2108,12 @@ class BookingForConnectorModelResource extends JModelList
 		}
 
 		switch($type) {
-			case 'ratings':
-				$items = $this->getRatingsFromService(
-					$this->getStart($type),
-					$this->getState('list.limit')
-				);
-				break;
+//			case 'ratings':
+//				$items = $this->getRatingsFromService(
+//					$this->getStart($type),
+//					$this->getState('list.limit')
+//				);
+//				break;
 			default:
 				break;
 		}
@@ -2129,9 +2140,9 @@ class BookingForConnectorModelResource extends JModelList
 	public function getTotal($type = '')
 	{
 		switch($type) {
-			case 'ratings':
-				return $this->getTotalRatings();
-				break;
+//			case 'ratings':
+//				return $this->getTotalRatings();
+//				break;
 			case '':
 			default:
 				return 0;

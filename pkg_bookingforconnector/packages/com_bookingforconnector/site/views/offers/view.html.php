@@ -24,7 +24,7 @@ class BookingForConnectorViewOffers extends BFCView
 	{
 
 		$document 	= JFactory::getDocument();
-		$language 	= $document->getLanguage();		
+		$language 	= JFactory::getLanguage()->getTag();		
 
 		// Initialise variables
 		$state		= $this->get('State');

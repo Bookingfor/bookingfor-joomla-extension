@@ -19,6 +19,5 @@ $language = $this->language;
 $isportal = COM_BOOKINGFORCONNECTOR_ISPORTAL;
 $showdata = COM_BOOKINGFORCONNECTOR_SHOWDATA;
 
+BFCHelper::bfi_get_template("shared/search_details.php",array("merchant"=>$merchant,"resourceId"=>$resourceId,"condominiumId"=>$condominiumId,"currencyclass"=>$currencyclass));	
 ?>
-				<?php 
-				include(JPATH_COMPONENT.'/views/shared/search_details.php'); //merchant temp ?>

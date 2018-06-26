@@ -71,10 +71,17 @@ $cap = isset($resource->ZipCode)?$resource->ZipCode:"";
 $comune = isset($resource->CityName)?$resource->CityName:"";
 $stato = isset($resource->StateName)?$resource->StateName:"";
 
-
+$services = [];
+$listServices = array();
 if (!empty($resource->ServiceIdList)){
-	$services=BFCHelper::GetServicesByIds($resource->ServiceIdList, $language);
+	$listServices = explode(",", $resource->ServiceIdList);
+	$services = BFCHelper::GetServicesByIds($resource->ServiceIdList,$language);
+	$services = array_filter($services, function($p) use ($listServices) {return in_array($p->ServiceId,$listServices);});
 }
+
+//if (!empty($resource->ServiceIdList)){
+//	$services=BFCHelper::GetServicesByIds($resource->ServiceIdList, $language);
+//}
 
 $this->document->setTitle($resourceName . ' - ' . $merchant->Name);
 $this->document->setDescription( BFCHelper::getLanguage($resource->Description, $this->language));
@@ -168,7 +175,18 @@ if (!empty($merchant->LogoUrl)){
 	</ul>
 </div>
 <div class="bfi-resourcecontainer-gallery bfi-hideonextra">
-	<?php  include('resource-gallery.php');  ?>
+	<?php  
+			$bfiSourceData = 'condominium';
+			$bfiImageData = null;
+			$bfiVideoData = null;			
+			if(!empty($resource->ImagesData)) {
+				$bfiImageData = $resource->ImagesData;
+			}
+			if(!empty($resource->VideoData)) {
+				$bfiVideoData = $resource->VideoData;
+			}
+			BFCHelper::bfi_get_template('shared/gallery.php',array("merchant"=>$merchant,"bfiSourceData"=>$bfiSourceData,"bfiImageData"=>$bfiImageData,"bfiVideoData"=>$bfiVideoData));	
+	?>
 </div>
 <div class="bfi-content">	
 
@@ -223,6 +241,33 @@ if (!empty($merchant->LogoUrl)){
 					</tr>
 				</table>
 				<?php } ?>
+				<?php if(isset($resource->AttachmentsString) && !empty($resource->AttachmentsString)){
+					?>
+					<div  class="bfi-attachmentfiles">
+					<?php 
+								
+					$resourceAttachments = json_decode($resource->AttachmentsString);
+					
+					foreach ($resourceAttachments as $keyAttachment=> $resourceAttachment) {
+						if ($keyAttachment>COM_BOOKINGFORCONNECTOR_MAXATTACHMENTFILES) {
+							break;
+						}
+						$resourceAttachmentName = $resourceAttachment->Name;
+						$resourceAttachmentExtension= "";
+						
+						$path_parts = pathinfo($resourceAttachmentName);
+						if(!empty( $path_parts['extension'])){
+							$resourceAttachmentExtension = $path_parts['extension'];
+							$resourceAttachmentName =  str_replace(".".$resourceAttachmentExtension, "", $resourceAttachmentName);
+						}
+						$resourceAttachmentIcon = bfi_get_file_icon($resourceAttachmentExtension);
+						?>
+						<?php echo $resourceAttachmentIcon ?> <a href="<?php echo $resourceAttachment->LinkValue ?>" target="_blank"><?php echo $resourceAttachmentName ?></a><br />
+						<?php 
+					}
+				?>
+					</div>
+				<?php } ?>
 			</div>
 					<!-- AddToAny BEGIN -->
 					<a class="bfi-btn bfi-alternative2 bfi-pull-right a2a_dd"  href="http://www.addtoany.com/share_save" ><i class="fa fa-share-alt"></i> <?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_ONSELLUNIT_SHARE') ?></a>
@@ -238,14 +283,17 @@ if (!empty($merchant->LogoUrl)){
 				$condominiumId = $resource->CondominiumId;
 				$resourceId = 0;
 
-				include(JPATH_COMPONENT.'/views/shared/search_details.php'); //merchant temp ?>
+				BFCHelper::bfi_get_template("shared/search_details.php",array("resource"=>$resource,"merchant"=>$merchant,"resourceId"=>$resourceId,"condominiumId"=>$condominiumId,"currencyclass"=>$currencyclass));	
+				?>
 					
 
 			</div>
 		<?php } ?>
 
 	<div class="bfi-clearboth"></div>
-	<?php  include(JPATH_COMPONENT.'/views/shared/merchant_small_details.php');  ?>
+<?php
+				BFCHelper::bfi_get_template('shared/merchant_small_details.php',array("resource_id"=>$resourceId,"merchant"=>$merchant,"routeMerchant"=>$routeMerchant)); 
+?>
 
 <?php if (($showResourceMap)) {?>
 	<div class="bfi-content-map bfi-hideonextra">
@@ -351,7 +399,7 @@ if (!empty($merchant->LogoUrl)){
 		<?php echo  $this->loadTemplate('resources'); ?>
 
 		<?php if (!$this->isFromSearch && $this->pagination->get('pages.total') > 1) { ?>
-			<div class="pagination">
+			<div class="pagination bfi-pagination">
 				<?php echo $this->pagination->getPagesLinks(); ?>
 			</div>
 		<?php } ?>

@@ -125,11 +125,15 @@ $formAction=$url;
 	<?php $listResourceIds = array(); ?>  
 	<?php foreach ($merchants as $merchant){ ?>
 		<?php 
-			$rating = $merchant->Rating;
+						
+			$hasSuperior = !empty($merchant->RatingSubValue);
+			$rating = (int)$merchant->Rating ;
 			if ($rating>9 )
 			{
 				$rating = $rating/10;
+				$hasSuperior = ($merchant->Rating %10)>0;
 			} 
+			
 			$currUriMerchant = $uriMerchant. '&merchantId=' . $merchant->MerchantId . ':' . BFCHelper::getSlug($merchant->Name);
 
 			if ($itemIdMerchant<>0)
@@ -181,7 +185,10 @@ $formAction=$url;
 							<span class="bfi-item-rating">
 								<?php for($i = 0; $i < $rating; $i++) { ?>
 									<i class="fa fa-star"></i>
-								<?php } ?>	             
+								<?php } ?>
+								<?php if ($hasSuperior) { ?>
+									&nbsp;S
+								<?php } ?>
 							</span>
 						</div>
 						<div class="bfi-item-address">
@@ -222,7 +229,7 @@ $formAction=$url;
 
 <?php if ($this->pagination->get('pages.total') > 1) { ?>
 	<div class="text-center">
-		<div class="pagination">
+		<div class="pagination bfi-pagination">
 			<?php echo $this->pagination->getPagesLinks(); ?>
 		</div>
 	</div>

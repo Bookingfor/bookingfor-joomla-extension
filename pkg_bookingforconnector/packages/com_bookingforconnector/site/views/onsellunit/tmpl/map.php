@@ -9,18 +9,19 @@
 defined('_JEXEC') or die('Restricted access');
 
 $resource = $this->item;
-
 $merchant = $resource->Merchant;
-//$resource->ResourceId = $resource->OnSellUnitId;
-//$resource = $this->item;
-//$merchant = $resource->Merchant;
+$language = $this->language;
 $resource->Price = $resource->MinPrice;
 
-$language = $this->language;
+$indirizzo = isset($resource->Address)?$resource->Address:"";
+$cap = isset($resource->ZipCode)?$resource->ZipCode:""; 
+$comune = isset($resource->CityName)?$resource->CityName:"";
+$provincia = isset($resource->RegionName)?$resource->RegionName:"";
+$stato = isset($resource->StateName)?$resource->StateName:"";
 
 //$resourceName = BFCHelper::getLanguage($resource->Name, $this->language);
 $resourceName = BFCHelper::getLanguage($resource->Name, $this->language, null, array('ln2br'=>'ln2br', 'striptags'=>'striptags')); 
-$resourceDescription = BFCHelper::getLanguage($resource->Description, $this->language, null, array('ln2br'=>'ln2br', 'striptags'=>'striptags'));
+$resourceDescription = BFCHelper::getLanguage($resource->Description, $this->language, null, array('ln2br'=>'ln2br', 'bbcode'=>'bbcode', 'striptags'=>'striptags'));
 $route = JRoute::_('index.php?option=com_bookingforconnector&view=onsellunit&resourceId=' . $resource->ResourceId . ':' . BFCHelper::getSlug($resourceName));
 
 
@@ -76,46 +77,15 @@ else
 $routeMerchant = JRoute::_($uriMerchant);
 $isMerchantAnonymous = BFCHelper::isMerchantAnonymous($merchant->MerchantTypeId);
 ?>
-<div class="com_bookingforconnector_map_resource" style="display:block;height:150px;overflow:auto; width: 300px;">
-	<div><a href="<?php echo $route?>"><b><?php echo  $resourceName?></b></a></div><br />
-<!-- 	<img class="com_bookingforconnector_resource-img" src="<?php echo $img?>" onerror="this.onerror=null;this.src='<?php echo $imgError?>'"  style="margin-bottom:10px;margin-right:10px;"/> -->
-	<div style="margin-bottom:5px;line-height:normal;">
-				<?php if ($resource->Price != null && $resource->Price > 0 && isset($resource->IsReservedPrice) && $resource->IsReservedPrice!=1 ) :?>
-							&euro; <?php echo number_format($resource->Price,0, ',', '.')?>
-				<?php else: ?>
-						<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_ISRESERVEDPRICE')?>
-				<?php endif; ?>	
-			<br />
-			<?php if (!$isMerchantAnonymous) :?>
-			<a class="com_bookingforconnector_merchantdetails-name" href="<?php echo $routeMerchant?>"> <?php echo $merchant->Name?></a>
-			<?php endif ?>
-			<br />
-			<br />
-			<a href="<?php echo $route?>"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_OFFER_DETAILS')?></a>
 
+<div class="bfi-mapdetails">
+	<div class="bfi-item-title">
+		<a href="<?php echo $route ?>" target="_blank"><?php echo  $resourceName?></a>
 	</div>
+	<div class="bfi-item-address"><span class="street-address"><?php echo $indirizzo ?></span>, <span class="postal-code "><?php echo  $cap ?></span> <span class="locality"><?php echo $comune ?></span>, <span class="region"><?php echo  $provincia ?></span></div>
+			<?php if ($resource->Price != null && $resource->Price > 0 && isset($resource->IsReservedPrice) && $resource->IsReservedPrice!=1 ) :?>
+						&euro; <?php echo number_format($resource->Price,0, ',', '.')?>
+			<?php else: ?>
+					<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_ISRESERVEDPRICE')?>
+			<?php endif; ?>	
 </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

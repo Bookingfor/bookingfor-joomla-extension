@@ -18,7 +18,7 @@ if ( ! function_exists( 'bfiDefine' ) ) {
 if ( ! function_exists( 'bfi_setSessionFromSubmittedData' ) ) {
 
 function bfi_setSessionFromSubmittedData() {
-	$ci = BFCHelper::getStayParam('checkin', new DateTime());
+	$ci = BFCHelper::getStayParam('checkin', new DateTime('UTC'));
 	$merchantCategoryId = isset($_REQUEST['merchantCategoryId']) ? $_REQUEST['merchantCategoryId'] : array();
 	$cultureCode = isset($_REQUEST['cultureCode']) ? $_REQUEST['cultureCode'] : '';
 	$availabilitytype =  isset($_REQUEST['availabilitytype']) ? $_REQUEST['availabilitytype'] : 1;
@@ -43,7 +43,7 @@ function bfi_setSessionFromSubmittedData() {
 		'searchid' => isset($_REQUEST['searchid']) ? $_REQUEST['searchid'] : '',
 		'searchtypetab' => isset($_REQUEST['searchtypetab']) ? $_REQUEST['searchtypetab'] : '',
 		'newsearch' => isset($_REQUEST['newsearch']) ? $_REQUEST['newsearch'] : '0',
-		'checkin' => BFCHelper::getStayParam('checkin', new DateTime()),
+		'checkin' => BFCHelper::getStayParam('checkin', new DateTime('UTC')),
 		'checkout' => BFCHelper::getStayParam('checkout', $ci->modify(BFCHelper::$defaultDaysSpan)),
 		'duration' => $duration,
 		'searchTerm' => isset($_REQUEST['searchTerm']) ? $_REQUEST['searchTerm'] : '',
@@ -92,158 +92,6 @@ function bfi_setSessionFromSubmittedData() {
 }
 }
 
-//setting constants
-if (!defined('COM_BOOKINGFORCONNECTOR_CONFIG_LOADED')) {
-		$config = JComponentHelper::getParams('com_bookingforconnector');
-
-		$subscriptionkey= $config->get('wsurl', '');
-		$apikey= $config->get('apikey', '');
-		$form_key= $config->get('formlabel', '');
-		$XGooglePosDef = $config->get('posx', 0);
-		$YGooglePosDef = $config->get('posy', 0);
-		$startzoom = $config->get('startzoom',15);
-		$googlemapskey = $config->get('googlemapskey','');
-		$itemperpage = $config->get('bfi_itemperpage_key',10);
-		$googlerecaptchakey = $config->get('bfi_googlerecaptcha_key','');
-		$googlerecaptchasecretkey = $config->get('bfi_googlerecaptcha_secret_key','');
-		$googlerecaptchathemekey = $config->get('bfi_googlerecaptcha_theme_key','light');
-		$googlerecaptchasizekey = $config->get('bfi_googlerecaptcha_size_key','normal');
-
-		$isportal = $config->get('isportal', 1);
-		$showdata = $config->get('showdata', 1);
-		$sendtocart = $config->get('bfi_sendtocart_key', 0);
-		$showbadge = $config->get('bfi_showbadge_key', 0);
-
-		$enablecoupon = $config->get('bfi_enablecoupon_key', 0);
-		
-		$usessl = $config->get('bfi_usessl_key',0);
-		$ssllogo = $config->get('bfi_ssllogo_key','');
-
-		$useproxy = $config->get('useproxy',0);
-		$urlproxy = $config->get('urlproxy','127.0.0.1:8888');
-		
-		$gaenabled = $config->get('gaenabled', 0);
-		$gaaccount = $config->get('gaaccount', '');
-		$eecenabled = $config->get('eecenabled', 0);
-		$criteoenabled = $config->get('bfi_criteoenabled_key', 0);
-
-		$enablecache = $config->get('enablecache', 1);
-
-		$bfi_adultsage_key = $config->get('adultsage', 18);
-		$bfi_adultsqt_key = $config->get('adultsqt', 2);
-		$bfi_childrensage_key = $config->get('childrensage', 12);
-		$bfi_senioresage_key = $config->get('senioresage', 65);
-		$bfi_maxqtSelectable_key = $config->get('bfi_maxqtSelectable_key', 20);
-		$bfi_defaultdisplaylist_key = $config->get('bfi_defaultdisplaylist_key', 0);
-		
-
-		$bfi_currentcurrency = $config->get('bfi_currentcurrency_key', '');
-
-		$nMonthinCalendar = 2;
-
-		$useragent=$_SERVER['HTTP_USER_AGENT'];
-
-		if(preg_match('/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino/i',$useragent)||preg_match('/1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i',substr($useragent,0,4))){
-			$nMonthinCalendar = 1;
-		}
-		$bfi_version = $config->get('version', '');
-		bfiDefine( 'BFI_VERSION', $bfi_version );
-
-		bfiDefine( 'COM_BOOKINGFORCONNECTOR_MONTHINCALENDAR', $nMonthinCalendar );
-		$subscriptionkey = strtolower($subscriptionkey);
-		if(strpos($subscriptionkey,'https://') !== false){
-			$subscriptionkey = str_replace("https://", "", $subscriptionkey);
-			$subscriptionkey = str_replace(".bookingfor.com/modules/bookingfor/services/bookingservice.svc", "", $subscriptionkey);
-			$subscriptionkey = str_replace("/", "", $subscriptionkey);
-		}
-		$bfiBaseUrl = 'https://' . $subscriptionkey . '.bookingfor.com';
-
-		bfiDefine( 'COM_BOOKINGFORCONNECTOR_SUBSCRIPTION_KEY', $subscriptionkey );
-		bfiDefine( 'COM_BOOKINGFORCONNECTOR_API_KEY', $apikey );
-		bfiDefine( 'COM_BOOKINGFORCONNECTOR_FORM_KEY', $form_key );
-		bfiDefine( 'COM_BOOKINGFORCONNECTOR_WSURL', $bfiBaseUrl .'/modules/bookingfor/services/bookingservice.svc' );
-		bfiDefine( 'COM_BOOKINGFORCONNECTOR_ORDERURL', $bfiBaseUrl .'/Public/{language}/orderlogin' );
-		bfiDefine( 'COM_BOOKINGFORCONNECTOR_PAYMENTURL', $bfiBaseUrl .'/Public/{language}/payment/' );
-		bfiDefine( 'COM_BOOKINGFORCONNECTOR_CURRENTCURRENCY', $bfi_currentcurrency );
-		
-		bfiDefine( 'COM_BOOKINGFORCONNECTOR_IMGURL', $subscriptionkey . '/bookingfor/images' );
-		bfiDefine( 'COM_BOOKINGFORCONNECTOR_IMGURL_CDN', '//cdnbookingfor.blob.core.windows.net/' );
-		bfiDefine( 'COM_BOOKINGFORCONNECTOR_BASEIMGURL', 'https://cdnbookingfor.blob.core.windows.net/' . $subscriptionkey . '/bookingfor/images' );
-		bfiDefine( 'COM_BOOKINGFORCONNECTOR_GOOGLE_POSX', $XGooglePosDef );
-		bfiDefine( 'COM_BOOKINGFORCONNECTOR_GOOGLE_POSY', $YGooglePosDef );
-		bfiDefine( 'COM_BOOKINGFORCONNECTOR_GOOGLE_STARTZOOM', $startzoom );
-		bfiDefine( 'COM_BOOKINGFORCONNECTOR_GOOGLE_GOOGLEMAPSKEY', $googlemapskey );
-
-		bfiDefine( 'COM_BOOKINGFORCONNECTOR_GOOGLE_GOOGLERECAPTCHAKEY', $googlerecaptchakey );
-		bfiDefine( 'COM_BOOKINGFORCONNECTOR_GOOGLE_GOOGLERECAPTCHASECRETKEY', $googlerecaptchasecretkey );
-		bfiDefine( 'COM_BOOKINGFORCONNECTOR_GOOGLE_GOOGLERECAPTCHATHEMEKEY', $googlerecaptchathemekey );
-		bfiDefine( 'COM_BOOKINGFORCONNECTOR_GOOGLE_GOOGLERECAPTCHASIZEKEY', $googlerecaptchasizekey );
-		
-		bfiDefine( 'COM_BOOKINGFORCONNECTOR_USEEXTERNALUPDATEORDER', false);
-		bfiDefine( 'COM_BOOKINGFORCONNECTOR_USEEXTERNALUPDATEORDERSYSTEM', "");
-		bfiDefine( 'COM_BOOKINGFORCONNECTOR_ANONYMOUS_TYPE', "3,4");
-		bfiDefine( 'COM_BOOKINGFORCONNECTOR_ITEMPERPAGE', $itemperpage );
-		
-		bfiDefine( 'COM_BOOKINGFORCONNECTOR_ISPORTAL', $isportal );
-		bfiDefine( 'COM_BOOKINGFORCONNECTOR_SHOWDATA', $showdata );
-		bfiDefine( 'COM_BOOKINGFORCONNECTOR_SENDTOCART', $sendtocart );
-		bfiDefine( 'COM_BOOKINGFORCONNECTOR_SHOWBADGE', $showbadge );
-		bfiDefine( 'COM_BOOKINGFORCONNECTOR_ENABLECOUPON', $enablecoupon );
-		
-		bfiDefine( 'COM_BOOKINGFORCONNECTOR_USESSL', $usessl );
-		bfiDefine( 'COM_BOOKINGFORCONNECTOR_SSLLOGO', $ssllogo );
-
-		bfiDefine( 'COM_BOOKINGFORCONNECTOR_ADULTSAGE', $bfi_adultsage_key );
-		bfiDefine( 'COM_BOOKINGFORCONNECTOR_ADULTSQT', $bfi_adultsqt_key );
-		bfiDefine( 'COM_BOOKINGFORCONNECTOR_CHILDRENSAGE', $bfi_childrensage_key );
-		bfiDefine( 'COM_BOOKINGFORCONNECTOR_SENIORESAGE', $bfi_senioresage_key );
-
-		bfiDefine( 'COM_BOOKINGFORCONNECTOR_USEPROXY', $useproxy );
-		bfiDefine( 'COM_BOOKINGFORCONNECTOR_URLPROXY', $urlproxy );
-
-		bfiDefine( 'COM_BOOKINGFORCONNECTOR_GAENABLED', $gaenabled );
-		bfiDefine( 'COM_BOOKINGFORCONNECTOR_GAACCOUNT', $gaaccount );
-		bfiDefine( 'COM_BOOKINGFORCONNECTOR_EECENABLED', $eecenabled );
-		bfiDefine( 'COM_BOOKINGFORCONNECTOR_CRITEOENABLED', $criteoenabled );
-
-		bfiDefine( 'COM_BOOKINGFORCONNECTOR_ENABLECACHE', $enablecache );
-
-		bfiDefine( 'COM_BOOKINGFORCONNECTOR_MAXQTSELECTABLE', $bfi_maxqtSelectable_key );
-		
-		bfiDefine( 'COM_BOOKINGFORCONNECTOR_DEFAULTDISPLAYLIST', $bfi_defaultdisplaylist_key );
-
-		define('COM_BOOKINGFORCONNECTOR_CONFIG_LOADED', 1);
-
-
-//		// load scripts
-//		JHtml::_('jquery.framework');
-//		JHTML::script('//ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js');
-//
-//		JHTML::stylesheet('components/com_bookingforconnector/assets/css/jquery.validate.css');
-//		JHTML::stylesheet('components/com_bookingforconnector/assets/jquery-ui/themes/smoothness/jquery-ui.min.css');
-//		JHTML::stylesheet('components/com_bookingforconnector/assets/css/font-awesome.min.css');
-//		JHTML::stylesheet('components/com_bookingforconnector/assets/css/magnific-popup.css');
-//		JHTML::stylesheet('components/com_bookingforconnector/assets/js/webui-popover/jquery.webui-popover.min.css');
-//		JHTML::stylesheet('components/com_bookingforconnector/assets/css/bookingfor.css');
-//
-//		JHTML::script('components/com_bookingforconnector/assets/js/jquery.blockUI.js');
-//		JHTML::script('components/com_bookingforconnector/assets/js/jquery.form.js');
-//		JHtml::script('components/com_bookingforconnector/assets/js/jquery-validation/jquery.validate.min.js');
-//		JHtml::script('components/com_bookingforconnector/assets/js/jquery-validation/additional-methods.min.js');
-//		JHtml::script('components/com_bookingforconnector/assets/js/jquery.validate.additional-custom-methods.js');
-//		JHtml::script('components/com_bookingforconnector/assets/js/jquery.magnific-popup.min.js');
-//		JHtml::script('components/com_bookingforconnector/assets/js/webui-popover/jquery.webui-popover.min.js');
-//		JHtml::script('components/com_bookingforconnector/assets/js/jquery.shorten.js');
-//		JHtml::script('components/com_bookingforconnector/assets/js/bfi.js');
-//		JHtml::script('components/com_bookingforconnector/assets/js/bfisearchonmap.js');
-//		JHtml::script('components/com_bookingforconnector/assets/js/bfi_calendar.js');
-//		$document 	= JFactory::getDocument();
-//		$language 	= $document->getLanguage();
-//		if(substr($language,0,2)!='en'){
-//			JHtml::script('//ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/i18n/datepicker-' . substr($language,0,2) . '.min.js?ver=1.11.4');
-//		}
-
-}
 if ( ! class_exists( 'bfi_load_scripts' ) ) {
 	function bfi_load_scripts(){
 		if (!defined('COM_BOOKINGFORCONNECTOR_SCRIPTS_LOADED')) {
@@ -252,7 +100,7 @@ if ( ! class_exists( 'bfi_load_scripts' ) ) {
 			JHtml::_('jquery.framework');
 			JHtml::_('bootstrap.framework');
 			$document 	= JFactory::getDocument();
-			$language 	= $document->getLanguage();
+			$language 	= JFactory::getLanguage()->getTag();
 			$document->addScript('//ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js',false, false);
 
 			$document->addStyleSheet('components/com_bookingforconnector/assets/jquery-ui/themes/smoothness/jquery-ui.min.css');
@@ -269,12 +117,13 @@ if ( ! class_exists( 'bfi_load_scripts' ) ) {
 			$document->addScript('components/com_bookingforconnector/assets/js/jquery.magnific-popup.min.js',false, false);
 			$document->addScript('components/com_bookingforconnector/assets/js/webui-popover/jquery.webui-popover.min.js',false, false);
 			$document->addScript('components/com_bookingforconnector/assets/js/jquery.shorten.js',false, false);
-			$document->addScript('components/com_bookingforconnector/assets/js/bfi.js',false, false);
+			$document->addScript('components/com_bookingforconnector/assets/js/bfi.js?',false, false);
 			$document->addScript('components/com_bookingforconnector/assets/js/bfisearchonmap.js',false, false);
 			$document->addScript('components/com_bookingforconnector/assets/js/bfi_calendar.js',false, false);
 			if(substr($language,0,2)!='en'){
 				$document->addScript('//ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/i18n/datepicker-' . substr($language,0,2) . '.min.js?ver=1.11.4',false, false);
 			}
+			$document->addScript('components/com_bookingforconnector/assets/js/recaptcha.js',false, false);
 
 			$db   = JFactory::getDBO();
 			$uriCart  = 'index.php?option=com_bookingforconnector&view=cart';
@@ -376,6 +225,48 @@ if ( ! function_exists( 'bfi_get_currencyExchanges' ) ) {
 	}
 }
 
+if ( ! function_exists( 'bfi_get_file_icon' ) ) {
+	function bfi_get_file_icon($fileExtension) {
+	  $iconFile = '<i class="fa fa-file-o"></i>';
+	  if (empty($fileExtension)) {
+	      return $iconFile;
+	  }
+	  $fileExtension = strtolower($fileExtension);
+	  // List of official MIME Types: http://www.iana.org/assignments/media-types/media-types.xhtml
+	  static $font_awesome_file_icon_classes = array(
+		// Images
+		'gif' => '<i class="fa fa-file-image-o"></i>',
+		'jpeg' => '<i class="fa fa-file-image-o"></i>',
+		'jpg' => '<i class="fa fa-file-image-o"></i>',
+		'png' => '<i class="fa fa-file-image-o"></i>',
+		// Audio
+		'mp3' => '<i class="fa fa-file-audio-o"></i>',
+		'wma' => '<i class="fa fa-file-audio-o"></i>',
+			
+		// Video
+		'avi' => '<i class="fa fa-file-video-o"></i>',
+		'flv' => '<i class="fa fa-file-video-o"></i>',
+		'mpg' => '<i class="fa fa-file-video-o"></i>',
+		'mpeg' => '<i class="fa fa-file-video-o"></i>',
+		// Documents
+		'pdf' => '<i class="fa fa-file-pdf-o"></i>',
+		'txt' => '<i class="fa fa-file-text-o"></i>',
+		'html' => '<i class="fa fa-file-code-o"></i>',
+		'json' => '<i class="fa fa-file-code-o"></i>',
+		// Archives
+		'gzip' => '<i class="fa fa-file-archive-o"></i>',
+		'zip' => '<i class="fa fa-file-archive-o"></i>',
+	  );
+
+	  if (isset($font_awesome_file_icon_classes[$fileExtension])) {
+		$iconFile = $font_awesome_file_icon_classes[$fileExtension];
+	  }
+
+	  return $iconFile;
+	}
+}
+
+
 if ( ! class_exists( 'BFCHelper' ) ) {
 
 	class BFCHelper {
@@ -388,6 +279,10 @@ if ( ! class_exists( 'BFCHelper' ) ) {
 		private static $defaultCheckMode = 5;
 		private static $favouriteCookieName = "BFFavourites";
 		private static $ordersCookieName = "BFOrders";
+
+		private static $TwoFactorCookieName = "2faHSTDenabledWP";
+		private static $TwoFactorAuthenticationDeviceExpiration = 30;
+		private static $TwoFactorPrefixClaimName = "TwoFactor.DeviceCode.";
 
 		private static $justloaded = false;
 
@@ -816,6 +711,12 @@ if ( ! class_exists( 'BFCHelper' ) ) {
 			$model = JModelLegacy::getInstance('Search', 'BookingForConnectorModel');
 			return $model->getMasterTypologies($onlyEnabled);
 		}
+		public static function GetAlternativeDates($checkin, $duration, $paxes, $paxages, $merchantId, $condominiumId, $resourceId, $cultureCode, $points, $userid, $tagids, $merchantsList, $availabilityTypes, $itemTypeIds, $domainLabel, $merchantCategoryIds = null, $masterTypeIds = null, $merchantTagsIds = null) {
+			JModelLegacy::addIncludePath(JPATH_ROOT. DIRECTORY_SEPARATOR .'components' . DIRECTORY_SEPARATOR . 'com_bookingforconnector'. DIRECTORY_SEPARATOR . 'models', 'BookingForConnectorModel');
+			$model = JModelLegacy::getInstance('Search', 'BookingForConnectorModel');
+			return $model->GetAlternativeDates($checkin, $duration, $paxes, $paxages, $merchantId, $condominiumId, $resourceId, $cultureCode, $points, $userid, $tagids, $merchantsList, $availabilityTypes, $itemTypeIds, $domainLabel, $merchantCategoryIds, $masterTypeIds, $merchantTagsIds);
+		}
+
 		public static function SearchByText($term, $language, $limit, $onlyLocations=0) {
 			JModelLegacy::addIncludePath(JPATH_ROOT. DIRECTORY_SEPARATOR .'components' . DIRECTORY_SEPARATOR . 'com_bookingforconnector'. DIRECTORY_SEPARATOR . 'models', 'BookingForConnectorModel');
 			$model = JModelLegacy::getInstance('Search', 'BookingForConnectorModel');
@@ -939,7 +840,8 @@ if ( ! class_exists( 'BFCHelper' ) ) {
 		public static function GetServicesByIds($listsId,$language='') {
 			JModelLegacy::addIncludePath(JPATH_ROOT. DIRECTORY_SEPARATOR .'components' . DIRECTORY_SEPARATOR . 'com_bookingforconnector'. DIRECTORY_SEPARATOR . 'models', 'BookingForConnectorModel');
 			$model = JModelLegacy::getInstance('Services', 'BookingForConnectorModel');
-			return $model->getServicesByIds($listsId,$language);
+//			return $model->getServicesByIds($listsId,$language);
+			return $model->getServicesFromService($language);
 		}
 
 		public static function getServicesForSearchOnSell($language='') {
@@ -1299,11 +1201,12 @@ if ( ! class_exists( 'BFCHelper' ) ) {
 				$checkin= NULL, 
 				$resourceId= NULL, 
 				$orderId= NULL, 
-				$label = NULL
+				$label = NULL, 
+				$otherData = NULL
 			) {
 			JModelLegacy::addIncludePath(JPATH_ROOT. DIRECTORY_SEPARATOR .'components' . DIRECTORY_SEPARATOR . 'com_bookingforconnector'. DIRECTORY_SEPARATOR . 'models', 'BookingForConnectorModel');
 			$model = JModelLegacy::getInstance('Ratings', 'BookingForConnectorModel');
-			return $model->setRating($name, $city, $typologyid, $email, $nation, $merchantId,$value1, $value2, $value3, $value4, $value5, $totale, $pregi, $difetti, $userId, $cultureCode,$checkin, $resourceId, $orderId, $label);
+			return $model->setRating($name, $city, $typologyid, $email, $nation, $merchantId,$value1, $value2, $value3, $value4, $value5, $totale, $pregi, $difetti, $userId, $cultureCode,$checkin, $resourceId, $orderId, $label, $otherData);
 		}
 
 		public static function getSlug($string) {
@@ -1473,7 +1376,7 @@ if ( ! class_exists( 'BFCHelper' ) ) {
 
 		public static function parseJsonDateTime($date, $format = 'd/m/Y') { 
 			date_default_timezone_set('UTC');
-			return DateTime::createFromFormat($format, BFCHelper::parseJsonDate($date,$format));
+			return DateTime::createFromFormat($format, BFCHelper::parseJsonDate($date,$format),new DateTimeZone('UTC'));
 		}
 
 		public static function parseArrayList($stringList, $fistDelimiter = ';', $secondDelimiter = '|'){
@@ -1549,12 +1452,12 @@ if ( ! class_exists( 'BFCHelper' ) ) {
 		public static function getDefaultParam($param) {
 			switch (strtolower($param)) {
 				case 'checkin':
-					return DateTime::createFromFormat('d/m/Y',self::getStartDate());
-					//return new DateTime();
+					return DateTime::createFromFormat('d/m/Y',self::getStartDate(),new DateTimeZone('UTC'));
+					//return new DateTime('UTC');
 					break;
 				case 'checkout':
-					$co = DateTime::createFromFormat('d/m/Y',self::getStartDate());
-					//$co = new DateTime();
+					$co = DateTime::createFromFormat('d/m/Y',self::getStartDate(),new DateTimeZone('UTC'));
+					//$co = new DateTime('UTC');
 					return $co->modify(self::$defaultDaysSpan);
 					break;
 				case 'duration':
@@ -1854,6 +1757,8 @@ if ( ! class_exists( 'BFCHelper' ) ) {
 			$pars['productTagIds'] = !empty($params['productTagIds']) ? $params['productTagIds']:"";
 			$pars['merchantTagIds'] = !empty($params['merchantTagIds']) ? $params['merchantTagIds']:"";
 
+			$pars['variationPlanIds'] = !empty($params['variationPlanIds']) ? $params['variationPlanIds']:"";
+
 			if(isset($params['merchantId'])){
 				$pars['merchantId'] = $params['merchantId'];
 			}
@@ -2013,6 +1918,7 @@ if ( ! class_exists( 'BFCHelper' ) ) {
 		}
 		
 		public static function getStayParam($param, $default= null) {
+			date_default_timezone_set('UTC');
 			$pars = self::getSearchParamsSession();
 
 			switch (strtolower($param)) {
@@ -2021,7 +1927,7 @@ if ( ! class_exists( 'BFCHelper' ) ) {
 					if (($strCheckin == null || $strCheckin == '') && (isset($pars['checkin']) && $pars['checkin'] != null && $pars['checkin'] != '')) {
 						return clone $pars['checkin'];
 					}
-					$checkin = DateTime::createFromFormat('d/m/Y',$strCheckin);
+					$checkin = DateTime::createFromFormat('d/m/Y',$strCheckin,new DateTimeZone('UTC'));
 					if ($checkin===false && isset($default)) {
 						$checkin = $default;
 					}
@@ -2032,15 +1938,15 @@ if ( ! class_exists( 'BFCHelper' ) ) {
 					if (($strCheckout == null || $strCheckout == '') && (isset($pars['checkout']) && $pars['checkout'] != null && $pars['checkout'] != '')) {
 						return clone $pars['checkout'];
 					}
-					$checkout = DateTime::createFromFormat('d/m/Y',$strCheckout);
+					$checkout = DateTime::createFromFormat('d/m/Y',$strCheckout,new DateTimeZone('UTC'));
 					if ($checkout===false && isset($default)) {
 						$checkout = $default;
 					}
 					return $checkout;
 					break;
 				case 'duration':
-					$ci = self::getStayParam('checkin', new DateTime());
-					$dco = new DateTime();
+					$ci = self::getStayParam('checkin', new DateTime('UTC'));
+					$dco = new DateTime('UTC');
 					$co = self::getStayParam('checkout', $dco->modify('+7 days'));
 					$interval = $co->diff($ci);
 					return $interval->d;
@@ -2174,12 +2080,56 @@ if ( ! class_exists( 'BFCHelper' ) ) {
 			return $y;
 		}
 
+
+	public static function encryptSupported()
+	{
+		$cryptoVersion= 0;
+
+		if (function_exists('mcrypt_create_iv') && function_exists('mcrypt_get_iv_size') && function_exists('mcrypt_encrypt') && function_exists('mcrypt_decrypt'))
+		{
+			$cryptoVersion= 1;
+		}
+		if (function_exists('openssl_random_pseudo_bytes') && function_exists('openssl_cipher_iv_length') && function_exists('openssl_encrypt') && function_exists('openssl_decrypt'))
+		{
+			$cryptoVersion= 2;
+		}
+
+		return $cryptoVersion;
+	}
+
+	// OPENSSL
 	// - funzione di criptazione/decriptazione basato su una chiave
-		public static function encrypt($string,$key=null) {
+	public static function encryptOpenSll($string,$key=null) {
+		$cipher = 'AES-256-CBC';
+		// Must be exact 32 chars (256 bit)
+		$password = substr(hash('sha256', $key, true), 0, 32);
+		// IV must be exact 16 chars (128 bit)
+		$iv = chr(0x0) . chr(0x0) . chr(0x0) . chr(0x0) . chr(0x0) . chr(0x0) . chr(0x0) . chr(0x0) . chr(0x0) . chr(0x0) . chr(0x0) . chr(0x0) . chr(0x0) . chr(0x0) . chr(0x0) . chr(0x0);
+		$encrypted_string = openssl_encrypt($string, $cipher, $password, OPENSSL_RAW_DATA, $iv);
+		return base64_encode($encrypted_string);
+	}
+	public static function decryptOpenSll($string,$urldecode = false,$key=null) {
+		if ($urldecode) {
+			$string = urldecode($string);
+		}
+		$string = base64_decode($string);
+		$cipher = 'AES-256-CBC';
+		// Must be exact 32 chars (256 bit)
+		$password = substr(hash('sha256', $key, true), 0, 32);
+		// IV must be exact 16 chars (128 bit)
+		$iv = chr(0x0) . chr(0x0) . chr(0x0) . chr(0x0) . chr(0x0) . chr(0x0) . chr(0x0) . chr(0x0) . chr(0x0) . chr(0x0) . chr(0x0) . chr(0x0) . chr(0x0) . chr(0x0) . chr(0x0) . chr(0x0);
+		$encrypted_string = openssl_decrypt($string, $cipher, $password, OPENSSL_RAW_DATA, $iv);
+		return $encrypted_string;
+	}
+
+	// MCRYPT
+	// - funzione di criptazione/decriptazione basato su una chiave
+		public static function encryptMcrypt($string,$key=null) {
 			//Key 
 			if(empty($key)){
 				$key = COM_BOOKINGFORCONNECTOR_KEY;
 			}
+			
 			$key = str_pad($key, 24, "\0");  
 					 
 			//Encryption
@@ -2193,7 +2143,7 @@ if ( ! class_exists( 'BFCHelper' ) ) {
 	//        return $encrypted_string;
 		}
 		
-	   public static function decrypt($string,$urldecode = false,$key=null) {
+	   public static function decryptMcrypt($string,$urldecode = false,$key=null) {
 				if ($urldecode) {
 					$string = urldecode($string);
 				}
@@ -2214,6 +2164,27 @@ if ( ! class_exists( 'BFCHelper' ) ) {
 				$decrypted_string = mcrypt_decrypt($cipher_alg, $key, $string, MCRYPT_MODE_ECB, $iv); 
 				return trim($decrypted_string);
 		}
+
+
+	public static function encrypt($string,$key=null) {
+		if (COM_BOOKINGFORCONNECTOR_CRYPTOVERSION==1) {
+			return self::encryptMcrypt($string);
+		}
+		if (COM_BOOKINGFORCONNECTOR_CRYPTOVERSION==2) {
+			return self::encryptOpenSll($string,$key);
+		}
+		return null;
+	}
+	public static function decrypt($string,$urldecode = false,$key=null) {
+		if (COM_BOOKINGFORCONNECTOR_CRYPTOVERSION==1) {
+			return self::decryptMcrypt($string,$urldecode);
+		}
+		if (COM_BOOKINGFORCONNECTOR_CRYPTOVERSION==2) {
+			return self::decryptOpenSll($string,$urldecode,$key);
+		}
+		return null;
+	}
+
 
 	//		public static function getImgPathSession() {
 	//		$sessionkey = 'imgpath.params';
@@ -2309,9 +2280,13 @@ if ( ! class_exists( 'BFCHelper' ) ) {
 					'VatCode' => $VatCode,
 					'Culture' => $Culture,
 					'UserCulture' => $UserCulture,
-					'BirthDate' => isset($formData['Birthday']) ? DateTime::createFromFormat('d/m/Y', $formData['Birthday'])->format("Y-m-d"): null,
+					//'BirthDate' => isset($formData['Birthday']) ? DateTime::createFromFormat('d/m/Y', $formData['Birthday'])->format("Y-m-d"): null,
 					'Gender' => $gender,
 			);
+			if(isset($formData['Birthday'])){
+				$customerData['BirthDate'] = DateTime::createFromFormat('d/m/Y', $formData['Birthday'],new DateTimeZone('UTC'))->format("Y-m-d");
+			}
+
 					
 			return $customerData;
 		}
@@ -2606,6 +2581,35 @@ if ( ! class_exists( 'BFCHelper' ) ) {
 			return $cookieValue;
 		}
 		
+		public static function SetTwoFactorCookie($id) {
+			$expire=time()+60*60*24*self::$TwoFactorAuthenticationDeviceExpiration;
+//			$ok = setcookie(self::$TwoFactorCookieName, $id, $expire,SITECOOKIEPATH, COOKIE_DOMAIN);
+			$config = JFactory::getConfig();
+			$cookie_domain = $config->get('cookie_domain', '');
+			$cookie_path = $config->get('cookie_path', '/');
+			$ok = setcookie(self::$TwoFactorCookieName, $id, $expire,$cookie_path, '');
+
+		}
+		public static function GetTwoFactorCookie() {
+			$twofactorCookie = BFCHelper::getCookie(self::$TwoFactorCookieName);
+			return $twofactorCookie;
+		}
+		public static function DeleteTwoFactorCookie() {
+//			setcookie( self::$TwoFactorCookieName, '', 0,SITECOOKIEPATH, COOKIE_DOMAIN);
+			$config = JFactory::getConfig();
+			$cookie_domain = $config->get('cookie_domain', '');
+			$cookie_path = $config->get('cookie_path', '/');
+			setcookie( self::$TwoFactorCookieName, '', 0,$cookie_path, '');
+			unset( $_COOKIE[self::$TwoFactorCookieName] );
+		}
+
+		public static function getLoginTwoFactor($email, $password, $twoFactorAuthCode,$deviceCodeAuthCode) {
+			JModelLegacy::addIncludePath(JPATH_ROOT. DIRECTORY_SEPARATOR .'components' . DIRECTORY_SEPARATOR . 'com_bookingforconnector'. DIRECTORY_SEPARATOR . 'models', 'BookingForConnectorModel');
+	//WP->					$model = new BookingForConnectorModelPortal;
+			$model = JModelLegacy::getInstance('Portal', 'BookingForConnectorModel');
+			return $model->getLoginTwoFactor($email, $password, $twoFactorAuthCode,$deviceCodeAuthCode);
+		}	
+
 		public static function getOptionsFromSelect($formData, $str){
 			if ($formData == null) {
 				$formData = $_POST['form'];
@@ -2722,14 +2726,14 @@ if ( ! class_exists( 'BFCHelper' ) ) {
 					"PriceId" => intval($array[0]),
 					"ProductId" => intval($array[0]),
 					"Quantity" =>intval($array[1]),
-					"CheckInDateTime" => count($array) > 2 && !empty($array[2]) ? DateTime::createFromFormat("YmdHis", $array[2]) : null,
+					"CheckInDateTime" => count($array) > 2 && !empty($array[2]) ? DateTime::createFromFormat("YmdHis", $array[2],new DateTimeZone('UTC')) : null,
 					"PeriodDuration" => count($array) > 3 && !empty($array[3]) ? intval($array[3]) : 0,
 					"TimeSlotId" => count($array) > 4 && !empty($array[4]) ? intval($array[4]) : 0,
 					"TimeSlotStart" => count($array) > 5 && !empty($array[5]) ? intval($array[5]) : 0,
 					"TimeSlotEnd" => count($array) > 6 && !empty($array[6]) ? intval($array[6]) : 0,
-					"TimeSlotDate" => count($array) > 7 && !empty($array[7]) ? DateTime::createFromFormat("Ymd", $array[7]) : null,
-					"CheckInDate" => count($array) > 8 && !empty($array[8]) ? DateTime::createFromFormat("Ymd", $array[8]) : null,
-					"CheckOutDate" => count($array) > 9 && !empty($array[9]) ? DateTime::createFromFormat("Ymd", $array[9]) : null,
+					"TimeSlotDate" => count($array) > 7 && !empty($array[7]) ? DateTime::createFromFormat("Ymd", $array[7],new DateTimeZone('UTC')) : null,
+					"CheckInDate" => count($array) > 8 && !empty($array[8]) ? DateTime::createFromFormat("Ymd", $array[8],new DateTimeZone('UTC')) : null,
+					"CheckOutDate" => count($array) > 9 && !empty($array[9]) ? DateTime::createFromFormat("Ymd", $array[9],new DateTimeZone('UTC')) : null,
 					"Configuration" => $str
 				);
 				return $newarray;
@@ -2754,11 +2758,11 @@ if ( ! class_exists( 'BFCHelper' ) ) {
 			public static function calculateOrder($OrderJson,$language,$bookingType = "") {
 				$orderModel = json_decode($OrderJson);
 				$order = new stdClass;
-				$DateTimeMinValue = new DateTime();
+				$DateTimeMinValue = new DateTime('UTC');
 				$DateTimeMinValue->setDate(1, 1, 1);
 
-				$orderModel->SearchModel->FromDate = DateTime::createFromFormat('d/m/Y', $orderModel->SearchModel->checkin);
-				$orderModel->SearchModel->ToDate = DateTime::createFromFormat('d/m/Y', $orderModel->SearchModel->checkout);
+				$orderModel->SearchModel->FromDate = DateTime::createFromFormat('d/m/Y', $orderModel->SearchModel->checkin,new DateTimeZone('UTC'));
+				$orderModel->SearchModel->ToDate = DateTime::createFromFormat('d/m/Y', $orderModel->SearchModel->checkout,new DateTimeZone('UTC'));
 				$orderModel->SearchModel->FromDate->setTime(0,0,0);
 				$orderModel->SearchModel->ToDate->setTime(0,0,0);
 
@@ -2789,8 +2793,8 @@ if ( ! class_exists( 'BFCHelper' ) ) {
 						if ($resourceDetail->AvailabilityType== 2)
 						{
 							$duration = $resource->TimeDuration;
-							$currModel->SearchModel->FromDate = DateTime::createFromFormat("YmdHis", $resource->CheckInTime);
-							$currModel->SearchModel->ToDate = DateTime::createFromFormat("YmdHis", $resource->CheckInTime);
+							$currModel->SearchModel->FromDate = DateTime::createFromFormat("YmdHis", $resource->CheckInTime,new DateTimeZone('UTC'));
+							$currModel->SearchModel->ToDate = DateTime::createFromFormat("YmdHis", $resource->CheckInTime,new DateTimeZone('UTC'));
 												  
 							$currModel->SearchModel->ToDate->modify('+1 day');
 						}
@@ -2991,7 +2995,7 @@ if ( ! class_exists( 'BFCHelper' ) ) {
 // WP=>				$orderModel = json_decode(stripslashes($OrderJson));
 				$orderModel = json_decode($OrderJson);
 				$lstOrderStay = array();
-				$DateTimeMinValue = new DateTime();
+				$DateTimeMinValue = new DateTime('UTC');
 				$DateTimeMinValue->setDate(1, 1, 1);
 
 	//            foreach ($totalModel as $orderModel)
@@ -3050,11 +3054,11 @@ if ( ! class_exists( 'BFCHelper' ) ) {
 						$currModel = new stdClass;
 						$currModel->SearchModel = new stdClass;
 						if($fromCart==0){
-							$currModel->SearchModel->FromDate  = DateTime::createFromFormat('d/m/Y\TH:i:s', $resource->FromDate);
-							$currModel->SearchModel->ToDate  = DateTime::createFromFormat('d/m/Y\TH:i:s', $resource->ToDate);
+							$currModel->SearchModel->FromDate  = DateTime::createFromFormat('d/m/Y\TH:i:s', $resource->FromDate,new DateTimeZone('UTC'));
+							$currModel->SearchModel->ToDate  = DateTime::createFromFormat('d/m/Y\TH:i:s', $resource->ToDate,new DateTimeZone('UTC'));
 						}else{
-							$currModel->SearchModel->FromDate = new DateTime($resource->FromDate );
-							$currModel->SearchModel->ToDate = new DateTime($resource->ToDate );
+							$currModel->SearchModel->FromDate = new DateTime($resource->FromDate,new DateTimeZone('UTC') );
+							$currModel->SearchModel->ToDate = new DateTime($resource->ToDate,new DateTimeZone('UTC') );
 						}
 						$currModel->SearchModel->FromDate->setTime(0,0,0);
 						$currModel->SearchModel->ToDate->setTime(0,0,0);
@@ -3065,8 +3069,8 @@ if ( ! class_exists( 'BFCHelper' ) ) {
 						if ($resource->AvailabilityType== 2)
 						{
 							$duration = $resource->TimeDuration;
-							$currModel->SearchModel->FromDate = DateTime::createFromFormat("YmdHis", $resource->CheckInTime);
-							$currModel->SearchModel->ToDate = DateTime::createFromFormat("YmdHis", $resource->CheckInTime);
+							$currModel->SearchModel->FromDate = DateTime::createFromFormat("YmdHis", $resource->CheckInTime,new DateTimeZone('UTC'));
+							$currModel->SearchModel->ToDate = DateTime::createFromFormat("YmdHis", $resource->CheckInTime,new DateTimeZone('UTC'));
 							$currModel->SearchModel->ToDate->modify('+1 day');
 						}
 						if ($resource->AvailabilityType== 3)
@@ -3235,9 +3239,11 @@ if ( ! class_exists( 'BFCHelper' ) ) {
 	//				$tmpUserId = $user->ID."|". $user->user_login . "|" . $_SERVER["SERVER_NAME"];
 	//			}
 	//->WP
-				$user = JFactory::getUser();
-				if ($user->id != 0) {
-					$tmpUserId=$user->id."|". $user->username . "|" . $_SERVER["SERVER_NAME"];
+				$user = BFCHelper::getSession('bfiUser',null, 'bfi-User');
+
+//				$user = JFactory::getUser();
+				if ($user !=null && $user->CustomerId != 0) {
+					$tmpUserId=$user->CustomerId."|". $user->Name . "|" . $_SERVER["SERVER_NAME"];
 				}
 				if(empty($tmpUserId)){
 					$tmpUserId = uniqid($_SERVER["SERVER_NAME"]);
@@ -3275,5 +3281,268 @@ if ( ! class_exists( 'BFCHelper' ) ) {
 			return $result;
 		}
 
+		public static function bfi_get_clientdata() {
+			$ipClient = BFCHelper::bfi_get_client_ip();
+			$ipServer = $_SERVER['SERVER_ADDR'];
+			$uaClient = $_SERVER['HTTP_USER_AGENT'];
+			$RequestTime = $_SERVER['REQUEST_TIME'];
+			$Referer = $_SERVER['HTTP_REFERER'];
+			$clientdata =
+				"ipClient:" . str_replace( ":", "_", $ipClient) ."|".
+				"ipServer:" . str_replace( ":", "_", $ipServer) ."|".
+				"uaClient:" . str_replace( "|", "_", str_replace( ":", "_", $uaClient)) ."|".
+				"Referer:" . str_replace( "|", "_", str_replace( ":", "_", $Referer)) ."|".
+				"RequestTime:" . $RequestTime;
+			return $clientdata;
+		}
+		public static function bfi_get_client_ip() {
+			$ipaddress = '';
+			if (isset($_SERVER['HTTP_CLIENT_IP']))
+				$ipaddress = $_SERVER['HTTP_CLIENT_IP'];
+			else if(isset($_SERVER['HTTP_X_FORWARDED_FOR']))
+				$ipaddress = $_SERVER['HTTP_X_FORWARDED_FOR'];
+			else if(isset($_SERVER['HTTP_X_FORWARDED']))
+				$ipaddress = $_SERVER['HTTP_X_FORWARDED'];
+			else if(isset($_SERVER['HTTP_FORWARDED_FOR']))
+				$ipaddress = $_SERVER['HTTP_FORWARDED_FOR'];
+			else if(isset($_SERVER['HTTP_FORWARDED']))
+				$ipaddress = $_SERVER['HTTP_FORWARDED'];
+			else if(isset($_SERVER['REMOTE_ADDR']))
+				$ipaddress = $_SERVER['REMOTE_ADDR'];
+			else
+				$ipaddress = 'UNKNOWN';
+		 
+			return $ipaddress;
+		}
+
+		public static function bfi_get_template($file, $args = array()) {
+			if ( ! empty( $args ) && is_array( $args ) ) {
+				extract( $args );
+			}
+			
+//			$file = preg_replace('/[^A-Z0-9_\.-]/i', '', $file);
+			jimport('joomla.filesystem.folder');
+			$app          = JFactory::getApplication();
+			$explodeArray = explode(DIRECTORY_SEPARATOR, $file);
+			$name         = end($explodeArray);
+			$template = $app->getTemplate();
+			$htmlPath   = JPath::clean(JPATH_ROOT . '/templates/' . $template . '/html/com_bookingforconnector/' . $file);
+
+
+			if (!JFile::exists($htmlPath))
+			{
+				$htmlPath   = JPath::clean(JPATH_COMPONENT . '/views/' . $file);
+			}
+			if (!file_exists($htmlPath))
+			{
+				return;
+			}
+			
+			include($htmlPath); 
+			return ;
+		}
+
+		public static function bfi_get_module($module, $file = 'default.php', $args = array()) {
+			if (empty( $module )) {
+				return;
+			}
+			if ( ! empty( $args ) && is_array( $args ) ) {
+				extract( $args );
+			}
+			
+//			$file = preg_replace('/[^A-Z0-9_\.-]/i', '', $file);
+			jimport('joomla.filesystem.folder');
+			$app          = JFactory::getApplication();
+			$explodeArray = explode(DIRECTORY_SEPARATOR, $file);
+			$name         = end($explodeArray);
+			$template = $app->getTemplate();
+			$htmlPath   = JPath::clean(JPATH_ROOT . DIRECTORY_SEPARATOR . 'templates' . DIRECTORY_SEPARATOR . $template . DIRECTORY_SEPARATOR . 'html'. DIRECTORY_SEPARATOR . $module . DIRECTORY_SEPARATOR . $file);
+
+			if (!JFile::exists($htmlPath))
+			{
+				$htmlPath   = JPath::clean(JPATH_ROOT . DIRECTORY_SEPARATOR . 'modules' . DIRECTORY_SEPARATOR . $module . DIRECTORY_SEPARATOR . 'tmpl'. DIRECTORY_SEPARATOR . $file);
+			}
+			if (!file_exists($htmlPath))
+			{
+				return;
+			}
+			include($htmlPath); 
+			return ;
+		}
+
 }
+}
+//setting constants
+if (!defined('COM_BOOKINGFORCONNECTOR_CONFIG_LOADED')) {
+		$config = JComponentHelper::getParams('com_bookingforconnector');
+
+		$subscriptionkey= $config->get('wsurl', '');
+		$apikey= $config->get('apikey', '');
+		$form_key= $config->get('formlabel', '');
+		$XGooglePosDef = $config->get('posx', 0);
+		$YGooglePosDef = $config->get('posy', 0);
+		$startzoom = $config->get('startzoom',15);
+		$googlemapskey = $config->get('googlemapskey','');
+		$itemperpage = $config->get('bfi_itemperpage_key',10);
+		$googlerecaptchakey = $config->get('bfi_googlerecaptcha_key','');
+		$googlerecaptchasecretkey = $config->get('bfi_googlerecaptcha_secret_key','');
+		$googlerecaptchathemekey = $config->get('bfi_googlerecaptcha_theme_key','light');
+		$googlerecaptchasizekey = $config->get('bfi_googlerecaptcha_size_key','normal');
+
+		$isportal = $config->get('isportal', 1);
+		$showdata = $config->get('showdata', 1);
+		$sendtocart = $config->get('bfi_sendtocart_key', 0);
+		$showbadge = 1; //$config->get('bfi_showbadge_key', 1);
+
+		$enablecoupon = $config->get('bfi_enablecoupon_key', 0);
+		$showlogincart = $config->get('bfi_showlogincart_key', 1);
+
+		$usessl = $config->get('bfi_usessl_key',0);
+		$ssllogo = $config->get('bfi_ssllogo_key','');
+
+		$useproxy = $config->get('useproxy',0);
+		$urlproxy = $config->get('urlproxy','127.0.0.1:8888');
+		
+		$gaenabled = $config->get('gaenabled', 0);
+		$gaaccount = $config->get('gaaccount', '');
+		$eecenabled = $config->get('eecenabled', 0);
+		$criteoenabled = $config->get('bfi_criteoenabled_key', 0);
+
+		$enablecache = $config->get('enablecache', 1);
+
+		$bfi_adultsage_key = $config->get('adultsage', 18);
+		$bfi_adultsqt_key = $config->get('adultsqt', 2);
+		$bfi_childrensage_key = $config->get('childrensage', 12);
+		$bfi_senioresage_key = $config->get('senioresage', 65);
+		$bfi_maxqtSelectable_key = $config->get('bfi_maxqtSelectable_key', 20);
+		$bfi_defaultdisplaylist_key = $config->get('bfi_defaultdisplaylist_key', 0);
+		
+
+		$bfi_currentcurrency = $config->get('bfi_currentcurrency_key', '');
+
+		$nMonthinCalendar = 2;
+
+		$useragent=$_SERVER['HTTP_USER_AGENT'];
+
+		if(preg_match('/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino/i',$useragent)||preg_match('/1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i',substr($useragent,0,4))){
+			$nMonthinCalendar = 1;
+		}
+		$bfi_version = $config->get('version', '');
+		bfiDefine( 'BFI_VERSION', $bfi_version );
+
+		bfiDefine( 'COM_BOOKINGFORCONNECTOR_MONTHINCALENDAR', $nMonthinCalendar );
+		$subscriptionkey = strtolower($subscriptionkey);
+		if(strpos($subscriptionkey,'https://') !== false){
+			$subscriptionkey = str_replace("https://", "", $subscriptionkey);
+			$subscriptionkey = str_replace(".bookingfor.com/modules/bookingfor/services/bookingservice.svc", "", $subscriptionkey);
+			$subscriptionkey = str_replace("/", "", $subscriptionkey);
+		}
+		$bfiBaseUrl = 'https://' . $subscriptionkey . '.bookingfor.com';
+
+		$cachetime = $config->get('cachetime ', 3600); // 1 hour default
+		$cachedir = $config->get('cachedir', 'cache/com_bookingforconnector');
+		bfiDefine( 'COM_BOOKINGFORCONNECTOR_CACHEDIR', $cachedir );
+		bfiDefine( 'COM_BOOKINGFORCONNECTOR_CACHETIME', $cachetime );
+		$datacrawler = file_get_contents(JPATH_ROOT. DIRECTORY_SEPARATOR .'components' . DIRECTORY_SEPARATOR . 'com_bookingforconnector'. DIRECTORY_SEPARATOR . 'helpers' . DIRECTORY_SEPARATOR . 'crawler-user-agents.json');
+		bfiDefine( 'COM_BOOKINGFORCONNECTOR_CRAWLER', $datacrawler );
+
+		bfiDefine( 'COM_BOOKINGFORCONNECTOR_SUBSCRIPTION_KEY', $subscriptionkey );
+		bfiDefine( 'COM_BOOKINGFORCONNECTOR_API_KEY', $apikey );
+		bfiDefine( 'COM_BOOKINGFORCONNECTOR_FORM_KEY', $form_key );
+		bfiDefine( 'COM_BOOKINGFORCONNECTOR_WSURL', $bfiBaseUrl .'/modules/bookingfor/services/bookingservice.svc' );
+		bfiDefine( 'COM_BOOKINGFORCONNECTOR_ORDERURL', $bfiBaseUrl .'/Public/{language}/orderlogin' );
+		bfiDefine( 'COM_BOOKINGFORCONNECTOR_PAYMENTURL', $bfiBaseUrl .'/Public/{language}/payment/' );
+		bfiDefine( 'COM_BOOKINGFORCONNECTOR_PRIVACYURL', $bfiBaseUrl .'/Public/{language}/privacy' );
+		bfiDefine( 'COM_BOOKINGFORCONNECTOR_TERMSOFUSEURL', $bfiBaseUrl .'/Public/{language}/termsofuse' );
+		bfiDefine( 'COM_BOOKINGFORCONNECTOR_ACCOUNTLOGIN', $bfiBaseUrl .'/Public/{language}/?openloginpopup=1' );
+		bfiDefine( 'COM_BOOKINGFORCONNECTOR_ACCOUNTREGISTRATION', $bfiBaseUrl .'/Public/{language}/Account/Register' );
+		bfiDefine( 'COM_BOOKINGFORCONNECTOR_ACCOUNTFORGOTPASSWORD', $bfiBaseUrl .'/Public/{language}/Account/sendforgotpasswordlink' );
+
+		bfiDefine( 'COM_BOOKINGFORCONNECTOR_CURRENTCURRENCY', $bfi_currentcurrency );
+		bfiDefine( 'COM_BOOKINGFORCONNECTOR_MAXATTACHMENTFILES', 3 );
+		
+		bfiDefine( 'COM_BOOKINGFORCONNECTOR_IMGURL', $subscriptionkey . '/bookingfor/images' );
+		bfiDefine( 'COM_BOOKINGFORCONNECTOR_IMGURL_CDN', '//cdnbookingfor.blob.core.windows.net/' );
+		bfiDefine( 'COM_BOOKINGFORCONNECTOR_BASEIMGURL', 'https://cdnbookingfor.blob.core.windows.net/' . $subscriptionkey . '/bookingfor/images' );
+//		bfiDefine( 'COM_BOOKINGFORCONNECTOR_BASEIMGURL', 'https://cdnbookingfor.blob.core.windows.net/bibione/bookingfor/images' );
+		bfiDefine( 'COM_BOOKINGFORCONNECTOR_GOOGLE_POSX', $XGooglePosDef );
+		bfiDefine( 'COM_BOOKINGFORCONNECTOR_GOOGLE_POSY', $YGooglePosDef );
+		bfiDefine( 'COM_BOOKINGFORCONNECTOR_GOOGLE_STARTZOOM', $startzoom );
+		bfiDefine( 'COM_BOOKINGFORCONNECTOR_GOOGLE_GOOGLEMAPSKEY', $googlemapskey );
+
+		bfiDefine( 'COM_BOOKINGFORCONNECTOR_GOOGLE_GOOGLERECAPTCHAKEY', $googlerecaptchakey );
+		bfiDefine( 'COM_BOOKINGFORCONNECTOR_GOOGLE_GOOGLERECAPTCHASECRETKEY', $googlerecaptchasecretkey );
+		bfiDefine( 'COM_BOOKINGFORCONNECTOR_GOOGLE_GOOGLERECAPTCHATHEMEKEY', $googlerecaptchathemekey );
+		bfiDefine( 'COM_BOOKINGFORCONNECTOR_GOOGLE_GOOGLERECAPTCHASIZEKEY', $googlerecaptchasizekey );
+		
+		bfiDefine( 'COM_BOOKINGFORCONNECTOR_USEEXTERNALUPDATEORDER', false);
+		bfiDefine( 'COM_BOOKINGFORCONNECTOR_USEEXTERNALUPDATEORDERSYSTEM', "");
+		bfiDefine( 'COM_BOOKINGFORCONNECTOR_ANONYMOUS_TYPE', "3,4");
+		bfiDefine( 'COM_BOOKINGFORCONNECTOR_ITEMPERPAGE', $itemperpage );
+		
+		bfiDefine( 'COM_BOOKINGFORCONNECTOR_ISPORTAL', $isportal );
+		bfiDefine( 'COM_BOOKINGFORCONNECTOR_SHOWDATA', $showdata );
+		bfiDefine( 'COM_BOOKINGFORCONNECTOR_SENDTOCART', $sendtocart );
+		bfiDefine( 'COM_BOOKINGFORCONNECTOR_SHOWBADGE', $showbadge );
+		bfiDefine( 'COM_BOOKINGFORCONNECTOR_ENABLECOUPON', $enablecoupon );
+		bfiDefine( 'COM_BOOKINGFORCONNECTOR_SHOWLOGINCART', $showlogincart );
+		
+		bfiDefine( 'COM_BOOKINGFORCONNECTOR_USESSL', $usessl );
+		bfiDefine( 'COM_BOOKINGFORCONNECTOR_SSLLOGO', $ssllogo );
+
+		bfiDefine( 'COM_BOOKINGFORCONNECTOR_ADULTSAGE', $bfi_adultsage_key );
+		bfiDefine( 'COM_BOOKINGFORCONNECTOR_ADULTSQT', $bfi_adultsqt_key );
+		bfiDefine( 'COM_BOOKINGFORCONNECTOR_CHILDRENSAGE', $bfi_childrensage_key );
+		bfiDefine( 'COM_BOOKINGFORCONNECTOR_SENIORESAGE', $bfi_senioresage_key );
+
+		bfiDefine( 'COM_BOOKINGFORCONNECTOR_USEPROXY', $useproxy );
+		bfiDefine( 'COM_BOOKINGFORCONNECTOR_URLPROXY', $urlproxy );
+
+		bfiDefine( 'COM_BOOKINGFORCONNECTOR_GAENABLED', $gaenabled );
+		bfiDefine( 'COM_BOOKINGFORCONNECTOR_GAACCOUNT', $gaaccount );
+		bfiDefine( 'COM_BOOKINGFORCONNECTOR_EECENABLED', $eecenabled );
+		bfiDefine( 'COM_BOOKINGFORCONNECTOR_CRITEOENABLED', $criteoenabled );
+
+		bfiDefine( 'COM_BOOKINGFORCONNECTOR_ENABLECACHE', $enablecache );
+
+		bfiDefine( 'COM_BOOKINGFORCONNECTOR_MAXQTSELECTABLE', $bfi_maxqtSelectable_key );
+		
+		bfiDefine( 'COM_BOOKINGFORCONNECTOR_DEFAULTDISPLAYLIST', $bfi_defaultdisplaylist_key );
+
+		$cryptoVersion = BFCHelper::encryptSupported();
+		bfiDefine('COM_BOOKINGFORCONNECTOR_CRYPTOVERSION', $cryptoVersion);
+
+		define('COM_BOOKINGFORCONNECTOR_CONFIG_LOADED', 1);
+
+
+
+
+//		// load scripts
+//		JHtml::_('jquery.framework');
+//		JHTML::script('//ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js');
+//
+//		JHTML::stylesheet('components/com_bookingforconnector/assets/css/jquery.validate.css');
+//		JHTML::stylesheet('components/com_bookingforconnector/assets/jquery-ui/themes/smoothness/jquery-ui.min.css');
+//		JHTML::stylesheet('components/com_bookingforconnector/assets/css/font-awesome.min.css');
+//		JHTML::stylesheet('components/com_bookingforconnector/assets/css/magnific-popup.css');
+//		JHTML::stylesheet('components/com_bookingforconnector/assets/js/webui-popover/jquery.webui-popover.min.css');
+//		JHTML::stylesheet('components/com_bookingforconnector/assets/css/bookingfor.css');
+//
+//		JHTML::script('components/com_bookingforconnector/assets/js/jquery.blockUI.js');
+//		JHTML::script('components/com_bookingforconnector/assets/js/jquery.form.js');
+//		JHtml::script('components/com_bookingforconnector/assets/js/jquery-validation/jquery.validate.min.js');
+//		JHtml::script('components/com_bookingforconnector/assets/js/jquery-validation/additional-methods.min.js');
+//		JHtml::script('components/com_bookingforconnector/assets/js/jquery.validate.additional-custom-methods.js');
+//		JHtml::script('components/com_bookingforconnector/assets/js/jquery.magnific-popup.min.js');
+//		JHtml::script('components/com_bookingforconnector/assets/js/webui-popover/jquery.webui-popover.min.js');
+//		JHtml::script('components/com_bookingforconnector/assets/js/jquery.shorten.js');
+//		JHtml::script('components/com_bookingforconnector/assets/js/bfi.js');
+//		JHtml::script('components/com_bookingforconnector/assets/js/bfisearchonmap.js');
+//		JHtml::script('components/com_bookingforconnector/assets/js/bfi_calendar.js');
+//		$document 	= JFactory::getDocument();
+//		$language 	= JFactory::getLanguage()->getTag();
+//		if(substr($language,0,2)!='en'){
+//			JHtml::script('//ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/i18n/datepicker-' . substr($language,0,2) . '.min.js?ver=1.11.4');
+//		}
+
 }

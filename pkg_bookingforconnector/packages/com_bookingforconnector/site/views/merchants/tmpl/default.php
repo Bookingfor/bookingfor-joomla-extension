@@ -103,10 +103,12 @@ $formAction=$url;
 	<?php foreach ($merchants as  $currKey => $merchant){ ?>
 		<?php 
 			$merchantName = BFCHelper::getLanguage($merchant->Name, $language, null, array('ln2br'=>'ln2br', 'striptags'=>'striptags')); 
+			$hasSuperior = !empty($merchant->RatingSubValue);
 			$rating = $merchant->Rating;
-			if ($rating>9 )
+			if ($rating > 9)
 			{
-				$rating = $rating/10;
+				$hasSuperior = ($merchant->Rating%10)>0;
+				$rating = (int)($rating / 10);
 			} 
 			
 			$currUriMerchant = $uriMerchant. '&merchantId=' . $merchant->MerchantId . ':' . BFCHelper::getSlug($merchantName);
@@ -170,7 +172,10 @@ $formAction=$url;
 							<span class="bfi-item-rating">
 								<?php for($i = 0; $i < $rating; $i++) { ?>
 									<i class="fa fa-star"></i>
-								<?php } ?>	             
+								<?php } ?>	 
+								<?php if ($hasSuperior) { ?>
+									&nbsp;S
+								<?php } ?>
 							</span>
 						</div>
 						<div class="bfi-item-address">
@@ -183,6 +188,9 @@ $formAction=$url;
 											<?php for($i = 0; $i < $rating; $i++) { ?>
 												<i class="fa fa-star"></i>
 											<?php } ?>	             
+											<?php if ($hasSuperior) { ?>
+												&nbsp;S
+											<?php } ?>
 										</span>
 									</div>
 									<span id="mapaddress<?php echo $merchant->MerchantId?>"></span>
@@ -222,7 +230,7 @@ $formAction=$url;
 
 <?php if ($this->pagination->get('pages.total') > 1) { ?>
 	<div class="text-center">
-		<div class="pagination">
+		<div class="pagination bfi-pagination">
 			<?php echo $this->pagination->getPagesLinks(); ?>
 		</div>
 	</div>

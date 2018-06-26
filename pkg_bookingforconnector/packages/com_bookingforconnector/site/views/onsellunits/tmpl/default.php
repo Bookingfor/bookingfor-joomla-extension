@@ -96,7 +96,7 @@ $formAction=$url;
 		$resourceImageUrl = Juri::root() . "components/com_bookingforconnector/assets/images/defaults/default-s6.jpeg";
 
 		$resourceName = BFCHelper::getLanguage($resource->Name, $language, null, array('ln2br'=>'ln2br', 'striptags'=>'striptags')); 
-		$resourceDescription = BFCHelper::getLanguage($resource->Description, $language, null, array('ln2br'=>'ln2br', 'striptags'=>'striptags')); 
+		$resourceDescription = BFCHelper::getLanguage($resource->Description, $language, null, array('ln2br'=>'ln2br', 'bbcode'=>'bbcode', 'striptags'=>'striptags')); 
 		$merchantName = $resource->MerchantName;
 
 		$resourceLat = $resource->XPos;
@@ -218,8 +218,8 @@ $formAction=$url;
 				</div>
 				<div class="bfi-clearfix"></div>
 				<!-- end resource details -->
-				<div  class="ribbonnew bfi-hide" id="ribbonnew<?php echo $resource->ResourceId?>"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_SEARCHONSELL_VIEW_RIBBONNEW') ?></div>
 			</div>
+				<div  class="bfi-ribbonnew bfi-hide" id="ribbonnew<?php echo $resource->ResourceId?>"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_SEARCHONSELL_VIEW_RIBBONNEW') ?></div>
 		</div>
 	</div>
 	<?php 
@@ -229,7 +229,7 @@ $formAction=$url;
 </div>
 
 <?php if ($this->pagination->get('pages.total') > 1) { ?>
-	<div class="pagination">
+	<div class="pagination bfi-pagination">
 		<?php echo $this->pagination->getPagesLinks(); ?>
 	</div>
 <?php } ?>

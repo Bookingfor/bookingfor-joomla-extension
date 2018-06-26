@@ -25,7 +25,7 @@ class BookingForConnectorViewPayment extends BFCView
 	function display($tpl = NULL, $preparecontent = false)
 	{
 		$document 	= JFactory::getDocument();
-		$language 	= $document->getLanguage();		
+		$language 	= JFactory::getLanguage()->getTag();		
 		$state		= $this->get('State');
 		$params = $state->params;
 

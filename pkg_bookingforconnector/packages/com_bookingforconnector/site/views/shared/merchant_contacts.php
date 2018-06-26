@@ -8,10 +8,15 @@
 
 // No direct access to this file
 defined('_JEXEC') or die('Restricted access');
+$isportal = COM_BOOKINGFORCONNECTOR_ISPORTAL;
+$document 	= JFactory::getDocument();
+$language 	= JFactory::getLanguage()->getTag();
+$app = JFactory::getApplication();
+$sitename = $app->get('sitename');
 
 $db   = JFactory::getDBO();
 $uriMerchant  = 'index.php?option=com_bookingforconnector&view=merchantdetails';
-$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uriMerchant .'%' ) .' AND (language='. $db->Quote($this->language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
+$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uriMerchant .'%' ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
 $itemIdMerchant = ($db->getErrorNum())? 0 : intval($db->loadResult());
 //$itemIdMerchant = intval($db->loadResult());
 
@@ -26,10 +31,15 @@ $route = JRoute::_($uriMerchant);
 $routeThanks = JRoute::_($uriMerchant .'&layout=thanks');
 $routeThanksKo = JRoute::_($uriMerchant .'&layout=errors');
 
+$routePrivacy = str_replace("{language}", substr($language,0,2), COM_BOOKINGFORCONNECTOR_PRIVACYURL);
+$routeTermsofuse = str_replace("{language}", substr($language,0,2), COM_BOOKINGFORCONNECTOR_TERMSOFUSEURL);
+
+$infoSendBtn = sprintf(JTEXT::_('COM_BOOKINGFORCONNECTOR_FORM_INFO_SENDBTN'),$sitename,$routePrivacy,$routeTermsofuse);
+
 $cNationList = BFCHelper::parseArrayList(JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEW_CONSTANTS_NATIONSLIST'));
 
-$cultureCode = strtolower(substr($this->language, 0, 2));
-$nationCode = strlen($this->language) == 5 ? strtolower(substr($this->language, 3, 2)) : $cultureCode;
+$cultureCode = strtolower(substr($language, 0, 2));
+$nationCode = strlen($language) == 5 ? strtolower(substr($language, 3, 2)) : $cultureCode;
 $keys = array_keys($cNationList);
 $nations = array_values(array_filter($keys, function($item) use($nationCode) {
 	return strtolower($item) == $nationCode; 
@@ -42,14 +52,14 @@ $culture="";
 $checkinId = uniqid('checkin');
 $checkoutId = uniqid('checkout');
 
-$checkin = new DateTime();
-$checkout = new DateTime();
+$checkin = new DateTime('UTC');
+$checkout = new DateTime('UTC');
 $checkout->modify('+1 day');
 
 $formRoute = "index.php?option=com_bookingforconnector&task=sendContact"; 
 
-$privacy = BFCHelper::GetPrivacy($language);
-$additionalPurpose = BFCHelper::GetAdditionalPurpose($language);
+//$privacy = BFCHelper::GetPrivacy($language);
+//$additionalPurpose = BFCHelper::GetAdditionalPurpose($language);
 $formlabel = COM_BOOKINGFORCONNECTOR_FORM_KEY;
 $idform = uniqid("merchantdetailscontacts");
 
@@ -122,30 +132,11 @@ $idform = uniqid("merchantdetailscontacts");
               <label><?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_NOTES') ?></label>
               <textarea name="form[note]" style="height:200px;" class="" placeholder="<?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_NOTES') ?>"></textarea>    
             </div>
-			<div class="bfi-col-md-12" style="display:none;">
-				<br />
-				<label id="mbfcPrivacyTitle"><?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_PRIVACY') ?></label>
-				<textarea id="mbfcPrivacyText" name="form[privacy]" class="" style="height:200px;" readonly ><?php echo $privacy ?></textarea>    
-			</div>
         </div>
 			
-		<div class="bfi-row">
-             <div class="bfi-col-md-12 bfi-checkbox-wrapper">
-		 	     <input name="form[accettazione]" id="agree" aria-invalid="true" aria-required="true" type="checkbox" required title="<?php echo JTEXT::_('MOD_BOOKINGFORSEARCH_ERROR_REQUIRED') ?>">
-			     <label  class="bfi-agreeprivacy"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RATING_CONFIRM') ?></label>
-			</div>
-		</div><!--/row-->
-		<div class="bfi-row" style="display:none;">
-			<div class="bfi-col-md-12">
-				<label id="mbfcAdditionalPurposeTitle"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_ADDITIONALPURPOSE_TITLE') ?></label>
-				<textarea id="mbfcAdditionalPurposeText" name="form[additionalPurpose]" class="" style="height:200px;" readonly ><?php echo $additionalPurpose ?></textarea>    
-			</div>
-		</div><!--/row-->
-		<div class="bfi-row" style="display:<?php echo empty($additionalPurpose)?"none":"";?>">
-			<div class="bfi-col-md-12 bfi-checkbox-wrapper">
-				<input name="form[accettazioneadditionalPurpose]" id="agreeadditionalPurpose" aria-invalid="true" aria-required="true" required type="checkbox" title="<?php echo JTEXT::_('MOD_BOOKINGFORSEARCH_ERROR_REQUIRED') ?>">
-				<label class="agreeadditionalPurpose"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_ADDITIONALPURPOSE') ?></label>
-			</div>
+		<div class=" bfi-checkbox-wrapper">
+			<input name="form[optinemail]" id="optinemailpop" type="checkbox">
+			<label for="optinemailpop"><?php echo sprintf(JTEXT::_('COM_BOOKINGFORCONNECTOR_FORM_OPTINEMAIL'),$sitename) ?></label>
 		</div>
 
 <?php
@@ -166,8 +157,14 @@ echo (isset($recaptcha[0])) ? $recaptcha[0] : '';
 		<input type="hidden" id="label" name="form[label]" value="" />
 		<input type="hidden" id="redirect" name="form[Redirect]" value="<?php echo $routeThanks;?>" />
 		<input type="hidden" id="redirecterror" name="Redirecterror" value="<?php echo $routeThanksKo;?>" />
-		<input type="hidden" id="formCulture" name="form[Culture]" value="<?php echo $this->language;?>" />
-		<button type="submit" class="bfi-btn"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_BUTTONSUBMIT'); ?></button>
+		<input type="hidden" id="formCulture" name="form[Culture]" value="<?php echo $language;?>" />
+
+		<div class="bfi-row bfi-footer-book" >
+			<div class="bfi-col-md-10">
+			<?php echo $infoSendBtn ?>
+			</div>
+			<div class="bfi-col-md-2 bfi-footer-send"><button type="submit" class="bfi-btn"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_BUTTONSUBMIT'); ?></button></div>
+		</div>
 </form>
 
 <script type="text/javascript">
@@ -197,10 +194,7 @@ echo (isset($recaptcha[0])) ? $recaptcha[0] : '';
 					jQuery('#ui-datepicker-div').attr('data-before',"");
 					jQuery('#ui-datepicker-div').addClass("bfi-checkin");
 					jQuery('#ui-datepicker-div').removeClass("bfi-checkout");
-					setTimeout(function() {
-						jQuery("#ui-datepicker-div div.bfi-title").remove();
-						jQuery("#ui-datepicker-div").prepend( "<div class=\"bfi-title\">Check-in</div>" );
-					}, 1);
+					setTimeout(function() {bfiCalendarCheck()}, 1);
 					}
 				, onSelect: function(date) { checkDate<?php echo $checkinId?>(jQuery, jQuery(this), date); }
 				, changeMonth: false
@@ -222,10 +216,7 @@ echo (isset($recaptcha[0])) ? $recaptcha[0] : '';
 					jQuery('#ui-datepicker-div').attr('data-before',"");
 					jQuery('#ui-datepicker-div').removeClass("bfi-checkin");
 					jQuery('#ui-datepicker-div').addClass("bfi-checkout");
-					setTimeout(function() {
-						jQuery("#ui-datepicker-div div.bfi-title").remove();
-						jQuery("#ui-datepicker-div").prepend( "<div class=\"bfi-title\">Check-out</div>" );
-					}, 1);
+					setTimeout(function() {bfiCalendarCheck()}, 1);
 					}
 				, minDate: '+1d'
 				, changeMonth: false
@@ -296,22 +287,31 @@ echo (isset($recaptcha[0])) ? $recaptcha[0] : '';
 				//label.closest('.control-group').removeClass('error');
 			},
 			submitHandler: function(form) {
-				if (typeof grecaptcha === 'object') {
-					var response = grecaptcha.getResponse();
-					//recaptcha failed validation
-					if(response.length == 0) {
-						$('#recaptcha-error').show();
-						return false;
+				var $form = $(form);
+				if($form.valid()){
+					if (typeof grecaptcha === 'object') {
+						var response = grecaptcha.getResponse();
+						//recaptcha failed validation
+						if(response.length == 0) {
+							$('#recaptcha-error').show();
+							return false;
+						}
+						//recaptcha passed validation
+						else {
+							$('#recaptcha-error').hide();
+						}					 
 					}
-					//recaptcha passed validation
-					else {
-						$('#recaptcha-error').hide();
-					}					 
+					bookingfor.waitBlockUI();
+//						jQuery.blockUI({message: ''});
+					if ($form.data('submitted') === true) {
+						 return false;
+					} else {
+						// Mark it so that the next submit can be ignored
+						$form.data('submitted', true);
+						form.submit();
+					}
 				}
-				form.submit();
-			}
-
-		});
+			});
 		});
 //-->
 </script>

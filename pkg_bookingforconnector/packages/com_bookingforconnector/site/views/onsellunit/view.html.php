@@ -22,7 +22,7 @@ class BookingForConnectorViewOnSellUnit extends BFCView
 	{
 
 		$document 	= JFactory::getDocument();
-		$language 	= $document->getLanguage();
+		$language 	= JFactory::getLanguage()->getTag();
 		$config = JComponentHelper::getParams('com_bookingforconnector');
 		$app = JFactory::getApplication();
 		$sitename = $app->get('sitename');
@@ -58,10 +58,11 @@ class BookingForConnectorViewOnSellUnit extends BFCView
 		if (!empty($resource)){
 				$mainframe = JFactory::getApplication();
 				$pathway   = $mainframe->getPathway();
-				$count = count($pathway);
+				$items   = $pathway->getPathWay();
+				$count = count($items);
 				$newPathway = array();
 				if($count>1){
-					$newPathway = array_pop($pathway);
+					$newPathway = array_pop($items);
 				}
 				$pathway->setPathway($newPathway);
 

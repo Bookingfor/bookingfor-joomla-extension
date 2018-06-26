@@ -60,13 +60,14 @@ class BookingForConnectorModelCondominiums extends JModelList
 
 
 	public  function GetCondominiumsByIds($listsId,$language='') {
+		$cultureCode = JFactory::getLanguage()->getTag();
 		$options = array(
 				'path' => $this->urlGetCondominiumsByIds,
 				'data' => array(
 					/*'$skip' => $start,
 					'$top' => $limit,*/
 					'ids' => '\'' .$listsId. '\'',
-					'cultureCode' => BFCHelper::getQuotedString($language),
+					'cultureCode' => BFCHelper::getQuotedString($cultureCode),
 					'$format' => 'json',
 //					'$select' => 'CondominiumId,Name,Description,MerchantId,AddressData,DefaultImg,XGooglePos,YGooglePos'
 					//'$select' => 'Area,Rooms,Description,MerchantId,MerchantTypeId,ResourceId,MerchantName,LocationName,AddressData,ImageUrl,Logo,XGooglePos,YGooglePos,LocationZone,IsNewBuilding,ForegroundExpiration,HighlightExpiration,ShowcaseExpiration,PriceVariation,IsReservedPrice,Created,IsAddressVisible,IsShowcase,IsForeground'
@@ -92,6 +93,7 @@ class BookingForConnectorModelCondominiums extends JModelList
 
 
 	public function getResourcesFromService($start, $limit, $ordering, $direction, $jsonResult = false) {// with random order is not possible to order by another field
+		$cultureCode = JFactory::getLanguage()->getTag();
 
 		$params = $this->getState('params');
 
@@ -101,6 +103,7 @@ class BookingForConnectorModelCondominiums extends JModelList
 					/*'$skip' => $start,
 					'$top' => $limit,*/
 //					'seed' => $seed,
+					'cultureCode' => BFCHelper::getQuotedString($cultureCode),
 					'$format' => 'json'
 				)
 			);
@@ -393,12 +396,14 @@ class BookingForConnectorModelCondominiums extends JModelList
 	
 	
 	public function getResourcesForSearch($text, $start, $limit, $ordering, $direction) {
+		$cultureCode = JFactory::getLanguage()->getTag();
 		//$typeId = $this->getTypeId();
 		$options = array(
 				'path' => $this->urlResources,
 				'data' => array(
 					/*'$skip' => $start,
 					'$top' => $limit,*/
+					'cultureCode' => BFCHelper::getQuotedString($cultureCode),
 					'$format' => 'json'
 				)
 			);

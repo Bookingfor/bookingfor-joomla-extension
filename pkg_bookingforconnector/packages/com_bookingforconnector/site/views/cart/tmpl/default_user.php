@@ -108,7 +108,7 @@ $returnOrder = JRoute::_($uriOrder);
 		<?php endforeach?>
 			</table>
 		<?php if ($this->pagination->get('pages.total') > 1) : ?>
-			<div class="pagination">
+			<div class="pagination bfi-pagination">
 				<?php echo $this->pagination->getPagesLinks(); ?>
 			</div>
 		<?php endif; ?>

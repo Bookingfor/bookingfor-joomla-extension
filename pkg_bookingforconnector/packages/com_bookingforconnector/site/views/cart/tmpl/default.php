@@ -25,7 +25,7 @@ $enablecoupon = COM_BOOKINGFORCONNECTOR_ENABLECOUPON;
 //$PaymentsCentralized = !BFCHelper::getCartMultimerchantEnabled();
 
 $listStayConfigurations = array();
-$dateTimeNow =  new DateTime();
+$dateTimeNow =  new DateTime('UTC');
 
 //if (isset($_POST['hdnOrderData']) && isset($_POST['hdnPolicyIds'])  ) {
 //	$policyByIds = $_POST['hdnPolicyIds'];
@@ -115,6 +115,7 @@ $allServiceIds = array();
 $allPolicyHelp = array();
 $allResourceBookable = array();
 $allResourceNoBookable = array();
+$allPolicies = array();
 
 ///**test**/
 //		$cartConfig->DiscountCodes = null;
@@ -196,8 +197,8 @@ $nation = !empty(count($nations)) ? $nations[0] : $cultureCode;
 		$formRouteDelete = "index.php?option=com_bookingforconnector&task=DeleteFromCart"; 
 		$formRouteaddDiscountCodes = "index.php?option=com_bookingforconnector&task=addDiscountCodesToCart"; 
 
-		$privacy = BFCHelper::GetPrivacy($language);
-		$additionalPurpose = BFCHelper::GetAdditionalPurpose($language);
+//		$privacy = BFCHelper::GetPrivacy($language);
+//		$additionalPurpose = BFCHelper::GetAdditionalPurpose($language);
 
 		$policyId = $cartConfig->PolicyId;
 //		$currPolicy =  BFCHelper::GetPolicyById($policyId, $language);
@@ -216,7 +217,7 @@ $nation = !empty(count($nations)) ? $nations[0] : $cultureCode;
 //		$listPolicyIdsBookable = array();
 //		$listPolicyIdsNoBookable = array();
 
-		$now = new DateTime();
+		$now = new DateTime('UTC');
 		$now->setTime(0,0,0);
 
 		// cerco risorse scadute come checkin
@@ -224,13 +225,15 @@ $nation = !empty(count($nations)) ? $nations[0] : $cultureCode;
 			$id = $resource->ResourceId;
 			$merchantId = $resource->MerchantId;
 			$listResourcesCart[] = $id;
-			$tmpCheckinDate = new DateTime();
+			$tmpCheckinDate = new DateTime('UTC');
 			if($cartId==0){
-				$tmpCheckinDate = DateTime::createFromFormat('d/m/Y\TH:i:s', $resource->FromDate);
+				$tmpCheckinDate = DateTime::createFromFormat('d/m/Y\TH:i:s', $resource->FromDate,new DateTimeZone('UTC'));
 //				$tmpCheckinDate->setTime(0,0,1);
 			}else{
-				$tmpCheckinDate = new DateTime($resource->FromDate);
+				$tmpCheckinDate = new DateTime($resource->FromDate,new DateTimeZone('UTC'));
+//				$tmpCheckinDate = DateTime::createFromFormat('Y-m-d\TH:i:s', $resource->FromDate,new DateTimeZone('UTC'));
 			}
+						
 			if($tmpCheckinDate < $now){
 				if($cartId==0){
 					unset($cartConfig->Resources[$keyRes]);  
@@ -284,7 +287,7 @@ $nation = !empty(count($nations)) ? $nations[0] : $cultureCode;
 <div class="bfi-content">
 <div class="bfi-cart-title"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_CARTDETAILS_TITLE') ?></div>
 
-	<?php  include(JPATH_COMPONENT.'/views/shared/menu_small_booking.php');  ?>
+	<?php  BFCHelper::bfi_get_template('shared/menu_small_booking.php');  ?>
 <script type="text/javascript">
 <!--
 	jQuery(function()
@@ -314,11 +317,15 @@ $nation = !empty(count($nations)) ? $nations[0] : $cultureCode;
 		$routeMerchant = JRoute::_($currUriMerchant);
 		$nRowSpan = 1;
 		
-		$rating = $MerchantDetail->Rating;
+		$hasSuperior = !empty($MerchantDetail->RatingSubValue);
+		$rating = (int)$MerchantDetail->Rating;
 		if ($rating>9 )
 		{
 			$rating = $rating/10;
+			$hasSuperior = ($MerchantDetail->Rating%10)>0;
 		} 
+
+		
 		$mrcindirizzo = "";
 		$mrccap = "";
 		$mrccomune = "";
@@ -392,6 +399,9 @@ if(!empty($MerchantDetail->AcceptanceCheckIn) && !empty($MerchantDetail->Accepta
 							<?php for($i = 0; $i < $rating; $i++) { ?>
 								<i class="fa fa-star"></i>
 							<?php } ?>	             
+							<?php if ($hasSuperior) { ?>
+								&nbsp;S
+							<?php } ?>
 						</span>
 					</div>
 					<br />
@@ -440,6 +450,7 @@ if(!empty($MerchantDetail->AcceptanceCheckIn) && !empty($MerchantDetail->Accepta
 
 				$nchs = array_slice($nchs,0,$nch);
 				$resource = $resourceDetail[$res->ResourceId];  //$modelMerchant->getItem($merchant_id);	 
+				$resourceDescription = BFCHelper::getLanguage($resource->Description, $language, null, array('ln2br'=>'ln2br', 'bbcode'=>'bbcode', 'striptags'=>'striptags'));											
 											
 				$currUriresource = $uri.'&resourceId=' . $resource->ResourceId . ':' . BFCHelper::getSlug($resource->Name);
 				$routeResource = JRoute::_($currUriresource);
@@ -462,8 +473,6 @@ if(!empty($MerchantDetail->AcceptanceCheckIn) && !empty($MerchantDetail->Accepta
 				}else{
 				    $allResourceNoBookable[] = $resource->Name;
 				}
-
-				$totalQt += $res->SelectedQt;
 												
 			?>
                                 <tr>
@@ -471,6 +480,10 @@ if(!empty($MerchantDetail->AcceptanceCheckIn) && !empty($MerchantDetail->Accepta
 										<div class="bfi-resname">
 											<a href="<?php echo $routeResource?>" target="_blank"><?php echo $resource->Name ?></a>
 										</div>
+										<?php if(!empty($resourceDescription)) { ?>
+											<div class="bfi-description"><?php echo $resourceDescription ?></div>
+											<br />
+										<?php } ?>
 										<div class="bfi-cart-person">
 											<?php if ($nad > 0): ?><?php echo $nad ?> <?php echo JText::_('COM_BOOKINGFORCONNECTOR_RESOURCE_VIEW_CALCULATOR_ADULTS') ?> <?php endif; ?>
 											<?php if ($nse > 0): ?><?php if ($nad > 0): ?>, <?php endif; ?>
@@ -484,15 +497,15 @@ if(!empty($MerchantDetail->AcceptanceCheckIn) && !empty($MerchantDetail->Accepta
 								/*-----------checkin/checkout--------------------*/	
 									if ($res->AvailabilityType == 0 )
 									{
-										$currCheckIn = new DateTime();
-										$currCheckOut = new DateTime();
+										$currCheckIn = new DateTime('UTC');
+										$currCheckOut = new DateTime('UTC');
 										if($cartId==0){
-											$currCheckIn = DateTime::createFromFormat('d/m/Y\TH:i:s', $res->FromDate);
-											$currCheckOut = DateTime::createFromFormat('d/m/Y\TH:i:s', $res->ToDate);
+											$currCheckIn = DateTime::createFromFormat('d/m/Y\TH:i:s', $res->FromDate,new DateTimeZone('UTC'));
+											$currCheckOut = DateTime::createFromFormat('d/m/Y\TH:i:s', $res->ToDate,new DateTimeZone('UTC'));
 
 										}else{
-											$currCheckIn = new DateTime($res->FromDate);
-											$currCheckOut = new DateTime($res->ToDate);
+											$currCheckIn = new DateTime($res->FromDate,new DateTimeZone('UTC'));
+											$currCheckOut = new DateTime($res->ToDate,new DateTimeZone('UTC'));
 											$currCheckIn->setTime($mrcAcceptanceCheckInHours,$mrcAcceptanceCheckInMins,$mrcAcceptanceCheckInSecs);
 											$currCheckOut->setTime($mrcAcceptanceCheckOutHours,$mrcAcceptanceCheckOutMins,$mrcAcceptanceCheckOutSecs);
 										}										
@@ -503,8 +516,8 @@ if(!empty($MerchantDetail->AcceptanceCheckIn) && !empty($MerchantDetail->Accepta
 
 										$currDiff = $currCheckOutFull->diff($currCheckInFull);
 
-										$currCheckIn = new JDate($currCheckIn->format('Y-m-d')); 
-										$currCheckOut = new JDate($currCheckOut->format('Y-m-d')); 
+										$currCheckIn = new JDate($currCheckIn->format('Y-m-d\TH:i:s')); 
+										$currCheckOut = new JDate($currCheckOut->format('Y-m-d\TH:i:s')); 
 
 									?>
 										<div class="bfi-timeperiod " >
@@ -531,14 +544,14 @@ if(!empty($MerchantDetail->AcceptanceCheckIn) && !empty($MerchantDetail->Accepta
 									}
 									if ($res->AvailabilityType == 1 )
 									{
-										$currCheckIn = new DateTime();
-										$currCheckOut = new DateTime();
+										$currCheckIn = new DateTime('UTC');
+										$currCheckOut = new DateTime('UTC');
 										if($cartId==0){
-											$currCheckIn = DateTime::createFromFormat('d/m/Y\TH:i:s', $res->FromDate);
-											$currCheckOut = DateTime::createFromFormat('d/m/Y\TH:i:s', $res->ToDate);
+											$currCheckIn = DateTime::createFromFormat('d/m/Y\TH:i:s', $res->FromDate,new DateTimeZone('UTC'));
+											$currCheckOut = DateTime::createFromFormat('d/m/Y\TH:i:s', $res->ToDate,new DateTimeZone('UTC'));
 										}else{
-											$currCheckIn = new DateTime($res->FromDate);
-											$currCheckOut = new DateTime($res->ToDate);
+											$currCheckIn = new DateTime($res->FromDate,new DateTimeZone('UTC'));
+											$currCheckOut = new DateTime($res->ToDate,new DateTimeZone('UTC'));
 											$currCheckIn->setTime($mrcAcceptanceCheckInHours,$mrcAcceptanceCheckInMins,$mrcAcceptanceCheckInSecs);
 											$currCheckOut->setTime($mrcAcceptanceCheckOutHours,$mrcAcceptanceCheckOutMins,$mrcAcceptanceCheckOutSecs);
 										}										
@@ -550,8 +563,8 @@ if(!empty($MerchantDetail->AcceptanceCheckIn) && !empty($MerchantDetail->Accepta
 
 										$currDiff = $currCheckOutFull->diff($currCheckInFull);
 
-										$currCheckIn = new JDate($currCheckIn->format('Y-m-d')); 
-										$currCheckOut = new JDate($currCheckOut->format('Y-m-d')); 
+										$currCheckIn = new JDate($currCheckIn->format('Y-m-d\TH:i:s')); 
+										$currCheckOut = new JDate($currCheckOut->format('Y-m-d\TH:i:s')); 
 									?>
 										<div class="bfi-timeperiod " >
 											<div class="bfi-row ">
@@ -578,8 +591,8 @@ if(!empty($MerchantDetail->AcceptanceCheckIn) && !empty($MerchantDetail->Accepta
 									if ($res->AvailabilityType == 2)
 									{
 										
-										$currCheckIn = DateTime::createFromFormat("YmdHis", $res->CheckInTime);
-										$currCheckOut = DateTime::createFromFormat("YmdHis", $res->CheckInTime);
+										$currCheckIn = DateTime::createFromFormat("YmdHis", $res->CheckInTime,new DateTimeZone('UTC'));
+										$currCheckOut = DateTime::createFromFormat("YmdHis", $res->CheckInTime,new DateTimeZone('UTC'));
 										$currCheckOut->add(new DateInterval('PT' . $res->TimeDuration . 'M'));
 										
 										$currDiff = $currCheckOut->diff($currCheckIn);
@@ -614,7 +627,7 @@ if(!empty($MerchantDetail->AcceptanceCheckIn) && !empty($MerchantDetail->Accepta
 									if ($res->AvailabilityType == 3)
 									{
 
-										$currCheckIn = new DateTime($res->FromDate);										
+										$currCheckIn = new DateTime($res->FromDate,new DateTimeZone('UTC'));										
 										$currCheckOut = clone $currCheckIn;
 										$currCheckIn->setTime(0,0,1);
 										$currCheckOut->setTime(0,0,1);
@@ -779,6 +792,8 @@ if(!empty( $policy )){
 		case strstr($policy->CancellationBaseValue ,'n'):
 			$currValue = sprintf(JTEXT::_('COM_BOOKINGFORCONNECTOR_SEARCH_VIEW_TOTALFOR_DAYS') ,rtrim($policy->CancellationBaseValue,"n"));
 			break;
+		default:
+			$currValue = '<span class="bfi_' . $currencyclass .'">'. BFCHelper::priceFormat($policy->CancellationBaseValue) .'</span>' ;
 	}
 	$currValuebefore = $policy->CancellationValue;
 	switch (true) {
@@ -791,15 +806,17 @@ if(!empty( $policy )){
 		case strstr($policy->CancellationValue ,'n'):
 			$currValuebefore = sprintf(JTEXT::_('COM_BOOKINGFORCONNECTOR_SEARCH_VIEW_TOTALFOR_DAYS') ,rtrim($policy->CancellationValue,"n"));
 			break;
+		default:
+			$currValuebefore = '<span class="bfi_' . $currencyclass .'">'. BFCHelper::priceFormat($policy->CancellationValue) .'</span>' ;
 	}
 	if($policy->CanBeCanceled){
 		$currTimeBefore = "";
 		$currDateBefore = "";
-		$currDatePolicy =  new DateTime();
+		$currDatePolicy =  new DateTime('UTC');
 		if($cartId==0){
-			$currDatePolicy = DateTime::createFromFormat('d/m/Y\TH:i:s', $res->FromDate);
+			$currDatePolicy = DateTime::createFromFormat('d/m/Y\TH:i:s', $res->FromDate,new DateTimeZone('UTC'));
 		}else{
-			$currDatePolicy = new DateTime($res->FromDate);
+			$currDatePolicy = new DateTime($res->FromDate,new DateTimeZone('UTC'));
 		}										
 		if(!empty( $policy->CancellationTime )){		
 			switch (true) {
@@ -822,16 +839,20 @@ if(!empty( $policy )){
 				if(!empty( $policy->CancellationTime )){					
 					switch (true) {
 						case strstr($policy->CancellationTime ,'d'):
-							$currTimeBefore = rtrim($policy->CancellationTime,"d") .' days';	
+//							$currTimeBefore = rtrim($policy->CancellationTime,"d") .' ' . strtolower(JTEXT::_('MOD_BOOKINGFORSEARCH_DAYS')) ;	
+							$currTimeBefore = sprintf(JTEXT::_('COM_BOOKINGFORCONNECTOR_SEARCH_VIEW_TOTALFOR_DAYS'),rtrim($policy->CancellationTime,"d"));
 							break;
 						case strstr($policy->CancellationTime ,'h'):
-							$currTimeBefore = rtrim($policy->CancellationTime,"h") .' hours';	
+//							$currTimeBefore = rtrim($policy->CancellationTime,"h") .' hours';	
+							$currTimeBefore = sprintf(JTEXT::_('COM_BOOKINGFORCONNECTOR_SEARCH_VIEW_TOTALFOR_HOURS'),rtrim($policy->CancellationTime,"h"));
 							break;
 						case strstr($policy->CancellationTime ,'w'):
-							$currTimeBefore = rtrim($policy->CancellationTime,"w") .' weeks';	
+//							$currTimeBefore = rtrim($policy->CancellationTime,"w") .' weeks';	
+							$currTimeBefore = sprintf(JTEXT::_('COM_BOOKINGFORCONNECTOR_SEARCH_VIEW_TOTALFOR_WEEKS'),rtrim($policy->CancellationTime,"w"));
 							break;
 						case strstr($policy->CancellationTime ,'m'):
-							$currTimeBefore = rtrim($policy->CancellationTime,"m") .' months';	
+//							$currTimeBefore = rtrim($policy->CancellationTime,"m") .' months';	
+							$currTimeBefore = sprintf(JTEXT::_('COM_BOOKINGFORCONNECTOR_SEARCH_VIEW_TOTALFOR_MONTHS'),rtrim($policy->CancellationTime,"m"));
 							break;
 					}
 				}
@@ -891,6 +912,14 @@ if(!empty( $policy )){
 if(!empty($policyHelp)){
 	$allPolicyHelp[] = $resource->Name . ": " . $policyHelp;
 }
+$allPolicies[] = array(
+	'merchantid' =>$MerchantDetail->MerchantId,
+	'merchantname' =>$MerchantDetail->Name,
+	'resourcename' =>$resource->Name ,
+	'policyHelp' =>$policyHelp,
+	'policyid' =>$policyId,
+	);
+
 //$currMerchantBookingTypes = array();
 $prepayment = "";
 $prepaymentHelp = "";
@@ -901,7 +930,7 @@ $prepaymentHelp = "";
 //	$currMerchantBookingType = array_filter($currMerchantBookingTypes, function($bt) use($currBookingTypeId) {return $bt->BookingTypeId == $currBookingTypeId;});
 //	if(count($currMerchantBookingType)>0){
 //		if($currMerchantBookingType[0]->PayOnArrival){
-//			$prepayment = __("Pay at the property – NO PREPAYMENT NEEDED", 'bfi');
+//			$prepayment = __("Pay at the property â€“ NO PREPAYMENT NEEDED", 'bfi');
 //			$prepaymentHelp = __("No prepayment is needed.", 'bfi');
 //		}
 //		if($currMerchantBookingType[0]->AcquireCreditCardData){
@@ -1009,8 +1038,8 @@ if($res->IncludedMeals >-1){
 													<?php 
 													if (!empty($sdetail->CheckInTime) && !empty($sdetail->TimeDuration) && $sdetail->TimeDuration>0)
 													{
-														$currCheckIn = DateTime::createFromFormat("YmdHis", $sdetail->CheckInTime);
-														$currCheckOut = DateTime::createFromFormat("YmdHis", $sdetail->CheckInTime);
+														$currCheckIn = DateTime::createFromFormat("YmdHis", $sdetail->CheckInTime,new DateTimeZone('UTC'));
+														$currCheckOut = DateTime::createFromFormat("YmdHis", $sdetail->CheckInTime,new DateTimeZone('UTC'));
 														$currCheckOut->add(new DateInterval('PT' . $sdetail->TimeDuration . 'M'));
 														$currDiff = $currCheckOut->diff($currCheckIn);
 														$timeDuration = $currDiff->h + ($currDiff->i/60);
@@ -1045,11 +1074,11 @@ if($res->IncludedMeals >-1){
 													}
 													if (isset($sdetail->TimeSlotId) && $sdetail->TimeSlotId > 0)
 													{									
-														$currCheckIn = new DateTime(); 
+														$currCheckIn = new DateTime('UTC'); 
 														if($cartId==0){
-															$currCheckIn = DateTime::createFromFormat('d/m/Y', $sdetail->TimeSlotDate);
+															$currCheckIn = DateTime::createFromFormat('d/m/Y', $sdetail->TimeSlotDate,new DateTimeZone('UTC'));
 														}else{
-															$currCheckIn = new DateTime($sdetail->TimeSlotDate); 
+															$currCheckIn = new DateTime($sdetail->TimeSlotDate,new DateTimeZone('UTC')); 
 														}
 														$currCheckOut = clone $currCheckIn;
 														$currCheckIn->setTime(0,0,1);
@@ -1131,8 +1160,8 @@ if($res->IncludedMeals >-1){
 													<?php 
 													if (!empty($sdetail->CheckInTime) && !empty($sdetail->TimeDuration) && $sdetail->TimeDuration>0)
 													{
-														$currCheckIn = DateTime::createFromFormat("YmdHis", $sdetail->CheckInTime);
-														$currCheckOut = DateTime::createFromFormat("YmdHis", $sdetail->CheckInTime);
+														$currCheckIn = DateTime::createFromFormat("YmdHis", $sdetail->CheckInTime,new DateTimeZone('UTC'));
+														$currCheckOut = DateTime::createFromFormat("YmdHis", $sdetail->CheckInTime,new DateTimeZone('UTC'));
 														$currCheckOut->add(new DateInterval('PT' . $sdetail->TimeDuration . 'M'));
 														
 														$currDiff = $currCheckOut->diff($currCheckIn);
@@ -1169,11 +1198,11 @@ if($res->IncludedMeals >-1){
 													}
 													if (isset($sdetail->TimeSlotId) && $sdetail->TimeSlotId > 0)
 													{									
-														$currCheckIn = new DateTime(); 
+														$currCheckIn = new DateTime('UTC'); 
 														if($cartId==0){
-															$currCheckIn = DateTime::createFromFormat('d/m/Y', $sdetail->TimeSlotDate);
+															$currCheckIn = DateTime::createFromFormat('d/m/Y', $sdetail->TimeSlotDate,new DateTimeZone('UTC'));
 														}else{
-															$currCheckIn = new DateTime($sdetail->TimeSlotDate); 
+															$currCheckIn = new DateTime($sdetail->TimeSlotDate,new DateTimeZone('UTC')); 
 														}
 														$currCheckOut = clone $currCheckIn;
 														$currCheckIn->setTime(0,0,1);
@@ -1345,7 +1374,25 @@ if($countCoupon>0){
 //---------------------FORM
 
 
-	$current_user = JFactory::getUser();
+//	$current_user = JFactory::getUser();
+	$current_user = BFCHelper::getSession('bfiUser',null, 'bfi-User');
+
+	if ($current_user==null) {
+		$current_user = new stdClass;
+		$current_user->CustomerId = 0; 
+		$current_user->Name = ""; 
+		$current_user->Surname = ""; 
+		$current_user->Email = ""; 
+		$current_user->Phone = "+39"; 
+		$current_user->VATNumber = ""; 
+		$current_user->MainAddress = new stdClass;
+		$current_user->MainAddress->Address = ""; 
+		$current_user->MainAddress->Country = $nation; 
+		$current_user->MainAddress->City = ""; 
+		$current_user->MainAddress->ZipCode = ""; 
+		$current_user->MainAddress->Province = ""; 	    
+	}
+
 	$sitename = $this->sitename;
 
 	$isportal = COM_BOOKINGFORCONNECTOR_ISPORTAL;
@@ -1354,8 +1401,8 @@ if($countCoupon>0){
 	$idrecaptcha = uniqid("bfirecaptcha");
 	$formlabel = COM_BOOKINGFORCONNECTOR_FORM_KEY;
 	$tmpSearchModel = new stdClass;
-	$tmpSearchModel->FromDate = new DateTime();
-	$tmpSearchModel->ToDate = new DateTime();
+	$tmpSearchModel->FromDate = new DateTime('UTC');
+	$tmpSearchModel->ToDate = new DateTime('UTC');
 	
 //	$routeMerchant = $url_merchant_page . $firstMerchantId.'-'.BFI()->seoUrl($firstMerchantName);
 //
@@ -1365,6 +1412,10 @@ if($countCoupon>0){
 $routeThanks = JRoute::_($uriCart.'&layout=thanks');
 $routeThanksKo = JRoute::_($uriCart.'&layout=errors');
 
+$routePrivacy = str_replace("{language}", substr($language,0,2), COM_BOOKINGFORCONNECTOR_PRIVACYURL);
+$routeTermsofuse = str_replace("{language}", substr($language,0,2), COM_BOOKINGFORCONNECTOR_TERMSOFUSEURL);
+
+$infoSendBtn = sprintf(JTEXT::_('COM_BOOKINGFORCONNECTOR_FORM_INFO_SENDBTN'),$sitename,$routePrivacy,$routeTermsofuse);
 
 //$currPolicy = $modelResource->GetMostRestrictivePolicyByIds($listPolicyIdsstr, $language,json_encode($listStayConfigurations));
 
@@ -1493,7 +1544,7 @@ if(!empty($bookingTypes)){
 			$bookingTypeIddefault = $bt->BookingTypeId;
 		}
 
-//		$bookingTypesDescArray[] = BFCHelper::getLanguage($bt->Description, $language);;
+//		$bookingTypesDescArray[] = BFCHelper::getLanguage($bt->Description, $language);
 	}
 //	$bookingTypesDesc = implode("|",$bookingTypesDescArray);
 
@@ -1518,43 +1569,59 @@ if(!empty($bookingTypes)){
 
 ?>
 <div class="bfi-payment-form bfi-form-field">
-<div class="bf-title-book"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_RESOURCE_VIEW_TITLEFORM') ?></div>
+<div class="bf-title-book">
+	<?php if(COM_BOOKINGFORCONNECTOR_SHOWLOGINCART && $current_user->CustomerId <1) { ?>
+	<a href="javascript:bfishowlogin()" class="bfi-btn bfi-alternative bfi-pull-right " ><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_RESOURCE_VIEW_TITLEFORM_LOGIN')  ?>
+	  <span><i id="bfiarrowlogindisplay" class="fa fa-angle-right"></i></span>
+	</a>
+	<?php } ?>
+	<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_RESOURCE_VIEW_TITLEFORM') ?>
+</div>
+<?php if(COM_BOOKINGFORCONNECTOR_SHOWLOGINCART) { ?>
+	<div id="bfiLoginModule" style="display:<?php echo ($current_user->CustomerId>0)?"":"none"; ?>;">
+		<?php BFCHelper::bfi_get_module("mod_bookingforlogin","default.php", array('moduleclass_sfx'=>'')); ?>
+	</div>
+<?php } ?>
 <form method="post" id="bfi-resourcedetailsrequest" class="form-validate" action="<?php echo $formRoute; ?>">
 	<div class="bfi-mailalertform">
 		<div class="bfi-row">
 			<div class="bfi-col-md-6">
 			<div class="bfi-clearfix">
 				<label><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_NAME'); ?> *</label>
-				<input type="text" value="<?php echo $current_user->name ; ?>" size="50" name="form[Name]" id="Name" required  title="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_NAME_REQUIRED'); ?>">
+				<input type="text" value="<?php echo $current_user->Name ; ?>" size="50" name="form[Name]" id="Name" required  title="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_NAME_REQUIRED'); ?>">
 			</div><!--/span-->
 			<div >
 				<label><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_SURNAME'); ?> *</label>
-				<input type="text" value="" size="50" name="form[Surname]" id="Surname" required  title="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_SURNAME_REQUIRED'); ?>">
+				<input type="text" value="<?php echo $current_user->Surname ; ?>" size="50" name="form[Surname]" id="Surname" required  title="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_SURNAME_REQUIRED'); ?>">
 			</div><!--/span-->
 			<div >
 				<label><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_EMAIL'); ?> *</label>
-				<input type="email" value="<?php echo $current_user->email; ?>" size="50" name="form[Email]" id="formemail" required  title="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_EMAIL_REQUIRED'); ?>">
+				<input type="email" value="<?php echo $current_user->Email; ?>" size="50" name="form[Email]" id="formemail" required  title="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_EMAIL_REQUIRED'); ?>">
 			</div><!--/span-->
 			<div >
 				<label><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_EMAIL_CONFIRM'); ?> *</label>
-				<input type="email" value="<?php echo $current_user->email; ?>" size="50" name="form[EmailConfirm]" id="formemailconfirm" required equalTo="#formemail" title="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_EMAIL_CONFIRM_REQUIRED'); ?>">
+				<input type="email" value="<?php echo $current_user->Email; ?>" size="50" name="form[EmailConfirm]" id="formemailconfirm" required equalTo="#formemail" title="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_EMAIL_CONFIRM_REQUIRED'); ?>">
 			</div><!--/span-->
 			
 						
 			<div class="inputaddress" style="display:;">
 				<div >
 					<label><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_ADDRESS'); ?> </label>
-					<input type="text" value="" size="50" name="form[Address]" id="Address"   title="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_ADDRESS_REQUIRED'); ?>">
+					<input type="text" value="<?php echo $current_user->MainAddress->Address; ?>" size="50" name="form[Address]" id="Address"   title="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_ADDRESS_REQUIRED'); ?>">
 				</div><!--/span-->
 				<div >
 					<label><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_CAP'); ?> </label>
-					<input type="text" value="" size="20" name="form[Cap]" id="Cap"   title="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_CAP_REQUIRED'); ?>">
+					<input type="text" value="<?php echo $current_user->MainAddress->ZipCode; ?>" size="20" name="form[Cap]" id="Cap"   title="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_CAP_REQUIRED'); ?>">
 				</div><!--/span-->
 				<div >
 					<label><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_NATION'); ?> </label>
-					<?php echo JHTML::_('select.genericlist',$cNationList, 'form[Nation]','class="bf_input_select width90percent"','value', 'text', $nation) ?>
+					<?php echo JHTML::_('select.genericlist',$cNationList, 'form[Nation]','class="bf_input_select width90percent"','value', 'text', $current_user->MainAddress->Country) ?>
 				</div><!--/span-->
 			</div>
+			<div class="bfi-vatcode-required">
+				<label><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_FISCALCODE'); ?></label>
+				<input type="text" value="<?php echo $current_user->VATNumber; ?>" size="20" name="form[VatCode]" id="VatCode" class="vatCode" title="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_REQUIRED'); ?>">
+			</div><!--/span-->
 	    </div>
 	    <div class="bfi-col-md-6">
 			<div >
@@ -1563,7 +1630,7 @@ if(!empty($bookingTypes)){
 			</div>
 			<div >
 				<label><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_PHONE'); ?> *</label>
-				<input type="text" value="+39" data-rule-minlength="4" size="20" name="form[Phone]" id="Phone" required  title="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_PHONE_REQUIRED'); ?>" data-msg-minlength="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_PHONE_REQUIRED'); ?>">
+				<input type="text" value="<?php echo $current_user->Phone; ?>" data-rule-minlength="4" size="20" name="form[Phone]" id="Phone" required  title="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_PHONE_REQUIRED'); ?>" data-msg-minlength="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_PHONE_REQUIRED'); ?>">
 			</div><!--/span-->
 			<div >
 				<label><?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_CHECKIN_ETA_HOUR') ?></label>
@@ -1599,15 +1666,15 @@ if(!empty($bookingTypes)){
 			</div><!--/span-->
 			<div class="bfi-hide">
 				<label><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_PASSWORD'); ?> *</label>
-				<input type="password" value="<?php echo $current_user->email; ?>" size="50" name="form[Password]" id="Password"   title="">
+				<input type="password" value="<?php echo $current_user->Email; ?>" size="50" name="form[Password]" id="Password"   title="">
 			</div><!--/span-->
 			<div>
 				<label><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_CITY'); ?> </label>
-				<input type="text" value="" size="50" name="form[City]" id="City"   title="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_CITY_REQUIRED'); ?>">
+				<input type="text" value="<?php echo $current_user->MainAddress->City ; ?>" size="50" name="form[City]" id="City"   title="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_CITY_REQUIRED'); ?>">
 			</div><!--/span-->
 			<div class="">
 				<label><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_PROVINCIA'); ?> </label>
-				<input type="text" value="" size="20" name="form[Provincia]" id="Provincia"   title="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_PROVINCIA_REQUIRED'); ?>">
+				<input type="text" value="<?php echo $current_user->MainAddress->Province ; ?>" size="20" name="form[Provincia]" id="Provincia"   title="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_PROVINCIA_REQUIRED'); ?>">
 			</div><!--/span-->
 		</div>
 	</div>
@@ -1709,51 +1776,82 @@ if(!empty( $policy )){
 		case strstr($policy->CancellationValue ,'n'):
 			$currValuebefore = sprintf(JTEXT::_('COM_BOOKINGFORCONNECTOR_SEARCH_VIEW_TOTALFOR_DAYS'),rtrim($policy->CancellationValue,"n"));
 			break;
+		default:
+			$currValuebefore = '<span class="bfi_' . $currencyclass .'">'. BFCHelper::priceFormat($policy->CancellationValue) .'</span>' ;
 	}
 }
+
+
 ?>
+
 			<div class=" bfi-checkbox-wrapper">
 					<input name="form[accettazionepolicy]" id="agreepolicy" aria-invalid="true" aria-required="true" type="checkbox" required title="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_REQUIRED'); ?>">
 					<label class="bfi-shownextelement"><?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_POLICY') ?></label>
-					<textarea name="form[policy]" class="bfi-col-md-12" style="display:none;height:200px;margin-top:15px !important;" readonly ><?php
+					<div class="bfi-policies">
+<?php
+	$currMerchantName="";
+	foreach ($allPolicies as  $key => $currSinglePolicy) { 
+		$currPolicyDescription = "";
+		foreach ($currPolicies as $currPolicy) { 
+			if($currPolicy->PolicyId == $currSinglePolicy['policyid']){
+				$currPolicyDescription = $currPolicy->Description;
+				 break;
+			}
+		}
+		if ($currSinglePolicy['merchantname']!=$currMerchantName) {
+		    $currMerchantName = $currSinglePolicy['merchantname'];
+			?>
+			<div class="bfi-merchantname"><?php echo $currMerchantName ?></div>
+			<?php 
+		}
+		?>
+				<div class="bfi-resourcename"><?php echo $key+1 ?>) <?php echo $currSinglePolicy['resourcename'] ?>:</div>
+				<p>
+				<?php echo $currSinglePolicy['policyHelp'] ?><br />
+				<?php echo $currPolicyDescription?><br />
+
+				</p>
+
+		<?php 
+	}
+//if (count($allPolicyHelp)>0) {
+//	foreach ($allPolicyHelp as $key => $value) { 
+//		echo ($key+1) . ") " . $value . "<br />";
+//	}
+//}
+					?>
+<textarea name="form[policy]" class="bfi-col-md-12" style="display:none;height:200px;margin-top:15px !important;" readonly ><?php
 if (count($allPolicyHelp)>0) {
 	foreach ($allPolicyHelp as $key => $value) { 
 		echo ($key+1) . ") " . $value . "\r\n";
 	}
 }
-					?>
+?>
 
 <?php echo $currPoliciesDescriptions; ?></textarea>
 		</div>
+		<div class="bfi-clearfix"></div>
 		<?php } ?>
-		<div class=" bfi-checkbox-wrapper">
-				<input name="form[accettazione]" id="agree" aria-invalid="true" aria-required="true" type="checkbox" required title="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_REQUIRED'); ?>">
-				<label class="bfi-shownextelement"><?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_CONFIRM') ?></label>
-				<textarea name="form[privacy]" class="bfi-col-md-12" style="display:none;height:200px;margin-top:15px !important;" readonly ><?php echo $privacy ?></textarea>    
-		</div>
-<?php if(!empty($additionalPurpose)) { ?>
-		<div class=" bfi-checkbox-wrapper">
-				<input name="form[accettazioneadditionalPurpose]" id="agreeadditionalPurpose" aria-invalid="true" aria-required="false" type="checkbox" title="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_REQUIRED'); ?>">
-				<label class="bfi-shownextelement"><?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_ADDITIONALPURPOSE') ?></label>
-				<textarea name="form[additionalPurpose]" class="" style="display:none;height:200px;margin-top:15px !important;" readonly ><?php echo $additionalPurpose ?></textarea>    
-		</div>
-<?php } ?>
 
+		<div class=" bfi-checkbox-wrapper">
+			<input name="form[optinemail]" id="optinemail" type="checkbox">
+			<label for="optinemail"><?php echo sprintf(JTEXT::_('COM_BOOKINGFORCONNECTOR_FORM_OPTINEMAIL'),$sitename) ?></label>
+		</div>
+<br />
 <?php
 JPluginHelper::importPlugin('captcha');
 $dispatcher = JDispatcher::getInstance();
 $dispatcher->trigger('onInit','recaptcha');
-$recaptcha = $dispatcher->trigger('onDisplay', array(null, 'recaptcha', 'class=""'));
+$recaptcha = $dispatcher->trigger('onDisplay', array(null, $idrecaptcha, 'class=""'));
 echo (isset($recaptcha[0])) ? $recaptcha[0] : '';
 ?>
-<div id="recaptcha-error" style="display:none"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_CAPTCHA_REQUIRED') ?></div>
+<div id="recaptcha-error-<?php echo $idrecaptcha ?>" style="display:none"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_CAPTCHA_REQUIRED') ?></div>
 
 		<input type="hidden" id="actionform" name="actionform" value="<?php echo $formlabel ?>" />
 		<input type="hidden" name="form[merchantId]" value="" /> 
 		<input type="hidden" id="orderType" name="form[orderType]" value="a" />
 		<input type="hidden" id="cultureCode" name="form[cultureCode]" value="<?php echo $language; ?>" />
 		<input type="hidden" id="Fax" name="form[Fax]" value="" />
-		<input type="hidden" id="VatCode" name="form[VatCode]" value="" />
 		<input type="hidden" id="label" name="form[label]" value="<?php echo $formlabel ?>">
 		<input type="hidden" id="resourceId" name="form[resourceId]" value="" /> 
 		<input type="hidden" id="redirect" name="form[Redirect]" value="<?php echo $routeThanks; ?>">
@@ -1768,9 +1866,11 @@ echo (isset($recaptcha[0])) ? $recaptcha[0] : '';
 		<input type="hidden" id="policyId" name="form[policyId]" value="<?php echo $currPolicyId?>">
 
 		</div>
-
-		<div class="bfi-row bfi_footer-book" >
-			<div class="bfi-col-md-10"></div>
+<br />
+		<div class="bfi-row bfi-footer-book" >
+			<div class="bfi-col-md-10">
+			<?php echo $infoSendBtn ?>
+			</div>
 			<div class="bfi-col-md-2 bfi_footer-send"><button type="submit" id="btnbfFormSubmit" class="bfi-btn" style="display:none;"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_BUTTONSUBMIT'); ?></button></div>
 		</div>
 
@@ -1994,7 +2094,8 @@ jQuery(function($)
 					var $form = $(form);
 					if($form.valid()){
 						if (typeof grecaptcha === 'object') {
-							var response = grecaptcha.getResponse(window.bfirecaptcha['<?php echo $idrecaptcha ?>']);
+//							var response = grecaptcha.getResponse(window.bfirecaptcha['<?php echo $idrecaptcha ?>']);
+							var response = grecaptcha.getResponse();
 							//recaptcha failed validation
 							if(response.length == 0) {
 								$('#recaptcha-error-<?php echo $idrecaptcha ?>').show();
@@ -2100,7 +2201,17 @@ jQuery(function($)
 						}
 					}
 			}
+			function checkVatRequired(){
+				if (jQuery("#formNation").val() == "IT")
+				{
+					jQuery(".bfi-vatcode-required").show();
+				}else{
+					jQuery(".bfi-vatcode-required").hide();
+				}
+			}
+			jQuery("#formNation").change(function(){ checkVatRequired();});
 			checkBT();
+			checkVatRequired();
 
 		});
 
@@ -2203,7 +2314,20 @@ function bfiUpdateInfo(){
 	jQuery(".bfisimpleservices").shorten(shortenOption);
 }
 
+function bfishowlogin(){
+	jQuery("#bfiLoginModule").toggle();
+	if (jQuery("#bfiLoginModule").css('display') != 'none')
+	{
+		jQuery("#bfiarrowlogindisplay").removeClass("fa-angle-right");
+		jQuery("#bfiarrowlogindisplay").addClass("fa-angle-down");
+	}else{
+		jQuery("#bfiarrowlogindisplay").addClass("fa-angle-right");
+		jQuery("#bfiarrowlogindisplay").removeClass("fa-angle-down");
+	}
+
+}
 jQuery(document).ready(function () {
+	jQuery(".bfi-description").shorten(shortenOption);
 	getAjaxInformationsSrv();
 	getAjaxInformationsResGrp();
 });

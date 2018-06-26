@@ -25,7 +25,7 @@ class BookingForConnectorViewSearchOnSell extends BFCView
 	{
 		// Initialise variables
 		$document 	= JFactory::getDocument();
-		$language 	= $document->getLanguage();
+		$language 	= JFactory::getLanguage()->getTag();
 		$config = JComponentHelper::getParams('com_bookingforconnector');
 		$state		= $this->get('State');
 		$params = $state->params;

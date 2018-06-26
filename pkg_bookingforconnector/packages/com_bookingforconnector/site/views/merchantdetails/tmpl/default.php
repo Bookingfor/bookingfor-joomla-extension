@@ -71,12 +71,14 @@ $routeMerchant = JRoute::_($uriMerchant,true, -1);
 $routeRating = JRoute::_($uriMerchant.'&layout=rating');				
 $routeRatings = JRoute::_($uriMerchant.'&layout=ratings');				
 
-
-$rating = $merchant->Rating;
+$hasSuperior = !empty($merchant->RatingSubValue);
+$rating = (int)$merchant->Rating;
 if ($rating>9 )
 {
 	$rating = $rating/10;
+	$hasSuperior = ($MerchantDetail->Rating%10)>0;
 } 
+
 $reviewavg = isset($merchant->Avg) ? $merchant->Avg->Average : 0;
 $reviewcount = isset($merchant->Avg) ? $merchant->Avg->Count : 0;
 $merchantName = BFCHelper::getLanguage($merchant->Name, $language, null, array('nobr'=>'nobr', 'striptags'=>'striptags')); 
@@ -126,6 +128,9 @@ $merchantDescription = BFCHelper::getLanguage($merchant->Description, $language,
 				<?php for($i = 0; $i < $rating; $i++) { ?>
 				<i class="fa fa-star"></i>
 				<?php } ?>
+				<?php if ($hasSuperior) { ?>
+					&nbsp;S
+				<?php } ?>
 			</span>
 		</div>
 		<div class="bfi-address bfi-hideonextra">
@@ -152,7 +157,19 @@ $merchantDescription = BFCHelper::getLanguage($merchant->Description, $language,
 </div>
 
 	<div class="bfi-resourcecontainer-gallery">
-		<?php  include('merchant-gallery.php');  ?>
+	<?php  
+			$bfiSourceData = 'merchant';
+			$bfiImageData = null;
+			$bfiVideoData = null;
+			if(!empty($merchant->ImageData)) {
+				$bfiImageData = $merchant->ImageData;
+			}
+			if(!empty($merchant->VideoData)) {
+				$bfiVideoData = $merchant->VideoData;
+			}
+			BFCHelper::bfi_get_template('shared/gallery.php',array("merchant"=>$merchant,"bfiSourceData"=>$bfiSourceData,"bfiImageData"=>$bfiImageData,"bfiVideoData"=>$bfiVideoData));	
+	?>
+
 	</div>
 
 <div class="bfi-content">
@@ -164,6 +181,33 @@ $merchantDescription = BFCHelper::getLanguage($merchant->Description, $language,
 			<div class="bfi-feature-data">
 				<strong><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_RESOURCE_INSHORT') ?></strong>
 				<div id="bfi-merchant-tags"></div>
+				<?php if(isset($merchant->AttachmentsString) && !empty($merchant->AttachmentsString)){
+					?>
+					<div  class="bfi-attachmentfiles">
+					<?php 
+								
+					$resourceAttachments = json_decode($merchant->AttachmentsString);
+					
+					foreach ($resourceAttachments as $keyAttachment=> $resourceAttachment) {
+					    if ($keyAttachment>COM_BOOKINGFORCONNECTOR_MAXATTACHMENTFILES) {
+					        break;
+					    }
+						$resourceAttachmentName = $resourceAttachment->Name;
+						$resourceAttachmentExtension= "";
+						
+						$path_parts = pathinfo($resourceAttachmentName);
+						if(!empty( $path_parts['extension'])){
+							$resourceAttachmentExtension = $path_parts['extension'];
+							$resourceAttachmentName =  str_replace(".".$resourceAttachmentExtension, "", $resourceAttachmentName);
+						}
+						$resourceAttachmentIcon = bfi_get_file_icon($resourceAttachmentExtension);
+						?>
+					    <?php echo $resourceAttachmentIcon ?> <a href="<?php echo $resourceAttachment->LinkValue ?>" target="_blank"><?php echo $resourceAttachmentName ?></a><br />
+					    <?php 
+					}
+				?>
+					</div>
+				<?php } ?>
 			</div>
 				<!-- AddToAny BEGIN -->
 				<a class="bfi-btn bfi-alternative2 bfi-pull-right a2a_dd"  href="http://www.addtoany.com/share_save" ><i class="fa fa-share-alt"></i> <?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_ONSELLUNIT_SHARE') ?></a>
@@ -179,7 +223,8 @@ $merchantDescription = BFCHelper::getLanguage($merchant->Description, $language,
 				$resourceId = 0;
 				$condominiumId = 0;
 
-				include(JPATH_COMPONENT.'/views/shared/search_details.php'); //merchant temp ?>
+				BFCHelper::bfi_get_template("shared/search_details.php",array("merchant"=>$merchant,"resourceId"=>$resourceId,"condominiumId"=>$condominiumId,"currencyclass"=>$currencyclass));	
+				?>
 					
 
 			</div>
@@ -187,8 +232,11 @@ $merchantDescription = BFCHelper::getLanguage($merchant->Description, $language,
 	<div class="bfi-clearboth"></div>
 	<?php 
 	$services = [];
+	$listServices = array();
 	if (!empty($merchant->ServiceIdList)){
+		$listServices = explode(",", $merchant->ServiceIdList);
 		$services = BFCHelper::GetServicesByIds($merchant->ServiceIdList,$language);
+		$services = array_filter($services, function($p) use ($listServices) {return in_array($p->ServiceId,$listServices);});
 	}
 	?>	
 	<?php if (!empty($services) && count($services ) > 0){?>
@@ -210,7 +258,9 @@ $merchantDescription = BFCHelper::getLanguage($merchant->Description, $language,
 	<?php } ?>	
 
 	<div class="bfi-clearboth"></div>
-	<?php  include(JPATH_COMPONENT.'/views/shared/merchant_small_details.php');  ?>
+<?php
+				BFCHelper::bfi_get_template('shared/merchant_small_details.php',array("merchant"=>$merchant,"routeMerchant"=>$routeMerchant)); 
+?>
 
 	<?php if (($showMap)) {?>
 	<br /><br />
@@ -273,7 +323,8 @@ $merchantDescription = BFCHelper::getLanguage($merchant->Description, $language,
 <?php if ($merchant->RatingsContext ==1 || $merchant->RatingsContext ==3){?>
 	<div class="bfi-ratingslist">
 	<?php
-		$summaryRatings = BFCHelper::getRatingByMerchantId($merchant->MerchantId);
+//		$summaryRatings = BFCHelper::getRatingByMerchantId($merchant->MerchantId);
+		$summaryRatings = $merchant->Avg;
 //		$modelmerchant->setItemPerPage(COM_BOOKINGFORCONNECTOR_ITEMPERPAGE);
 		$ratings = BFCHelper::getMerchantRatings(0,5,$merchant->MerchantId);
 //		if ( false !== ( $temp_message = get_transient( 'temporary_message' ) )) :

@@ -24,12 +24,6 @@
 	padding: 0 4px 0 4px;
 	margin: 0;
 }
-#bfi-calculatorForm .bfi-datepicker {
-	background: $color14;
-	& button {
-		background: $color14;
-	}
-}
 #ui-datepicker-div.bfi-calendar{
 	z-index:999 !important;
 	&::before, &::after {
@@ -65,6 +59,7 @@
 	}
 	&.ui-widget-content {
 		background: $color13;
+		line-height: 18px;
 		padding: 0; 
 		color: $color12;
 		border: 1px solid #bababa;
@@ -72,7 +67,7 @@
 		-webkit-box-shadow: 0 2px 6px 1px rgba(0,0,0,0.3);
 		box-shadow: 0 2px 6px 1px rgba(0,0,0,0.3);
 		-webkit-transform: translate3d(0,0,0);
-		&:before {
+		& div.bfi-title-arrow {
 			content: '';
 			position: absolute;
 			width: 10px;
@@ -142,12 +137,13 @@
 		padding: 5px 0;
 		background: $color13;
 	}
+
 }
 #ui-datepicker-div.bfi-checkin::before {
-    content: "Check In";
+    content: "Checkin";
 }
 #ui-datepicker-div.bfi-checkout::before {
-    content: "Check Out";
+    content: "Checkout";
 }
 .ui-datepicker {
 	&.bfi-calendar {
@@ -157,12 +153,13 @@
 		border-collapse: collapse;
 		margin: 0 0 .4em;
 		border: 0;
+		line-height: 18px;
 		}
 		& td {
-			padding: 0;
+			padding: 0px;
 			& a, & span {
 				text-align: center;
-				padding: 5px;
+				padding: 4px;
 			}
 		}
 		& .ui-datepicker-prev span, & .ui-datepicker-next span {
@@ -178,5 +175,33 @@
 			padding: 7px;
 			display: block;
 		}
+	}
+}
+.bfi-date-holidays{
+	& a, & span {
+		border-radius: $border-radius-base;
+		border:1px solid $color17 !important;
+		border-top:2px solid $color18 !important;
+	}
+}
+@media (min-width: 590px)  {
+
+	#ui-datepicker-div.bfi-calendar .ui-datepicker-group{
+		width: 48%;
+	}
+	#ui-datepicker-div.bfi-calendar .ui-datepicker-group{
+	    margin-right: 1%;
+	    margin-left: 1%;
+	}
+	#ui-datepicker-div.bfi-calendar .ui-datepicker-group-first:after{
+	    content: '';
+	    width: 0px;
+	    height: 60%;
+	    display: block;
+	    border-right: 1px solid $color19;
+	    margin-left: -5%;
+	    position: absolute;
+	    top: 20%;
+	    left: 55%;
 	}
 }

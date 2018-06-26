@@ -34,9 +34,9 @@ class BookingForConnectorModelServices extends JModelList
 	{
 		parent::__construct($config);
 		$this->helper = new wsQueryHelper(COM_BOOKINGFORCONNECTOR_WSURL, COM_BOOKINGFORCONNECTOR_APIKEY);
-		$this->urlGetService = '/Services(%d)';
-		$this->urlServices = '/Services';
-		$this->urlServicesCount = '/Services/$count/';
+//		$this->urlGetService = '/Services(%d)';
+		$this->urlServices = '/GetServices';
+//		$this->urlServicesCount = '/Services/$count/';
 		$this->urlServicesbyid = '/GetServicesByIds';
 	}
 	
@@ -67,24 +67,28 @@ class BookingForConnectorModelServices extends JModelList
 	
 	
 //	public function getservicesFromService($start, $limit, $ordering, $direction) {
-	public function getServicesFromService($start, $limit) {// with randor order is not possible to otrder by another field
+	public function getServicesFromService($language='') {// with randor order is not possible to otrder by another field
+		if(empty( $language )){
+			$language = JFactory::getLanguage()->getTag();
+		}
 		$options = array(
 				'path' => $this->urlServices,
 				'data' => array(
-					'$filter' => 'Enabled eq true',
+//					'$filter' => 'Enabled eq true',
+					'cultureCode' => BFCHelper::getQuotedString($language),
 					'$format' => 'json'
 				)
 			);
 
-		if (isset($start) && $start >= 0) {
-			$options['data']['skip'] = $start;
-		}
+//		if (isset($start) && $start >= 0) {
+//			$options['data']['skip'] = $start;
+//		}
+//		
+//		if (isset($limit) && $limit > 0) {
+//			$options['data']['top'] = $limit;
+//		}
 		
-		if (isset($limit) && $limit > 0) {
-			$options['data']['top'] = $limit;
-		}
-		
-		$this->applyDefaultFilter($options);
+//		$this->applyDefaultFilter($options);
 		
 
 		// adding other ordering to allow grouping
@@ -95,9 +99,9 @@ class BookingForConnectorModelServices extends JModelList
 		
 		$url = $this->helper->getQuery($options);
 		
-		$services = null;
+		$services = array();
 		
-		$r = $this->helper->executeQuery($url);
+		$r = $this->helper->executeQuery($url,null,null,false);
 		if (isset($r)) {
 			$res = json_decode($r);
 //			$services = $res->d->results ?: $res->d;
@@ -165,45 +169,45 @@ class BookingForConnectorModelServices extends JModelList
 		return $services;
 	}
 
-	public function getServiceFromService($serviceid)
-	{
-		$params = $this->getState('params');
-	
-		$data = array(
-				'$format' => 'json'
-		);
-		
-		$options = array(
-				'path' => sprintf($this->urlGetService, $serviceid),
-				'data' => $data
-		);
-		
-		$url = $this->helper->getQuery($options);
-		
-		$service= null;
-		
-		$r = $this->helper->executeQuery($url);
-		if (isset($r)) {
-			$res = json_decode($r);
-//			$service = $res->d->results ?: $res->d;
-			if (!empty($res->d->results)){
-				$service = $res->d->results;
-			}elseif(!empty($res->d)){
-				$service = $res->d;
-			}
-
-		}
-		
-		
-		return $service;
-	}
-		
-	protected function populateState($ordering = NULL, $direction = NULL) {
-		$filter_order = BFCHelper::getCmd('filter_order','Order');
-		$filter_order_Dir = BFCHelper::getCmd('filter_order_Dir','asc');		
-		return parent::populateState($filter_order, $filter_order_Dir);
-	}
-	
+//	public function getServiceFromService($serviceid)
+//	{
+//		$params = $this->getState('params');
+//	
+//		$data = array(
+//				'$format' => 'json'
+//		);
+//		
+//		$options = array(
+//				'path' => sprintf($this->urlGetService, $serviceid),
+//				'data' => $data
+//		);
+//		
+//		$url = $this->helper->getQuery($options);
+//		
+//		$service= null;
+//		
+//		$r = $this->helper->executeQuery($url);
+//		if (isset($r)) {
+//			$res = json_decode($r);
+////			$service = $res->d->results ?: $res->d;
+//			if (!empty($res->d->results)){
+//				$service = $res->d->results;
+//			}elseif(!empty($res->d)){
+//				$service = $res->d;
+//			}
+//
+//		}
+//		
+//		
+//		return $service;
+//	}
+//		
+//	protected function populateState($ordering = NULL, $direction = NULL) {
+//		$filter_order = BFCHelper::getCmd('filter_order','Order');
+//		$filter_order_Dir = BFCHelper::getCmd('filter_order_Dir','asc');		
+//		return parent::populateState($filter_order, $filter_order_Dir);
+//	}
+//	
 	public function getItems()
 	{
 		// Get a storage key.

@@ -14,6 +14,7 @@ $posx = COM_BOOKINGFORCONNECTOR_GOOGLE_POSX;
 $posy = COM_BOOKINGFORCONNECTOR_GOOGLE_POSY;
 $startzoom = COM_BOOKINGFORCONNECTOR_GOOGLE_STARTZOOM;
 $googlemapsapykey = COM_BOOKINGFORCONNECTOR_GOOGLE_GOOGLEMAPSKEY;
+$base_url = JURI::root();
 
 $merchant = $this->item;
 $sitename = $this->sitename;
@@ -93,24 +94,62 @@ $stato = isset($merchant->AddressData->StateName)?$merchant->AddressData->StateN
 		</ul>
 	
 		<div class="bfi-resourcecontainer-gallery">
-			<?php 
-			$images = array();
-			$contextImg ="variationplans";
+	<?php  
+			$bfiSourceData = 'variationplans';
+			$bfiImageData = null;
+			$bfiVideoData = null;
 			if(!empty($offer->Images)) {
-			  $strImg = str_replace(' ', '', $offer->Images);
-			  foreach(explode(',', $strImg) as $image) {
-				  $images[] = array('type' => 'image', 'data' => $image);
-			  }
+				$bfiImageData = $offer->Images;
 			}
-			?>
-			<?php  include('gallery.php');  ?>
+			if(!empty($offer->VideoData)) {
+				$bfiVideoData = $offer->VideoData;
+			}
+			BFCHelper::bfi_get_template('shared/gallery.php',array("merchant"=>$merchant,"bfiSourceData"=>$bfiSourceData,"bfiImageData"=>$bfiImageData,"bfiVideoData"=>$bfiVideoData));	
+	?>
 
 		</div>
-		<?php if (!empty($offer->Description)){?>
+		<?php if (!empty($offer->Description) || (isset($resource->AttachmentsString) && !empty($resource->AttachmentsString)) ){?>
 		<div class="bfi-description-data bfi-row">
-			<div class="bfi-description-data bfi-col-md-12">
+			<div class="bfi-col-md-8 bfi-description-data">
 				<?php echo BFCHelper::getLanguage($offer->Description, $language, null, array( 'striptags'=>'striptags', 'bbcode'=>'bbcode','ln2br'=>'ln2br')); ?>
+			</div>	
+			<div class="bfi-col-md-4">
+				<div class=" bfi-feature-data">
+					<strong><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_RESOURCE_INSHORT') ?></strong>
+					<?php if(isset($resource->AttachmentsString) && !empty($resource->AttachmentsString)){
+						?>
+						<div  class="bfi-attachmentfiles">
+						<?php 
+									
+						$resourceAttachments = json_decode($resource->AttachmentsString);
+						
+						foreach ($resourceAttachments as $keyAttachment=> $resourceAttachment) {
+							if ($keyAttachment>COM_BOOKINGFORCONNECTOR_MAXATTACHMENTFILES) {
+								break;
+							}
+							$resourceAttachmentName = $resourceAttachment->Name;
+							$resourceAttachmentExtension= "";
+							
+							$path_parts = pathinfo($resourceAttachmentName);
+							if(!empty( $path_parts['extension'])){
+								$resourceAttachmentExtension = $path_parts['extension'];
+								$resourceAttachmentName =  str_replace(".".$resourceAttachmentExtension, "", $resourceAttachmentName);
+							}
+							$resourceAttachmentIcon = bfi_get_file_icon($resourceAttachmentExtension);
+							?>
+							<?php echo $resourceAttachmentIcon ?> <a href="<?php echo $resourceAttachment->LinkValue ?>" target="_blank"><?php echo $resourceAttachmentName ?></a><br />
+							<?php 
+						}
+					?>
+						</div>
+					<?php } ?>
+				</div>
 			</div>
+					<!-- AddToAny BEGIN -->
+					<a class="bfi-btn bfi-alternative2 bfi-pull-right a2a_dd"  href="http://www.addtoany.com/share_save" ><i class="fa fa-share-alt"></i> <?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_ONSELLUNIT_SHARE') ?></a>
+					<script async src="https://static.addtoany.com/menu/page.js"></script>
+					<!-- AddToAny END -->
+
 		</div>
 		<?php } ?>
 		<div class="bfi-clearfix "></div>
@@ -120,8 +159,9 @@ $stato = isset($merchant->AddressData->StateName)?$merchant->AddressData->StateN
 				<?php 
 				$resourceId = 0;
 				$condominiumId = 0;
-
-				include(JPATH_COMPONENT.'/views/shared/search_details.php'); ?>
+				BFCHelper::bfi_get_template('shared/search_details.php',array("merchant"=>$merchant,"resourceId"=>$resourceId,"condominiumId"=>$condominiumId,"currvariationPlanId"=>$currvariationPlanId,"currencyclass"=>$currencyclass));	
+//				include(JPATH_COMPONENT.'/views/shared/search_details.php');
+				?>
 			</div>
 	</div>
 	
@@ -132,7 +172,9 @@ $stato = isset($merchant->AddressData->StateName)?$merchant->AddressData->StateN
 	<?php } ?>
 
 	<div class="bfi-clearboth"></div>
-	<?php  include(JPATH_COMPONENT.'/views/shared/merchant_small_details.php');  ?>
+<?php
+				BFCHelper::bfi_get_template('shared/merchant_small_details.php',array("merchant"=>$merchant,"routeMerchant"=>$routeMerchant)); 
+?>
 
 </div>
 <script type="text/javascript">

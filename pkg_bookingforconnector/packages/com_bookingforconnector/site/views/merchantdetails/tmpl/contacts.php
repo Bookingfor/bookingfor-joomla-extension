@@ -19,6 +19,6 @@ $this->document->setDescription( BFCHelper::getLanguage($this->item->Description
 <div class="bfi-content">
 
 <?php 
-include(JPATH_COMPONENT.'/views/shared/merchant_contacts.php'); //merchant contact 
+				BFCHelper::bfi_get_template('shared/merchant_contacts.php',array("merchant"=>$merchant)); 
 ?>
 </div>

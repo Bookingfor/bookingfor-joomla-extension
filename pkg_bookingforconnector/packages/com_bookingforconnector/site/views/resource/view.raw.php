@@ -32,10 +32,10 @@ class BookingForConnectorViewResource extends BFCView
 		$item		= $this->get('Item');
 
 		$document 	= JFactory::getDocument();
-		$language 	= $document->getLanguage();
+		$language 	= JFactory::getLanguage()->getTag();
 		$params = $state->params;
 		
-		$stay = $this->get('Stay');
+//		$stay = $this->get('Stay');
 		
 		// Check for errors.
 		if (count($errors = $this->get('Errors'))) {
@@ -43,7 +43,6 @@ class BookingForConnectorViewResource extends BFCView
 			return false;
 		}
 		
-		$this->setBreadcrumb($item, 'resources', $language);
 		
 		$this->assignRef('state', $state);
 		$this->assignRef('params', $params);
@@ -57,26 +56,4 @@ class BookingForConnectorViewResource extends BFCView
 		parent::display($tpl, true);
 	}
 	
-	function setBreadcrumb($resource, $layout = '') {
-		$mainframe = JFactory::getApplication();
-		$pathway   = $mainframe->getPathway();
-		
-		$pathway->addItem(
-			$resource->Merchant->Name,
-			JRoute::_('index.php?option=com_bookingforconnector&view=merchantdetails&merchantId=' . $resource->Merchant->MerchantId . ':' . BFCHelper::getSlug($resource->Merchant->Name))
-		);
-		
-		$pathway->addItem(
-			JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEWS_MERCHANTDETAILS_LAYOUT_' . strtoupper($layout) ),
-			JRoute::_('index.php?option=com_bookingforconnector&view=merchantdetails&layout=' . $layout . '&merchantId=' . $resource->Merchant->MerchantId . ':' . BFCHelper::getSlug($resource->Merchant->Name))
-		);
-				
-//		$resourceName = BFCHelper::getLanguage($resource->Name, $this->Language);
-		$resourceName = BFCHelper::getLanguage($resource->Name, $this->language, null, array('ln2br'=>'ln2br', 'striptags'=>'striptags')); 
-		
-		$pathway->addItem(
-			$resourceName,
-			JRoute::_('index.php?option=com_bookingforconnector&view=resource&resourceId=' . $resource->ResourceId . ':' . BFCHelper::getSlug($resourceName))
-		);
-	}
 }

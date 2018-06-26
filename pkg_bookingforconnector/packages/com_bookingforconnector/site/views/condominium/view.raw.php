@@ -31,7 +31,7 @@ class BookingForConnectorViewCondominium extends BFCView
 		$item		= $this->get('Item');
 
 		$document 	= JFactory::getDocument();
-		$language 	= $document->getLanguage();
+		$language 	= JFactory::getLanguage()->getTag();
 		$params = $state->params;
 		if (BFCHelper::getString('layout') == 'resourcesajax') {
 			$items = $this->get('ItemsResourcesAjax');

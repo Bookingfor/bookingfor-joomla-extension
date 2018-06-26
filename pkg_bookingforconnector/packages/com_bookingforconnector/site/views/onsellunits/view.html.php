@@ -26,7 +26,7 @@ class BookingForConnectorViewOnSellUnits extends BFCView
 	function display($tpl = null, $preparecontent = false) 
 	{
 		$document 	= JFactory::getDocument();
-		$language 	= $document->getLanguage();		
+		$language 	= JFactory::getLanguage()->getTag();		
 
 		// Initialise variables
 		$state		= $this->get('State');

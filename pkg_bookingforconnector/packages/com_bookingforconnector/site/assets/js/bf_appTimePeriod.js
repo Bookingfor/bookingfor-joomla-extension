@@ -65,13 +65,14 @@ function initDatepickerTimePeriod() {
         firstDay: 1,
 		beforeShow: function(dateText, inst) { 
 			jQuery(this).attr("disabled", true);
+			jQuery(this).attr("readonly", true); 
 			jQuery(inst.dpDiv).addClass('bfi-calendar');
-			jQuery(inst.dpDiv).attr('data-before',"");
-			jQuery(inst.dpDiv).removeClass("bfi-checkin");
-			jQuery(inst.dpDiv).removeClass("bfi-checkout");
 			setTimeout(function() {
-				jQuery("#ui-datepicker-div div.bfi-title").remove();
-				jQuery("#ui-datepicker-div").prepend( "<div class=\"bfi-title\">Check-in</div>" );
+				bfiCalendarCheck();
+				jQuery("#ui-datepicker-div").addClass("bfi-checkin");
+				jQuery("#ui-datepicker-div").removeClass("bfi-checkout");
+				jQuery("#ui-datepicker-div div.bfi-title-arrow").remove();
+				jQuery("#ui-datepicker-div").prepend( "<div class=\"bfi-title-arrow\">"+"Checkin"+"</div>" );
 			}, 1);
 		}
 
