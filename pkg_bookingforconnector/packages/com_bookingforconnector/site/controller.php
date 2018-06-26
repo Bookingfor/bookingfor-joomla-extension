@@ -1036,40 +1036,40 @@ class BookingForConnectorController extends JControllerLegacy
 		$app->close();
 	}
 
-//	function DeleteFromCart(){
-//		$return = null;
-//		$CartOrderId = stripslashes(BFCHelper::getVar("bfi_CartOrderId"));
-//		$language = isset($_REQUEST['language']) ? $_REQUEST['language'] : '' ;
-//		$redirect = JURI::root();
-//		BFCHelper::setSession('hdnBookingType', '', 'bfi-cart');
-//		BFCHelper::setSession('hdnOrderData', '', 'bfi-cart');
-//		if(!empty($CartOrderId)){
-//			$tmpUserId = BFCHelper::bfi_get_userId();
-//			$currCart = BFCHelper::DeleteFromCartByExternalUser($tmpUserId, $language, $CartOrderId);
-////WP->			$cartdetails_page = get_post( bfi_get_page_id( 'cartdetails' ) );
-////			$url_cart_page = get_permalink( $cartdetails_page->ID );
-////			wp_redirect($url_cart_page);
-////			exit;
-//			$redirect = JRoute::_('index.php?option=com_bookingforconnector&view=cart');
-//
-////			if(!empty($currCart)){
-////				$return = json_encode($currCart);
-////			}
+	function DeleteFromCart(){
+		$return = null;
+		$CartOrderId = stripslashes(BFCHelper::getVar("bfi_CartOrderId"));
+		$language = isset($_REQUEST['language']) ? $_REQUEST['language'] : '' ;
+		$redirect = JURI::root();
+		BFCHelper::setSession('hdnBookingType', '', 'bfi-cart');
+		BFCHelper::setSession('hdnOrderData', '', 'bfi-cart');
+		if(!empty($CartOrderId)){
+			$tmpUserId = BFCHelper::bfi_get_userId();
+			$currCart = BFCHelper::DeleteFromCartByExternalUser($tmpUserId, $language, $CartOrderId);
+//WP->			$cartdetails_page = get_post( bfi_get_page_id( 'cartdetails' ) );
+//			$url_cart_page = get_permalink( $cartdetails_page->ID );
+//			wp_redirect($url_cart_page);
+//			exit;
+			$redirect = JRoute::_('index.php?option=com_bookingforconnector&view=cart');
+
+//			if(!empty($currCart)){
+//				$return = json_encode($currCart);
+//			}
+		}
+		$app = JFactory::getApplication();
+		$app->redirect($redirect, false);
+		$app->close();
+
+//WP->		$base_url = get_site_url();
+//		if(defined('ICL_LANGUAGE_CODE') &&  class_exists('SitePress')){
+//				global $sitepress;
+//				if($sitepress->get_current_language() != $sitepress->get_default_language()){
+//					$base_url = "/" .ICL_LANGUAGE_CODE;
+//				}
 //		}
-//		$app = JFactory::getApplication();
-//		$app->redirect($redirect, false);
-//		$app->close();
-//
-////WP->		$base_url = get_site_url();
-////		if(defined('ICL_LANGUAGE_CODE') &&  class_exists('SitePress')){
-////				global $sitepress;
-////				if($sitepress->get_current_language() != $sitepress->get_default_language()){
-////					$base_url = "/" .ICL_LANGUAGE_CODE;
-////				}
-////		}
-////		wp_redirect($base_url);
-////		exit;
-//	}
+//		wp_redirect($base_url);
+//		exit;
+	}
 
 	function addDiscountCodesToCart(){		
 		$bficoupons = BFCHelper::getVar("bficoupons");

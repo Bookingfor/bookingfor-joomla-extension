@@ -593,7 +593,7 @@ class BookingForConnectorModelSearch extends JModelList
 		
 		$typologies = null;
 		
-		$r = $this->helper->executeQuery($url);
+		$r = $this->helper->executeQuery($url,null,null,false);
 		if (isset($r)) {
 			$res = json_decode($r);
 //			$typologies = $res->d->results ?: $res->d;
