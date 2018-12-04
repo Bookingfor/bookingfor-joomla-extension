@@ -24,28 +24,30 @@ $fromsearchparam = "&lna=".$listNameAnalytics;
 
 $total = $this->pagination->total;
 
-$db   = JFactory::getDBO();
-$uri  = 'index.php?option=com_bookingforconnector&view=resource';
-$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uri ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
-//$itemId = ($db->getErrorNum())? 0 : intval($db->loadResult());
-$itemId = intval($db->loadResult());
+//$db   = JFactory::getDBO();
+//$uri  = 'index.php?option=com_bookingforconnector&view=resource';
+//$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uri ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
+////$itemId = ($db->getErrorNum())? 0 : intval($db->loadResult());
+//$itemId = intval($db->loadResult());
+//
+//$itemIdMerchant=0;
+//$uriMerchant  = 'index.php?option=com_bookingforconnector&view=merchantdetails';
+//if($isportal){
+//	//-------------------pagina per il redirect di tutti i merchant
+//
+//	$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uriMerchant .'%' ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
+//	//$itemIdMerchant = ($db->getErrorNum())? 0 : intval($db->loadResult());
+//	$itemIdMerchant = intval($db->loadResult());
+//	//-------------------pagina per il redirect di tutti i merchant
+//
+//	//-------------------pagina per il redirect di tutte le risorse in vendita favorite
+//}
+//if($itemId == 0){
+//	$itemId = $itemIdMerchant;
+//}
 
-$itemIdMerchant=0;
-$uriMerchant  = 'index.php?option=com_bookingforconnector&view=merchantdetails';
-if($isportal){
-	//-------------------pagina per il redirect di tutti i merchant
-
-	$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uriMerchant .'%' ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
-	//$itemIdMerchant = ($db->getErrorNum())? 0 : intval($db->loadResult());
-	$itemIdMerchant = intval($db->loadResult());
-	//-------------------pagina per il redirect di tutti i merchant
-
-	//-------------------pagina per il redirect di tutte le risorse in vendita favorite
-}
-if($itemId == 0){
-	$itemId = $itemIdMerchant;
-}
-
+$uri = COM_BOOKINGFORCONNECTOR_URIRESOURCE;
+$uriMerchant  = COM_BOOKINGFORCONNECTOR_URIMERCHANTDETAILS;
 ?>
 <div class="bfi-content">
 	<div class="bfi-row">
@@ -96,15 +98,15 @@ if($itemId == 0){
 		$showResourceMap = (($resourceLat != null) && ($resourceLon !=null));
 
 		$currUriresource = $uri.'&resourceId=' . $resource->ResourceId . ':' . BFCHelper::getSlug($resourceName);
-		if ($itemId<>0)
-			$currUriresource.='&Itemid='.$itemId;
+//		if ($itemId<>0)
+//			$currUriresource.='&Itemid='.$itemId;
 		$resourceRoute = JRoute::_($currUriresource.$fromsearchparam);
 	
 		$routeMerchant = "";
 		if($isportal){
 			$currUriMerchant = $uriMerchant. '&merchantId=' . $resource->MerchantId . ':' . BFCHelper::getSlug($resource->MerchantName);
-			if ($itemIdMerchant<>0)
-				$currUriMerchant.= '&Itemid='.$itemIdMerchant;
+//			if ($itemIdMerchant<>0)
+//				$currUriMerchant.= '&Itemid='.$itemIdMerchant;
 			$routeMerchant = JRoute::_($currUriMerchant.$fromsearchparam);
 		}
 		$rating = 0;

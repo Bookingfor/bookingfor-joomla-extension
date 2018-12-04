@@ -7,32 +7,30 @@
 
 // No direct access to this file
 defined('_JEXEC') or die('Restricted access');
-/*
-
-CSS overrides star by merchantCategoryId
-
-.com_bookingforconnector_merchantdetails-resourcerating5.com_bookingforconnector_merchantdetails-merchantCategoryId856 .com_bookingforconnector_merchantdetails-ratingText{
-display:none;
+if(!empty( COM_BOOKINGFORCONNECTOR_CRAWLER )){
+	$listCrawler = json_decode(COM_BOOKINGFORCONNECTOR_CRAWLER , true);
+	foreach( $listCrawler as $key=>$crawler){
+	if (preg_match('/'.$crawler['pattern'].'/', $_SERVER['HTTP_USER_AGENT'])) return;
+	}
+	
 }
-.com_bookingforconnector_merchantdetails-resourcerating5.com_bookingforconnector_merchantdetails-merchantCategoryId856:before {content: "5 stars ";}{
 
+//$pathbase = JPATH_BASE . DIRECTORY_SEPARATOR . 'components' . DIRECTORY_SEPARATOR . 'com_bookingforconnector' . DIRECTORY_SEPARATOR;
 
-*/
+//$db   = JFactory::getDBO();
+//$language = $language;
+//$uri  = 'index.php?option=com_bookingforconnector&view=search';
+//
+//$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uri .'%' ) .' AND language='. $db->Quote($language) .' AND published = 1 LIMIT 1' );
+//
+//$itemId = ($db->getErrorNum())? 0 : intval($db->loadResult());
+//
+//if ($itemId<>0)
+//	$formAction = JRoute::_('index.php?Itemid='.$itemId.'' );
+//else
+//	$formAction = JRoute::_($uri);
 
-$pathbase = JPATH_BASE . DIRECTORY_SEPARATOR . 'components' . DIRECTORY_SEPARATOR . 'com_bookingforconnector' . DIRECTORY_SEPARATOR;
-
-$db   = JFactory::getDBO();
-$language = $language;
-$uri  = 'index.php?option=com_bookingforconnector&view=search';
-
-$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uri .'%' ) .' AND language='. $db->Quote($language) .' AND published = 1 LIMIT 1' );
-
-$itemId = ($db->getErrorNum())? 0 : intval($db->loadResult());
-
-if ($itemId<>0)
-	$formAction = JRoute::_('index.php?Itemid='.$itemId.'' );
-else
-	$formAction = JRoute::_($uri);
+$formAction = JRoute::_(COM_BOOKINGFORCONNECTOR_URISEARCH);
 
 //$formAction = (isset($_SERVER['HTTPS']) ? "https" : "http") . ':' ."//$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
 $formAction = "//$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
@@ -720,12 +718,6 @@ $minvaluetoshow=1;
 	<input type="hidden" name="merchantResults" id="filtersmerchantResultseHidden" value="<?php echo $isMerchantResults ?>" />
 </form>
 </div>
-<?php if(!empty(COM_BOOKINGFORCONNECTOR_GOOGLE_GOOGLEMAPSKEY)){ ?>
-<div class="bfi-maps-static">
-	<span class="bfi-showmap"><?php echo JTEXT::_('MOD_BOOKINGFORMAPS_SHOW_MAP') ?></span>
-	<img alt="Map" src="https://maps.google.com/maps/api/staticmap?center=<?php echo COM_BOOKINGFORCONNECTOR_GOOGLE_POSY?>,<?php echo COM_BOOKINGFORCONNECTOR_GOOGLE_POSX?>&amp;zoom=11&amp;size=400x250&key=<?php echo COM_BOOKINGFORCONNECTOR_GOOGLE_GOOGLEMAPSKEY ?>&" style="max-width: 100%;" />
-</div>
-<?php } ?>
 
 <script type="text/javascript">
 jQuery.widget.bridge('bfiTooltip', jQuery.ui.tooltip );

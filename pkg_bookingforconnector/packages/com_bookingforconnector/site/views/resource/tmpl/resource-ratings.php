@@ -156,9 +156,9 @@ jimport('joomla.utilities.date');
 							<?php echo JText::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RATING_RESOURCE_LABEL') ?><br />
 							 <?php 
 								$resourceName = BFCHelper::getLanguage($rating->ResourceName, $language, null, array('ln2br'=>'ln2br', 'striptags'=>'striptags')); 
-								if ($itemId<>0)
-									$route = JRoute::_($uri.'&resourceId=' . $rating->ResourceId . ':' . BFCHelper::getSlug($resourceName).'&Itemid='.$itemId );
-								else
+//								if ($itemId<>0)
+//									$route = JRoute::_($uri.'&resourceId=' . $rating->ResourceId . ':' . BFCHelper::getSlug($resourceName).'&Itemid='.$itemId );
+//								else
 									$route = JRoute::_($uri.'&resourceId=' . $rating->ResourceId . ':' . BFCHelper::getSlug($resourceName));
 							 ?>
 							<a class="" href="<?php echo $route ?>" id="nameAnchor<?php echo $rating->ResourceId?>" target="_blank"><?php echo  $resourceName ?></a>

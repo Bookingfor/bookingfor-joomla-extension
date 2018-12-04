@@ -8,12 +8,13 @@
 
 // No direct access to this file
 defined('_JEXEC') or die('Restricted access');
-$db   = JFactory::getDBO();
-$uri  = 'index.php?option=com_bookingforconnector&view=resource';
-$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uri ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
-//$itemId = ($db->getErrorNum())? 0 : intval($db->loadResult());
-$itemId = intval($db->loadResult());
+//$db   = JFactory::getDBO();
+//$uri  = 'index.php?option=com_bookingforconnector&view=resource';
+//$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uri ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
+////$itemId = ($db->getErrorNum())? 0 : intval($db->loadResult());
+//$itemId = intval($db->loadResult());
 
+$uri = COM_BOOKINGFORCONNECTOR_URIRESOURCE;
 
 ?>
 <div >
@@ -160,9 +161,9 @@ $itemId = intval($db->loadResult());
 							<?php echo JText::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RATING_RESOURCE_LABEL') ?><br />
 							 <?php 
 								$resourceName = BFCHelper::getLanguage($rating->ResourceName, $language, null, array('ln2br'=>'ln2br', 'striptags'=>'striptags')); 
-								if ($itemId<>0)
-									$route = JRoute::_($uri.'&resourceId=' . $rating->ResourceId . ':' . BFCHelper::getSlug($resourceName).'&Itemid='.$itemId );
-								else
+//								if ($itemId<>0)
+//									$route = JRoute::_($uri.'&resourceId=' . $rating->ResourceId . ':' . BFCHelper::getSlug($resourceName).'&Itemid='.$itemId );
+//								else
 									$route = JRoute::_($uri.'&resourceId=' . $rating->ResourceId . ':' . BFCHelper::getSlug($resourceName));
 							 ?>
 							<a class="" href="<?php echo $route ?>" id="nameAnchor<?php echo $rating->ResourceId?>"><?php echo  $resourceName ?></a>

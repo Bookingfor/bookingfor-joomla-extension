@@ -7,7 +7,7 @@
  // No direct access to this file
 defined('_JEXEC') or die('Restricted access');
 
-define("BFI_VERSION", "3.2.5");
+define("BFI_VERSION", "3.2.6");
 
 define("COM_BOOKINGFORCONNECTOR_APIKEY", "aXBlcnRyYWRlOlF5TWQ5V0xPSG53RGhQSzFnVk4vbVE9PQ==");
 

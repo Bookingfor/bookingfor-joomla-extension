@@ -9,7 +9,7 @@
 			var totalQuoteDiscount = 0;
 			var onlybookable = 0;
 			
-			jQuery(".bfi-book-now").hide();
+//			jQuery(".bfi-book-now").hide();
 			jQuery(".bfi-request-now").hide();
 			jQuery(".bfi-btn-book-now").hide();
 

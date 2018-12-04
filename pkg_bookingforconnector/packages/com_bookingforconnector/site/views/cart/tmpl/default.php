@@ -161,25 +161,33 @@ $nation = !empty(count($nations)) ? $nations[0] : $cultureCode;
 //		$modelResource = new BookingForConnectorModelResource;
 //		$merchantdetails_page = get_post( bfi_get_page_id( 'merchantdetails' ) );
 //		$url_merchant_page = get_permalink( $merchantdetails_page->ID );
-		$db   = JFactory::getDBO();
-		$uri  = 'index.php?option=com_bookingforconnector&view=resource';
-		$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uri ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
-		$itemId = intval($db->loadResult());
-		if ($itemId<>0){
-			$uri.='&Itemid='.$itemId;
-		}
+//		$db   = JFactory::getDBO();
+//		$uri  = 'index.php?option=com_bookingforconnector&view=resource';
+////		$db->setQuery('SELECT id FROM #__menu WHERE link = '. $db->Quote( $uri ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
+//		$db->setQuery('SELECT id FROM #__menu WHERE (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 AND link = '. $db->Quote( $uri ) .' LIMIT 1' );
+//		$itemId = intval($db->loadResult());
+//		if ($itemId<>0){
+//			$uri.='&Itemid='.$itemId;
+//		}
 
-		$uriMerchant  = 'index.php?option=com_bookingforconnector&view=merchantdetails';
-		$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uriMerchant .'%' ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
-		$itemIdMerchant = ($db->getErrorNum())? 0 : intval($db->loadResult());
-		if ($itemIdMerchant<>0)
-			$uriMerchant.='&Itemid='.$itemIdMerchant;
+//		$uriMerchant  = 'index.php?option=com_bookingforconnector&view=merchantdetails';
+////		$db->setQuery('SELECT id FROM #__menu WHERE link = '. $db->Quote( $uriMerchant .'%' ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
+//		$db->setQuery('SELECT id FROM #__menu WHERE (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 AND link = '. $db->Quote( $uriMerchant .'%' ) .' LIMIT 1' );
+//		$itemIdMerchant = ($db->getErrorNum())? 0 : intval($db->loadResult());
+//		if ($itemIdMerchant<>0)
+//			$uriMerchant.='&Itemid='.$itemIdMerchant;
 		
-		$uriCart  = 'index.php?option=com_bookingforconnector&view=cart';
-		$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uriCart .'%' ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
-		$itemIdCart= ($db->getErrorNum())? 0 : intval($db->loadResult());
-		if ($itemIdCart<>0)
-			$uriCart.='&Itemid='.$itemIdCart;
+//		$uriCart  = 'index.php?option=com_bookingforconnector&view=cart';
+////		$db->setQuery('SELECT id FROM #__menu WHERE link = '. $db->Quote( $uriCart .'%' ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
+//		$db->setQuery('SELECT id FROM #__menu WHERE (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 AND link = '. $db->Quote( $uriCart .'%' ) .' LIMIT 1' );
+//		$itemIdCart= ($db->getErrorNum())? 0 : intval($db->loadResult());
+//		if ($itemIdCart<>0)
+//			$uriCart.='&Itemid='.$itemIdCart;
+
+		$uri = COM_BOOKINGFORCONNECTOR_URIRESOURCE;
+		$uriMerchant  = COM_BOOKINGFORCONNECTOR_URIMERCHANTDETAILS;
+		$uriCart  = COM_BOOKINGFORCONNECTOR_URICART;
+
 		$url_cart_page = JRoute::_($uriCart);
 		if($usessl){
 			$url_cart_page = str_replace( 'http:', 'https:', $url_cart_page );
@@ -473,7 +481,10 @@ if(!empty($MerchantDetail->AcceptanceCheckIn) && !empty($MerchantDetail->Accepta
 				}else{
 				    $allResourceNoBookable[] = $resource->Name;
 				}
-												
+				$hidePeopleAge = 0;
+				if (!empty($res->HidePeopleAge)) {
+					$hidePeopleAge = 1;
+				}
 			?>
                                 <tr>
                                     <td>
@@ -485,14 +496,23 @@ if(!empty($MerchantDetail->AcceptanceCheckIn) && !empty($MerchantDetail->Accepta
 											<br />
 										<?php } ?>
 										<div class="bfi-cart-person">
-											<?php if ($nad > 0): ?><?php echo $nad ?> <?php echo JText::_('COM_BOOKINGFORCONNECTOR_RESOURCE_VIEW_CALCULATOR_ADULTS') ?> <?php endif; ?>
-											<?php if ($nse > 0): ?><?php if ($nad > 0): ?>, <?php endif; ?>
+										<?php 
+										if(!empty( $hidePeopleAge )){
+											echo $countPaxes . " " . JText::_('COM_BOOKINGFORCONNECTOR_RESOURCE_VIEW_CALCULATOR_PEOPLE');
+										} else{
+										?>
+
+											<?php if ($nad > 0){ ?><?php echo $nad ?> <?php echo JText::_('COM_BOOKINGFORCONNECTOR_RESOURCE_VIEW_CALCULATOR_ADULTS') ?> <?php } ?>
+											<?php if ($nse > 0){ ?><?php if ($nad > 0){ ?>, <?php } ?>
 												<?php echo $nse ?> <?php echo JText::_('COM_BOOKINGFORCONNECTOR_RESOURCE_VIEW_CALCULATOR_SENIORES') ?>
-											<?php endif; ?>
-											<?php if ($nch > 0): ?>
+											<?php } ?>
+											<?php if ($nch > 0){ ?>
 												, <?php echo $nch ?> <?php echo JText::_('COM_BOOKINGFORCONNECTOR_RESOURCE_VIEW_CALCULATOR_CHILDREN') ?> (<?php echo implode(" ". JTEXT::_('COM_BOOKINGFORCONNECTOR_RESOURCE_VIEW_YEAR') .', ',$nchs) ?> <?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_RESOURCE_VIEW_YEAR') ?> )
-											<?php endif; ?>
-                                       </div>
+											<?php } ?>
+										<?php 
+										}
+										?>
+									   </div>
 								<?php																
 								/*-----------checkin/checkout--------------------*/	
 									if ($res->AvailabilityType == 0 )
@@ -1626,7 +1646,7 @@ if(!empty($bookingTypes)){
 	    <div class="bfi-col-md-6">
 			<div >
 				<label><?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_NOTES') ?></label>
-				<textarea name="form[note]" class="bfi-col-md-12" style="height:104px;" ></textarea>    
+				<textarea name="form[note]" style="height:104px;"  data-rule-nourl="true"  data-msg-nourl="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_NOURL_ERROR') ?>" ></textarea>    
 			</div>
 			<div >
 				<label><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_PHONE'); ?> *</label>
@@ -2125,8 +2145,8 @@ jQuery(function($)
 							});
 							<?php endif; ?>
 							form.submit();
-						}					}
-
+						}
+					}
 				}
 
 			});
@@ -2334,6 +2354,7 @@ jQuery(document).ready(function () {
 	//-->
 	</script>	
 </form>
+</div>		
 </div>		
 </div>		
 </div>		

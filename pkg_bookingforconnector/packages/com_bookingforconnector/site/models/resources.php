@@ -61,11 +61,11 @@ class BookingForConnectorModelResources extends JModelList
 	}
 
 	public  function getServicesForSearch($language='') {
-		$session = JFactory::getSession();
-		$sessionkey= 'getServicesForSearch'.$language;
-		$services = $session->get($sessionkey, null , 'com_bookingforconnector');
+//		$session = JFactory::getSession();
+//		$sessionkey= 'getServicesForSearch'.$language;
+//		$services = $session->get($sessionkey, null , 'com_bookingforconnector');
 //		$services = null;
-		if ($services==null) {		
+//		if ($services==null) {		
 			$options = array(
 					'path' => $this->urlServices,
 					'data' => array(
@@ -88,8 +88,8 @@ class BookingForConnectorModelResources extends JModelList
 					$services = $res->d;
 				}
 			}
-			$session->set($sessionkey, $services, 'com_bookingforconnector');
-		}
+//			$session->set($sessionkey, $services, 'com_bookingforconnector');
+//		}
 	
 		return $services;
 	}

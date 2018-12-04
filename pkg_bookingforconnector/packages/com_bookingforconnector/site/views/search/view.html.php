@@ -22,6 +22,14 @@ class BookingForConnectorViewSearch extends BFCView
 	// Overwriting JView display method
 	function display($tpl = null) 
 	{
+	if(!empty( COM_BOOKINGFORCONNECTOR_CRAWLER )){
+		$listCrawler = json_decode(COM_BOOKINGFORCONNECTOR_CRAWLER , true);
+		foreach( $listCrawler as $key=>$crawler){
+		if (preg_match('/'.$crawler['pattern'].'/', $_SERVER['HTTP_USER_AGENT'])) return;
+		}
+		
+	}
+
 
 		// Initialise variables
 		$document 	= JFactory::getDocument();

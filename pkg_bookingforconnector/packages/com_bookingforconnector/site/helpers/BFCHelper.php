@@ -73,6 +73,7 @@ function bfi_setSessionFromSubmittedData() {
 		'condominiumsResults' => isset($_REQUEST['condominiumsResults']) ? $_REQUEST['condominiumsResults'] : '',
 		'pricerange' => isset($_REQUEST['pricerange']) ? $_REQUEST['pricerange'] : '',
 		'onlystay' => isset($_REQUEST['onlystay']) ? $_REQUEST['onlystay'] : 0,
+		'getallresults' => isset($_REQUEST['getallresults']) ? $_REQUEST['getallresults'] : 0,
 		'resourceId' => isset($_REQUEST['resourceId']) ? $_REQUEST['resourceId'] : '',
 		'extras' => isset($_REQUEST['extras']) ? $_REQUEST['extras'] : '',
 		'packages' => isset($_REQUEST['packages']) ? $_REQUEST['packages'] : '',
@@ -91,6 +92,80 @@ function bfi_setSessionFromSubmittedData() {
 			
 }
 }
+
+if ( ! function_exists( 'bfi_load_languageurl' ) ) {
+	function bfi_load_languageurl($lang){
+		if ( ! is_dir(COM_BOOKINGFORCONNECTOR_CACHEDIR)) {
+			mkdir(COM_BOOKINGFORCONNECTOR_CACHEDIR, 0755, true);
+		}		
+		$bfifile = COM_BOOKINGFORCONNECTOR_CACHEDIR ."/bfi_".$lang."_url.cache";
+		$mtime = 0;
+		if (file_exists($bfifile)) {
+			$mtime = filemtime($bfifile);
+		}
+		$bfifiletimemod = $mtime + COM_BOOKINGFORCONNECTOR_CACHETIME;			
+		if ($bfifiletimemod < time() ) {
+			
+			$baseurlComponent = "index.php?option=com_bookingforconnector&view=";
+			$db   = JFactory::getDBO();
+			$db->setQuery('SELECT id,link FROM #__menu WHERE (language='. $db->Quote($lang) .' OR language='.$db->Quote('*').') AND published = 1 and link LIKE '. $db->Quote( $baseurlComponent .'%' ) .' ' );
+			$results = $db->loadObjectList();
+			$rdef = "<?php
+// No direct access to this file
+defined('_JEXEC') or die('Restricted access');
+";
+			$uriCart  = 'index.php?option=com_bookingforconnector&view=cart';
+			$uriResource  = 'index.php?option=com_bookingforconnector&view=resource';
+			$uriMerchantdetails  = 'index.php?option=com_bookingforconnector&view=merchantdetails';
+			$uriCondominium  = 'index.php?option=com_bookingforconnector&view=condominium';
+			$uriOnsellunit  = 'index.php?option=com_bookingforconnector&view=onsellunit';
+			$uriSearchResource  = 'index.php?option=com_bookingforconnector&view=search';
+			$uriSearchOnsell  = 'index.php?option=com_bookingforconnector&view=searchonsell';
+
+			foreach ($results as $key => $result)
+			{
+				if ($result->link ==$uriCart) {
+					$rdef .= "bfiDefine( 'COM_BOOKINGFORCONNECTOR_URICART','".$uriCart."&Itemid=".$result->id."' );"."\n";
+				}
+				if ($result->link ==$uriResource) {
+					$rdef .= "bfiDefine( 'COM_BOOKINGFORCONNECTOR_URIRESOURCE','".$uriResource."&Itemid=".$result->id."' );"."\n";
+				}
+				if ($result->link ==$uriMerchantdetails) {
+					$rdef .= "bfiDefine( 'COM_BOOKINGFORCONNECTOR_URIMERCHANTDETAILS','".$uriMerchantdetails."&Itemid=".$result->id."' );"."\n";
+				}
+				if ($result->link ==$uriCondominium) {
+					$rdef .= "bfiDefine( 'COM_BOOKINGFORCONNECTOR_URICONDOMINIUM','".$uriCondominium."&Itemid=".$result->id."' );"."\n";
+				}
+				if ($result->link ==$uriOnsellunit) {
+					$rdef .= "bfiDefine( 'COM_BOOKINGFORCONNECTOR_URIONSELLUNIT','".$uriOnsellunit."&Itemid=".$result->id."' );"."\n";
+				}
+				if ($result->link ==$uriSearchResource) {
+					$rdef .= "bfiDefine( 'COM_BOOKINGFORCONNECTOR_URISEARCH','".$uriSearchResource."&Itemid=".$result->id."' );"."\n";
+				}
+				if ($result->link ==$uriSearchOnsell) {
+					$rdef .= "bfiDefine( 'COM_BOOKINGFORCONNECTOR_URISEARCHONSELL','".$uriSearchOnsell."&Itemid=".$result->id."' );"."\n";
+				}
+			}
+					$rdef .= "
+bfiDefine('COM_BOOKINGFORCONNECTOR_URICART','".$uriCart."');
+bfiDefine('COM_BOOKINGFORCONNECTOR_URIRESOURCE','".$uriResource."');
+bfiDefine('COM_BOOKINGFORCONNECTOR_URIMERCHANTDETAILS','".$uriMerchantdetails."');
+bfiDefine('COM_BOOKINGFORCONNECTOR_URICONDOMINIUM','".$uriCondominium."');
+bfiDefine('COM_BOOKINGFORCONNECTOR_URIONSELLUNIT','".$uriOnsellunit."');
+bfiDefine('COM_BOOKINGFORCONNECTOR_URISEARCH','".$uriSearchResource."');
+bfiDefine('COM_BOOKINGFORCONNECTOR_URISEARCHONSELL','".$uriSearchOnsell."');
+  ?>";
+			
+			file_put_contents($bfifile, $rdef);
+		}
+
+		if (file_exists($bfifile)) {
+			include($bfifile); 
+		}
+
+	}
+}
+
 
 if ( ! class_exists( 'bfi_load_scripts' ) ) {
 	function bfi_load_scripts(){
@@ -125,14 +200,18 @@ if ( ! class_exists( 'bfi_load_scripts' ) ) {
 			}
 			$document->addScript('components/com_bookingforconnector/assets/js/recaptcha.js',false, false);
 
-			$db   = JFactory::getDBO();
-			$uriCart  = 'index.php?option=com_bookingforconnector&view=cart';
-			$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uriCart .'%' ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
-			$itemIdCart= ($db->getErrorNum())? 0 : intval($db->loadResult());
-			if ($itemIdCart<>0)
-				$uriCart.='&Itemid='.$itemIdCart;
-
-			$url_cart_page = JRoute::_($uriCart);
+			//load urls
+			bfi_load_languageurl($language);
+			
+			
+//			$db   = JFactory::getDBO();
+//			$uriCart  = 'index.php?option=com_bookingforconnector&view=cart';
+//			$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uriCart .'%' ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
+//			$itemIdCart= ($db->getErrorNum())? 0 : intval($db->loadResult());
+//			if ($itemIdCart<>0)
+//				$uriCart.='&Itemid='.$itemIdCart;
+//
+			$url_cart_page = JRoute::_(COM_BOOKINGFORCONNECTOR_URICART);
 			if(COM_BOOKINGFORCONNECTOR_USESSL){
 				$url_cart_page = str_replace( 'http:', 'https:', $url_cart_page );
 			}
@@ -1222,6 +1301,16 @@ if ( ! class_exists( 'BFCHelper' ) ) {
 			return $string;
 		}
 
+		public static function containsUrl($string) {
+			$re = '/^[a-zA-Z0-9\-\.\:\\\\]+\.(com|org|net|mil|edu|COM|ORG|NET|MIL|EDU)$/';
+			$re1 = '/(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/';
+			$trimmed = trim( $string );
+			if( preg_match($re,$trimmed) || preg_match($re1,$trimmed)){
+				return true;
+			}
+			return false;
+
+		}
 		
 		public static function getLanguage($xml, $langCode, $fallbackCode = 'en-gb', $opts = array() ) {
 			if (!isset($xml)) {
@@ -1317,34 +1406,36 @@ if ( ! class_exists( 'BFCHelper' ) ) {
 	 * @return string
 	 */
 		public static function stripInvalidXml($value)
-	{
-		$ret = "";
-		$current;
-		if (empty($value)) 
 		{
+			$ret = "";
+			$current;
+			if (empty($value)) 
+			{
+				return $ret;
+			}
+
+			$length = strlen($value);
+			for ($i=0; $i < $length; $i++)
+			{
+				$current = ord($value{$i});
+				if (($current == 0x9) ||
+					($current == 0xA) ||
+					($current == 0xD) ||
+					(($current >= 0x20) && ($current <= 0xD7FF)) ||
+					(($current >= 0xE000) && ($current <= 0xFFFD)) ||
+					(($current >= 0x10000) && ($current <= 0x10FFFF)))
+				{
+					$ret .= chr($current);
+				}
+				else
+				{
+					$ret .= " ";
+				}
+			}
 			return $ret;
 		}
 
-		$length = strlen($value);
-		for ($i=0; $i < $length; $i++)
-		{
-			$current = ord($value{$i});
-			if (($current == 0x9) ||
-				($current == 0xA) ||
-				($current == 0xD) ||
-				(($current >= 0x20) && ($current <= 0xD7FF)) ||
-				(($current >= 0xE000) && ($current <= 0xFFFD)) ||
-				(($current >= 0x10000) && ($current <= 0x10FFFF)))
-			{
-				$ret .= chr($current);
-			}
-			else
-			{
-				$ret .= " ";
-			}
-		}
-		return $ret;
-	}	
+	
 		public static function getQuotedString($str){
 			if (isset($str) && $str!=null){
 				return '\'' . $str . '\'';	
@@ -1377,6 +1468,10 @@ if ( ! class_exists( 'BFCHelper' ) ) {
 		public static function parseJsonDateTime($date, $format = 'd/m/Y') { 
 			date_default_timezone_set('UTC');
 			return DateTime::createFromFormat($format, BFCHelper::parseJsonDate($date,$format),new DateTimeZone('UTC'));
+		}
+		public static function parseStringDateTime($date, $format = 'Y-m-d\TH:i:s') { 
+			date_default_timezone_set('UTC');
+			return DateTime::createFromFormat($format, $date,new DateTimeZone('UTC'));
 		}
 
 		public static function parseArrayList($stringList, $fistDelimiter = ';', $secondDelimiter = '|'){
@@ -1736,8 +1831,11 @@ if ( ! class_exists( 'BFCHelper' ) ) {
 			if(isset($params['paxages'])){
 				$pars['paxages'] = $params['paxages'];
 			}
+			$pars['minqt'] = !empty($params['minqt']) ? $params['minqt']: 1;
 			
 			$pars['onlystay'] = !empty($params['onlystay']) ? $params['onlystay']: 0;
+			$pars['getallresults'] = !empty($params['getallresults']) ? $params['getallresults']: 0;
+			
 			$pars['searchtypetab'] = !empty($params['searchtypetab']) ? $params['searchtypetab']: "0";
 			$pars['masterTypeId'] = !empty($params['masterTypeId']) ? $params['masterTypeId']: "0";
 			$pars['merchantResults'] = !empty($params['merchantResults']) ? $params['merchantResults']: 0;
@@ -3370,6 +3468,32 @@ if ( ! class_exists( 'BFCHelper' ) ) {
 			return ;
 		}
 
+//----------------------------------
+//	openstreemap functions
+//----------------------------------
+		public static function bfi_getCoordOffset_openstreetmap($what, $lat, $lon, $offset) {
+			$earthRadius = 6378137;
+			$coord = [0 => $lat, 1 => $lon];
+
+			$radOff = $what === 0 ? $offset / $earthRadius : $offset / ($earthRadius * cos(M_PI * $coord[0] / 180));
+			return $coord[$what] + $radOff * 180 / M_PI;    
+		}
+
+		public static function bfi_getBBox_openstreetmap($lat, $lon, $area) {
+			$offset = $area / 2;
+			return [
+				0 => self::bfi_getCoordOffset_openstreetmap(1, $lat, $lon, -$offset),
+				1 => self::bfi_getCoordOffset_openstreetmap(0, $lat, $lon, -$offset),
+				2 => self::bfi_getCoordOffset_openstreetmap(1, $lat, $lon, $offset),
+				3 => self::bfi_getCoordOffset_openstreetmap(0, $lat, $lon, $offset),
+				4 => $lat,
+				5 => $lon
+			]; // 0 = minlon, 1 = minlat, 2 = maxlon, 3 = maxlat, 4,5 = original val (marker)
+		}
+//----------------------------------
+//	END openstreemap functions
+//----------------------------------
+
 }
 }
 //setting constants
@@ -3388,6 +3512,8 @@ if (!defined('COM_BOOKINGFORCONNECTOR_CONFIG_LOADED')) {
 		$googlerecaptchasecretkey = $config->get('bfi_googlerecaptcha_secret_key','');
 		$googlerecaptchathemekey = $config->get('bfi_googlerecaptcha_theme_key','light');
 		$googlerecaptchasizekey = $config->get('bfi_googlerecaptcha_size_key','normal');
+
+		$openstreetmap = $config->get('openstreetmap', 0);
 
 		$isportal = $config->get('isportal', 1);
 		$showdata = $config->get('showdata', 1);
@@ -3438,8 +3564,9 @@ if (!defined('COM_BOOKINGFORCONNECTOR_CONFIG_LOADED')) {
 			$subscriptionkey = str_replace("/", "", $subscriptionkey);
 		}
 		$bfiBaseUrl = 'https://' . $subscriptionkey . '.bookingfor.com';
+//		$bfiBaseUrl = 'https://localhost:44379';
 
-		$cachetime = $config->get('cachetime ', 3600); // 1 hour default
+		$cachetime = $config->get('cachetime ', (3600 *2)); // 1 hour default
 		$cachedir = $config->get('cachedir', 'cache/com_bookingforconnector');
 		bfiDefine( 'COM_BOOKINGFORCONNECTOR_CACHEDIR', $cachedir );
 		bfiDefine( 'COM_BOOKINGFORCONNECTOR_CACHETIME', $cachetime );
@@ -3469,6 +3596,7 @@ if (!defined('COM_BOOKINGFORCONNECTOR_CONFIG_LOADED')) {
 		bfiDefine( 'COM_BOOKINGFORCONNECTOR_GOOGLE_POSY', $YGooglePosDef );
 		bfiDefine( 'COM_BOOKINGFORCONNECTOR_GOOGLE_STARTZOOM', $startzoom );
 		bfiDefine( 'COM_BOOKINGFORCONNECTOR_GOOGLE_GOOGLEMAPSKEY', $googlemapskey );
+		bfiDefine( 'COM_BOOKINGFORCONNECTOR_USE_OPENSTREETMAP', $openstreetmap );
 
 		bfiDefine( 'COM_BOOKINGFORCONNECTOR_GOOGLE_GOOGLERECAPTCHAKEY', $googlerecaptchakey );
 		bfiDefine( 'COM_BOOKINGFORCONNECTOR_GOOGLE_GOOGLERECAPTCHASECRETKEY', $googlerecaptchasecretkey );

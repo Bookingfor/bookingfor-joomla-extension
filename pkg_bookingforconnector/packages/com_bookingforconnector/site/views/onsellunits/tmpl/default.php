@@ -35,20 +35,23 @@ $total = $this->pagination->total;
 
 $listsId = array();
 
-//-------------------pagina per i l redirect di tutte le risorsein vendita
+////-------------------pagina per i l redirect di tutte le risorsein vendita
+//
+//$db   = JFactory::getDBO();
+//$uri  = 'index.php?option=com_bookingforconnector&view=onsellunit';
+//$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uri ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
+//$itemId = ($db->getErrorNum())? 0 : intval($db->loadResult());
+////-------------------pagina per i l redirect di tutte le risorsein vendita
+//
+////-------------------pagina per il redirect di tutti i merchant
+//
+//$uriMerchant  = 'index.php?option=com_bookingforconnector&view=merchantdetails';
+//$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uriMerchant .'%' ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1  LIMIT 1' );
+//$itemIdMerchant = ($db->getErrorNum())? 0 : intval($db->loadResult());
+////-------------------pagina per il redirect di tutti i merchant
 
-$db   = JFactory::getDBO();
-$uri  = 'index.php?option=com_bookingforconnector&view=onsellunit';
-$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uri ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
-$itemId = ($db->getErrorNum())? 0 : intval($db->loadResult());
-//-------------------pagina per i l redirect di tutte le risorsein vendita
-
-//-------------------pagina per il redirect di tutti i merchant
-
-$uriMerchant  = 'index.php?option=com_bookingforconnector&view=merchantdetails';
-$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uriMerchant .'%' ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1  LIMIT 1' );
-$itemIdMerchant = ($db->getErrorNum())? 0 : intval($db->loadResult());
-//-------------------pagina per il redirect di tutti i merchant
+$uri = COM_BOOKINGFORCONNECTOR_URIONSELLUNIT;
+$uriMerchant  = COM_BOOKINGFORCONNECTOR_URIMERCHANTDETAILS;
 
 $url=JFactory::getURI()->toString();
 $formAction=$url;
@@ -107,15 +110,15 @@ $formAction=$url;
 		$showResourceMap = (($resourceLat != null) && ($resourceLon !=null) && $isMapVisible && $isMapMarkerVisible);
 
 		$currUriresource = $uri.'&resourceId=' . $resource->ResourceId . ':' . BFCHelper::getSlug($resourceName);
-		if ($itemId<>0)
-			$currUriresource.='&Itemid='.$itemId;
+//		if ($itemId<>0)
+//			$currUriresource.='&Itemid='.$itemId;
 		$resourceRoute = JRoute::_($currUriresource.$fromsearchparam);
 	
 		$routeMerchant = "";
 		if($isportal){
 			$currUriMerchant = $uriMerchant. '&merchantId=' . $resource->MerchantId . ':' . BFCHelper::getSlug($merchantName);
-			if ($itemIdMerchant<>0)
-				$currUriMerchant.= '&Itemid='.$itemIdMerchant;
+//			if ($itemIdMerchant<>0)
+//				$currUriMerchant.= '&Itemid='.$itemIdMerchant;
 			$routeMerchant = JRoute::_($currUriMerchant.$fromsearchparam);
 		}
 	

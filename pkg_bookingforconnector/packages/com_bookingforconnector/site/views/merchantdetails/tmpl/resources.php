@@ -25,21 +25,23 @@ $fromsearchparam = "&lna=".$listNameAnalytics;
 
 $total = $this->pagination->total;
 
-$db   = JFactory::getDBO();
-$uri  = 'index.php?option=com_bookingforconnector&view=resource';
-$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uri ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
-//$itemId = ($db->getErrorNum())? 0 : intval($db->loadResult());
-$itemId = intval($db->loadResult());
+//$db   = JFactory::getDBO();
+//$uri  = 'index.php?option=com_bookingforconnector&view=resource';
+//$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uri ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
+////$itemId = ($db->getErrorNum())? 0 : intval($db->loadResult());
+//$itemId = intval($db->loadResult());
+//
+//$itemIdMerchant=0;
+//$uriMerchant  = 'index.php?option=com_bookingforconnector&view=merchantdetails';
+//$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uriMerchant .'%' ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
+//$itemIdMerchant = intval($db->loadResult());
+//$uriMerchant.='&merchantId=' . $merchant->MerchantId . ':' . BFCHelper::getSlug($merchant->Name);
+//
+//if ($itemIdMerchant<>0)
+//	$uriMerchant.='&Itemid='.$itemIdMerchant;
 
-$itemIdMerchant=0;
-$uriMerchant  = 'index.php?option=com_bookingforconnector&view=merchantdetails';
-$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uriMerchant .'%' ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
-$itemIdMerchant = intval($db->loadResult());
-$uriMerchant.='&merchantId=' . $merchant->MerchantId . ':' . BFCHelper::getSlug($merchant->Name);
-
-if ($itemIdMerchant<>0)
-	$uriMerchant.='&Itemid='.$itemIdMerchant;
-
+$uri = COM_BOOKINGFORCONNECTOR_URIRESOURCE;
+$uriMerchant  = COM_BOOKINGFORCONNECTOR_URIMERCHANTDETAILS.'&merchantId=' . $merchant->MerchantId . ':' . BFCHelper::getSlug($merchant->Name);
 $routeMerchant  = JRoute::_($uriMerchant.$fromsearchparam);
 
 $listsId = array();
@@ -149,8 +151,8 @@ $stato = isset($merchant->AddressData->StateName)?$merchant->AddressData->StateN
 		$showResourceMap = (($resourceLat != null) && ($resourceLon !=null));
 
 		$currUriresource = $uri.'&resourceId=' . $resource->ResourceId . ':' . BFCHelper::getSlug($resourceName);
-		if ($itemId<>0)
-			$currUriresource.='&Itemid='.$itemId;
+//		if ($itemId<>0)
+//			$currUriresource.='&Itemid='.$itemId;
 		$resourceRoute = JRoute::_($currUriresource.$fromsearchparam);
 	
 		$hasSuperior = !empty($resource->RatingSubValue);

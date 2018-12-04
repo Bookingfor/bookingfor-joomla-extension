@@ -308,18 +308,18 @@ class BookingForConnectorModelMerchants extends JModelList
 	}
 
 	public function getLocationZones($locationId = NULL,$jsonResult = false) {
-		$session = JFactory::getSession();
+//		$session = JFactory::getSession();
 		$strlocationId = "";
 		if(isset($locationId)){
 			$strlocationId = $locationId;
 		}
-		$locationZones = BFCHelper::getSession('getLocationZones' . $strlocationId, null , 'com_bookingforconnector');
-		if ($locationZones==null) {
+//		$locationZones = BFCHelper::getSession('getLocationZones' . $strlocationId, null , 'com_bookingforconnector');
+//		if ($locationZones==null) {
 			$locationZones = $this->getLocationZonesFromService($strlocationId);
-			BFCHelper::setSession('getLocationZones' . $strlocationId, $locationZones, 'com_bookingforconnector');
+//			BFCHelper::setSession('getLocationZones' . $strlocationId, $locationZones, 'com_bookingforconnector');
 //		} else {
 //			$locationZones = $this->getLocationZonesFromService($locationId);
-		}
+//		}
 		if($jsonResult)	{
 			$arr = array();
 			if (!empty($locationZones)){
@@ -371,17 +371,17 @@ class BookingForConnectorModelMerchants extends JModelList
 	}
 
 	public function getLocations() {
-//		$session = JFactory::getSession();
-		$locations = BFCHelper::getSession('getPortalLocations', null , 'com_bookingforconnector');
-//		$locations=null;
-
-		if (!is_array($locations)) {
+////		$session = JFactory::getSession();
+//		$locations = BFCHelper::getSession('getPortalLocations', null , 'com_bookingforconnector');
+////		$locations=null;
+//
+//		if (!is_array($locations)) {
 			$locations = $this->getLocationsFromService();
 			if($locations==null){
 				$locations = array();
 			}
-			BFCHelper::setSession('getPortalLocations', $locations, 'com_bookingforconnector');
-		}
+//			BFCHelper::setSession('getPortalLocations', $locations, 'com_bookingforconnector');
+//		}
 		return $locations;
 	}
 
@@ -439,14 +439,24 @@ class BookingForConnectorModelMerchants extends JModelList
 		return $categoriesFromService;
 	}
 	
+//	public function getMerchantCategories($language='') {
+////		$session = JFactory::getSession();
+//		$categories = BFCHelper::getSession('getMerchantCategories'.$language, null , 'com_bookingforconnector');
+////		if (!$session->has('getMerchantCategories','com_bookingforconnector')) {
+//		if ($categories==null) {
+//			$categories = $this->getMerchantCategoriesFromService($language);
+//			BFCHelper::setSession('getMerchantCategories'.$language, $categories, 'com_bookingforconnector');
+//		}
+//		return $categories;
+//	}
 	public function getMerchantCategories($language='') {
-//		$session = JFactory::getSession();
-		$categories = BFCHelper::getSession('getMerchantCategories'.$language, null , 'com_bookingforconnector');
-//		if (!$session->has('getMerchantCategories','com_bookingforconnector')) {
-		if ($categories==null) {
+////		$session = JFactory::getSession();
+//		$categories = BFCHelper::getSession('getMerchantCategories'.$language, null , 'com_bookingforconnector');
+////		if (!$session->has('getMerchantCategories','com_bookingforconnector')) {
+//		if ($categories==null) {
 			$categories = $this->getMerchantCategoriesFromService($language);
-			BFCHelper::setSession('getMerchantCategories'.$language, $categories, 'com_bookingforconnector');
-		}
+//			BFCHelper::setSession('getMerchantCategories'.$language, $categories, 'com_bookingforconnector');
+//		}
 		return $categories;
 	}
 	

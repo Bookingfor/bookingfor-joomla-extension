@@ -47,24 +47,26 @@ $currSorting=$listOrder . "|" . $listDirn;
 
 //-------------------pagina per il redirect di tutte le risorse 
 
-$db   = JFactory::getDBO();
-$uri  = 'index.php?option=com_bookingforconnector&view=resource';
+//$db   = JFactory::getDBO();
+//$uri  = 'index.php?option=com_bookingforconnector&view=resource';
+//
+//$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uri ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
+//
+//$itemId = intval($db->loadResult());
+//
+////-------------------pagina per il redirect di tutti i merchant
+//$itemIdMerchant=0;
+//$uriMerchant  = 'index.php?option=com_bookingforconnector&view=merchantdetails';
+//if($isportal){
+//	$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uriMerchant .'%' ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
+//	$itemIdMerchant = intval($db->loadResult());
+//}
+//if($itemId == 0){
+//	$itemId = $itemIdMerchant;
+//}
 
-$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uri ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
-
-$itemId = intval($db->loadResult());
-
-//-------------------pagina per il redirect di tutti i merchant
-$itemIdMerchant=0;
-$uriMerchant  = 'index.php?option=com_bookingforconnector&view=merchantdetails';
-if($isportal){
-	$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uriMerchant .'%' ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
-	$itemIdMerchant = intval($db->loadResult());
-}
-if($itemId == 0){
-	$itemId = $itemIdMerchant;
-}
-
+$uri = COM_BOOKINGFORCONNECTOR_URIRESOURCE;
+$uriMerchant  = COM_BOOKINGFORCONNECTOR_URIMERCHANTDETAILS;
 $merchantImageUrl = Juri::root() . "components/com_bookingforconnector/assets/images/defaults/default-s6.jpeg";
 
 $merchantImagePath = BFCHelper::getImageUrlResized('merchant', "[img]",'medium');
@@ -160,8 +162,8 @@ foreach ($merchants as $currKey => $merchant){
 
 
 	$currUriMerchant = $uriMerchant. '&merchantId=' . $merchant->MerchantId . ':' . BFCHelper::getSlug($merchantName);
-	if ($itemIdMerchant<>0)
-		$currUriMerchant.='&Itemid='.$itemIdMerchant;
+//	if ($itemIdMerchant<>0)
+//		$currUriMerchant.='&Itemid='.$itemIdMerchant;
 	
 	$currUriMerchant .= $fromsearchparam;
 	$routeMerchant = JRoute::_($currUriMerchant);
@@ -188,9 +190,9 @@ foreach ($merchants as $currKey => $merchant){
 
 	$resourceName = BFCHelper::getLanguage($merchant->ResName, $this->language, null, array('ln2br'=>'ln2br', 'striptags'=>'striptags')); 
 	$currUriresource = $uri.'&resourceId=' . $merchant->ResourceId . ':' . BFCHelper::getSlug($resourceName);
-	if ($itemId<>0){
-		$currUriresource.='&Itemid='.$itemId;
-	}
+//	if ($itemId<>0){
+//		$currUriresource.='&Itemid='.$itemId;
+//	}
 	$currUriresource .= $fromsearchparam;
 	$resourceRoute = JRoute::_($currUriresource);
 

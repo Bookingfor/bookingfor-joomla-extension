@@ -35,7 +35,7 @@ $googlemapsapykey = COM_BOOKINGFORCONNECTOR_GOOGLE_GOOGLEMAPSKEY;
 
 $resourceName = BFCHelper::getLanguage($resource->Name, $language, null, array('ln2br'=>'ln2br', 'striptags'=>'striptags')); 
 $merchantName = BFCHelper::getLanguage($merchant->Name, $language, null, array('ln2br'=>'ln2br', 'striptags'=>'striptags')); 
-$resourceDescription = BFCHelper::getLanguage($resource->Description, $language, null, array('ln2br'=>'ln2br', 'bbcode'=>'bbcode', 'striptags'=>'striptags'));
+$resourceDescription = BFCHelper::getLanguage($resource->Description, $language, null, array('striptags'=>'striptags', 'bbcode'=>'bbcode','ln2br'=>'ln2br'));
 
 $resourceLat = null;
 $resourceLon = null;
@@ -86,26 +86,29 @@ if (!empty($resource->ServiceIdList)){
 $this->document->setTitle($resourceName . ' - ' . $merchant->Name);
 $this->document->setDescription( BFCHelper::getLanguage($resource->Description, $this->language));
 
-$db   = JFactory::getDBO();
-$uri  = 'index.php?option=com_bookingforconnector&view=condominium';
-$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uri ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
-//$itemId = ($db->getErrorNum())? 0 : intval($db->loadResult());
-$itemId = intval($db->loadResult());
-$itemIdMerchant=0;
-$uriMerchant  = 'index.php?option=com_bookingforconnector&view=merchantdetails';
-if($isportal){
-	$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uriMerchant .'%' ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
-	$itemIdMerchant = intval($db->loadResult());
-}
-if($itemId == 0){
-	$itemId = $itemIdMerchant;
-}
+//$db   = JFactory::getDBO();
+//$uri  = 'index.php?option=com_bookingforconnector&view=condominium';
+//$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uri ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
+////$itemId = ($db->getErrorNum())? 0 : intval($db->loadResult());
+//$itemId = intval($db->loadResult());
+//$itemIdMerchant=0;
+//$uriMerchant  = 'index.php?option=com_bookingforconnector&view=merchantdetails';
+//if($isportal){
+//	$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uriMerchant .'%' ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
+//	$itemIdMerchant = intval($db->loadResult());
+//}
+//if($itemId == 0){
+//	$itemId = $itemIdMerchant;
+//}
+
+$uri = COM_BOOKINGFORCONNECTOR_URICONDOMINIUM;
+$uriMerchant  = COM_BOOKINGFORCONNECTOR_URIMERCHANTDETAILS;
 
 $currUriresource = $uri.'&resourceId=' . $resource->CondominiumId . ':' . BFCHelper::getSlug($resourceName);
 
-if ($itemId<>0){
-	$currUriresource.='&Itemid='.$itemId;
-}
+//if ($itemId<>0){
+//	$currUriresource.='&Itemid='.$itemId;
+//}
 $resourceRoute = JRoute::_($currUriresource.$fromsearchparam);
 $routeRating = JRoute::_($currUriresource.'&layout=rating');				
 
@@ -114,9 +117,9 @@ $reviewcount = 0;
 $showReview = false;
 
 $currUriMerchant = $uriMerchant. '&merchantId=' . $resource->MerchantId . ':' . BFCHelper::getSlug($resource->MerchantName);
-if ($itemIdMerchant<>0){
-	$currUriMerchant.= '&Itemid='.$itemIdMerchant;
-}
+//if ($itemIdMerchant<>0){
+//	$currUriMerchant.= '&Itemid='.$itemIdMerchant;
+//}
 $routeMerchant = JRoute::_($currUriMerchant.$fromsearchparam);
 $payloadresource["@type"] = "Product";
 $payloadresource["@context"] = "http://schema.org";
@@ -144,7 +147,7 @@ if (!empty($merchant->LogoUrl)){
 <?php echo json_encode($payload); ?>
 // ]]></script>
 
-<div class="bfi-content bfi-hideonextra">	
+<div class="bfi-content bfi-content-rescat<?php echo $resource->MainCategoryId ?> bfi-hideonextra">	
 	
 	<?php if($reviewcount>0){ ?>
 	<div class="bfi-row">
@@ -188,7 +191,7 @@ if (!empty($merchant->LogoUrl)){
 			BFCHelper::bfi_get_template('shared/gallery.php',array("merchant"=>$merchant,"bfiSourceData"=>$bfiSourceData,"bfiImageData"=>$bfiImageData,"bfiVideoData"=>$bfiVideoData));	
 	?>
 </div>
-<div class="bfi-content">	
+<div class="bfi-content bfi-content-rescat<?php echo $resource->MainCategoryId ?>">	
 
 
 	<div class="bfi-row bfi-hideonextra">
@@ -298,8 +301,17 @@ if (!empty($merchant->LogoUrl)){
 <?php if (($showResourceMap)) {?>
 	<div class="bfi-content-map bfi-hideonextra">
 		<br /><br />
+<?php 
+if (COM_BOOKINGFORCONNECTOR_USE_OPENSTREETMAP) {
+		$bbox = BFCHelper::bfi_getBBox_openstreetmap($resourceLat, $resourceLon, 1000);
+		$urlopenstreetmap = vsprintf('https://www.openstreetmap.org/export/embed.html?bbox=%.15f%%2C%.15f%%2C%.15f%%2C%.15f&amp;layer=mapnik&amp;marker=%.15f%%2C%.15f', $bbox);
+?>
+	<iframe width="100%" height="350" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" src="<?php echo $urlopenstreetmap ?>" ></iframe> 
+<?php 
+  
+}else{
+?>
 		<div id="resource_map" style="width:100%;height:350px"></div>
-	</div>
 	<script type="text/javascript">
 	<!--
 		var mapUnit;
@@ -353,6 +365,8 @@ if (!empty($merchant->LogoUrl)){
 	//-->
 
 	</script>
+<?php } ?>
+	</div>
 <?php } ?>
 
 	<script type="text/javascript">

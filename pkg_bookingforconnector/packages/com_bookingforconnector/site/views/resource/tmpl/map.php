@@ -19,16 +19,18 @@ $resourceName = BFCHelper::getLanguage($resource->Name, $this->language, null, a
 $this->document->setTitle($resourceName . ' - ' . $merchant->Name);
 $this->document->setDescription( BFCHelper::getLanguage($resource->Description, $language, null, array( 'nobr'=>'nobr', 'bbcode'=>'bbcode', 'striptags'=>'striptags')) ;);
 
-$db   = JFactory::getDBO();
-$uri  = 'index.php?option=com_bookingforconnector&view=resource';
-$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uri ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').')  AND published = 1 LIMIT 1' );
-$itemId = ($db->getErrorNum())? 0 : intval($db->loadResult());
-//-------------------pagina per i l redirect di tutte le risorsein vendita
+//$db   = JFactory::getDBO();
+//$uri  = 'index.php?option=com_bookingforconnector&view=resource';
+//$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uri ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').')  AND published = 1 LIMIT 1' );
+//$itemId = ($db->getErrorNum())? 0 : intval($db->loadResult());
+////-------------------pagina per i l redirect di tutte le risorsein vendita
+//
+//if ($itemId<>0)
+//	$uri.='&resourceId=' . $resource->ResourceId . ':' . BFCHelper::getSlug($resourceName).'&Itemid='.$itemId;
+//else
+//	$uri.='&resourceId=' . $resource->ResourceId . ':' . BFCHelper::getSlug($resourceName);
 
-if ($itemId<>0)
-	$uri.='&resourceId=' . $resource->ResourceId . ':' . BFCHelper::getSlug($resourceName).'&Itemid='.$itemId;
-else
-	$uri.='&resourceId=' . $resource->ResourceId . ':' . BFCHelper::getSlug($resourceName);
+$uri = COM_BOOKINGFORCONNECTOR_URIRESOURCE.'&resourceId=' . $resource->ResourceId . ':' . BFCHelper::getSlug($resourceName);
 
 $route = JRoute::_($uri);
 $indirizzo = "";

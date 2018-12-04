@@ -7,17 +7,14 @@
 
 // No direct access to this file
 defined('_JEXEC') or die('Restricted access');
-/*
 
-CSS overrides star by merchantCategoryId
-
-.com_bookingforconnector_merchantdetails-resourcerating5.com_bookingforconnector_merchantdetails-merchantCategoryId856 .com_bookingforconnector_merchantdetails-ratingText{
-display:none;
+if(!empty( COM_BOOKINGFORCONNECTOR_CRAWLER )){
+	$listCrawler = json_decode(COM_BOOKINGFORCONNECTOR_CRAWLER , true);
+	foreach( $listCrawler as $key=>$crawler){
+	if (preg_match('/'.$crawler['pattern'].'/', $_SERVER['HTTP_USER_AGENT'])) return;
+	}
+	
 }
-.com_bookingforconnector_merchantdetails-resourcerating5.com_bookingforconnector_merchantdetails-merchantCategoryId856:before {content: "5 stars ";}{
-
-
-*/
 
 $pathbase = JPATH_BASE . DIRECTORY_SEPARATOR . 'components' . DIRECTORY_SEPARATOR . 'com_bookingforconnector' . DIRECTORY_SEPARATOR;
 
@@ -379,12 +376,6 @@ $minvaluetoshow=1;
 	
 </form>
 </div>
-<?php if(!empty(COM_BOOKINGFORCONNECTOR_GOOGLE_GOOGLEMAPSKEY)){ ?>
-<div class="bfi-maps-static">
-	<span class="bfi-showmap"><?php echo JTEXT::_('MOD_BOOKINGFORMAPS_SHOW_MAP') ?></span>
-	<img alt="Map" src="https://maps.google.com/maps/api/staticmap?center=<?php echo COM_BOOKINGFORCONNECTOR_GOOGLE_POSY?>,<?php echo COM_BOOKINGFORCONNECTOR_GOOGLE_POSX?>&amp;zoom=11&amp;size=400x250&key=<?php echo COM_BOOKINGFORCONNECTOR_GOOGLE_GOOGLEMAPSKEY ?>&" style="max-width: 100%;" />
-</div>
-<?php } ?>
 
 <script type="text/javascript">
 function bfi_applyfilterMerchantdata(){ 		

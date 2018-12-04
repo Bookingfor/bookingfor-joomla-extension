@@ -79,4 +79,17 @@ function bficodiceFISCALE(cfins) {
 	 return false;
 	 return true;
 }
+
+jQuery.validator.addMethod('nourl', function(value){
+    var re = /^[a-zA-Z0-9\-\.\:\\]+\.(com|org|net|mil|edu|COM|ORG|NET|MIL|EDU)$/;
+    var  re1 = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/; 
+    var trimmed = jQuery.trim(value);
+    if( trimmed == '' ){
+       return true;
+    }
+    if( trimmed.match(re) == null && re1.test(trimmed) == false){
+       return true;
+    }
+},"No URLs allowed!");
+
 });      

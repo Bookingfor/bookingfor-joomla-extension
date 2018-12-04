@@ -27,6 +27,9 @@ class BookingForConnectorController extends JControllerLegacy
 		$this->serviceUri = $params->get('wsurl', '');
 		$this->apikey = $params->get('apikey', '');
 		$this->formlabel = $params->get('formlabel', JPATH_SITE);
+		$language 	= JFactory::getLanguage()->getTag();
+		bfi_load_languageurl($language);
+
 	}
 
 	public function display($cachable = false, $urlparams = false)
@@ -143,7 +146,14 @@ class BookingForConnectorController extends JControllerLegacy
 
 
 	function sendContact(){ //Richiesta informazioni Merchant (infoRequestA)
+		JSession::checkToken() or jexit(JText::_('JINVALID_TOKEN'));
+
 		$formData = BFCHelper::getArray('form');
+		$userNotes = $formData['note'];
+		if(BFCHelper::containsUrl($userNotes)) {
+			jexit(JText::_('JINVALID_TOKEN'));
+		}
+
 //		$checkrecaptcha = true;
 //		JPluginHelper::importPlugin('captcha');
 //		$dispatcher = JDispatcher::getInstance();
@@ -242,7 +252,12 @@ class BookingForConnectorController extends JControllerLegacy
 //	}
 
 	function sendInforequest(){ //Richiesta informazioni Risorsa (infoRequestC)
+		JSession::checkToken() or jexit(JText::_('JINVALID_TOKEN'));
 		$formData = BFCHelper::getArray('form');
+		$userNotes = $formData['note'];
+		if(BFCHelper::containsUrl($userNotes)) {
+			jexit(JText::_('JINVALID_TOKEN'));
+		}
 //		JPluginHelper::importPlugin('captcha');
 //		$dispatcher = JDispatcher::getInstance();
 //		$result = $dispatcher->trigger('onCheckAnswer',$formData['recaptcha_response_field']);
@@ -343,7 +358,12 @@ class BookingForConnectorController extends JControllerLegacy
 	}
 
 	function sendOnSellrequest(){ //Richiesta informazioni Vendita (infoRequestB)
+		JSession::checkToken() or jexit(JText::_('JINVALID_TOKEN'));
 		$formData = BFCHelper::getArray('form');
+		$userNotes = $formData['note'];
+		if(BFCHelper::containsUrl($userNotes)) {
+			jexit(JText::_('JINVALID_TOKEN'));
+		}
 
 		$customer = BFCHelper::getCustomerData($formData);
 		$suggestedStay = null;
@@ -429,7 +449,9 @@ class BookingForConnectorController extends JControllerLegacy
 	}
 
 	function sendRating(){
+		JSession::checkToken() or jexit(JText::_('JINVALID_TOKEN'));
 		$formData = BFCHelper::getArray('form');		
+
 		$name=BFCHelper::getVar('name');
 		$city=BFCHelper::getVar('city');
 		$typologyid=BFCHelper::getVar('typologyid');
@@ -445,6 +467,11 @@ class BookingForConnectorController extends JControllerLegacy
 		$totale=BFCHelper::getVar('hftotale');
 		$pregi=BFCHelper::getVar('pregi');
 		$difetti=BFCHelper::getVar('difetti');
+
+		if(BFCHelper::containsUrl($pregi) || BFCHelper::containsUrl($difetti) ) {
+			jexit(JText::_('JINVALID_TOKEN'));
+		}
+
 		$merchantId=BFCHelper::getVar('merchantid');
 		$label=BFCHelper::getVar('label');
 		$user = JFactory::getUser();
@@ -1050,8 +1077,8 @@ class BookingForConnectorController extends JControllerLegacy
 //			$url_cart_page = get_permalink( $cartdetails_page->ID );
 //			wp_redirect($url_cart_page);
 //			exit;
-			$redirect = JRoute::_('index.php?option=com_bookingforconnector&view=cart');
-
+//			$redirect = JRoute::_('index.php?option=com_bookingforconnector&view=cart');
+			$redirect = JRoute::_(COM_BOOKINGFORCONNECTOR_URICART);
 //			if(!empty($currCart)){
 //				$return = json_encode($currCart);
 //			}
@@ -1074,7 +1101,8 @@ class BookingForConnectorController extends JControllerLegacy
 	function addDiscountCodesToCart(){		
 		$bficoupons = BFCHelper::getVar("bficoupons");
 		$language = BFCHelper::getVar("bfilanguage");
-		$redirect = JRoute::_('index.php?option=com_bookingforconnector&view=cart');
+//		$redirect = JRoute::_('index.php?option=com_bookingforconnector&view=cart');
+		$redirect = JRoute::_(COM_BOOKINGFORCONNECTOR_URICART);
 		if(!empty($bficoupons)){
 			$tmpUserId = BFCHelper::bfi_get_userId();
 			$currCart = BFCHelper::AddDiscountCodesCartByExternalUser($tmpUserId, $language, $bficoupons);
@@ -1140,13 +1168,16 @@ class BookingForConnectorController extends JControllerLegacy
 		$comune = isset($merchant->AddressData->CityName)?$merchant->AddressData->CityName:"";
 		$stato = isset($merchant->AddressData->StateName)?$merchant->AddressData->StateName:"";
 		
-		$db   = JFactory::getDBO();
-		$uri  = 'index.php?option=com_bookingforconnector&view=merchantdetails';
-		$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uri ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
-		$itemId = intval($db->loadResult());
-		$currUriMerchant = $uri.'&merchantId=' . $merchant->MerchantId . ':' . BFCHelper::getSlug($merchantName);
-		if ($itemId<>0)
-			$currUriMerchant.='&Itemid='.$itemId;
+//		$db   = JFactory::getDBO();
+//		$uri  = 'index.php?option=com_bookingforconnector&view=merchantdetails';
+////		$db->setQuery('SELECT id FROM #__menu WHERE link = '. $db->Quote( $uri ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
+//		$db->setQuery('SELECT id FROM #__menu WHERE (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 AND link = '. $db->Quote( $uri ) .' LIMIT 1' );
+//		$itemId = intval($db->loadResult());
+//		$currUriMerchant = $uri.'&merchantId=' . $merchant->MerchantId . ':' . BFCHelper::getSlug($merchantName);
+//		if ($itemId<>0)
+//			$currUriMerchant.='&Itemid='.$itemId;
+		
+		$currUriMerchant = COM_BOOKINGFORCONNECTOR_URIMERCHANTDETAILS.'&merchantId=' . $merchant->MerchantId . ':' . BFCHelper::getSlug($merchantName);
 		$routeMerchant = JRoute::_($currUriMerchant.'&fromsearch=1');
 
 //		$accommodationdetails_page = get_post( bfi_get_page_id( 'accommodationdetails' ) );
@@ -1172,16 +1203,19 @@ class BookingForConnectorController extends JControllerLegacy
 		$comune = isset($resource->CityName)?$resource->CityName:"";
 		$stato = isset($resource->StateName)?$resource->StateName:"";
 		
-		$db   = JFactory::getDBO();
-		$uri  = 'index.php?option=com_bookingforconnector&view=resource';
-		$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uri ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
-		$itemId = intval($db->loadResult());
-		$currUriresource = $uri.'&resourceId=' . $resource->ResourceId . ':' . BFCHelper::getSlug($resourceName);
-		if ($itemId<>0)
-			$currUriresource.='&Itemid='.$itemId;
-		if (!empty($resource->RateplanId)){
-			 $currUriresource .= "&pricetype=" . $resource->RateplanId;
-		}
+//		$db   = JFactory::getDBO();
+//		$uri  = 'index.php?option=com_bookingforconnector&view=resource';
+////		$db->setQuery('SELECT id FROM #__menu WHERE link = '. $db->Quote( $uri ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
+//		$db->setQuery('SELECT id FROM #__menu WHERE (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 AND link = '. $db->Quote( $uri ) .' LIMIT 1' );
+//		$itemId = intval($db->loadResult());
+//		$currUriresource = $uri.'&resourceId=' . $resource->ResourceId . ':' . BFCHelper::getSlug($resourceName);
+//		if ($itemId<>0)
+//			$currUriresource.='&Itemid='.$itemId;
+//		if (!empty($resource->RateplanId)){
+//			 $currUriresource .= "&pricetype=" . $resource->RateplanId;
+//		}
+
+		$currUriresource = COM_BOOKINGFORCONNECTOR_URIRESOURCE.'&resourceId=' . $resource->ResourceId . ':' . BFCHelper::getSlug($resourceName);
 		$resourceRoute = JRoute::_($currUriresource.'&fromsearch=1');
 
 //		$accommodationdetails_page = get_post( bfi_get_page_id( 'accommodationdetails' ) );
@@ -1205,13 +1239,16 @@ class BookingForConnectorController extends JControllerLegacy
 		$comune = isset($resource->CityName)?$resource->CityName:"";
 		$stato = isset($resource->StateName)?$resource->StateName:"";
 		
-		$db   = JFactory::getDBO();
-		$uri  = 'index.php?option=com_bookingforconnector&view=condominium';
-		$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uri ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
-		$itemId = intval($db->loadResult());
-		$currUriresource = $uri.'&resourceId=' . $resource->CondominiumId . ':' . BFCHelper::getSlug($resourceName);
-		if ($itemId<>0)
-			$currUriresource.='&Itemid='.$itemId;
+//		$db   = JFactory::getDBO();
+//		$uri  = 'index.php?option=com_bookingforconnector&view=condominium';
+////		$db->setQuery('SELECT id FROM #__menu WHERE link = '. $db->Quote( $uri ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
+//		$db->setQuery('SELECT id FROM #__menu WHERE (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 AND link = '. $db->Quote( $uri ) .' LIMIT 1' );
+//		$itemId = intval($db->loadResult());
+//		$currUriresource = $uri.'&resourceId=' . $resource->CondominiumId . ':' . BFCHelper::getSlug($resourceName);
+//		if ($itemId<>0)
+//			$currUriresource.='&Itemid='.$itemId;
+
+		$currUriresource = COM_BOOKINGFORCONNECTOR_URICONDOMINIUM.'&resourceId=' . $resource->CondominiumId . ':' . BFCHelper::getSlug($resourceName);
 		$resourceRoute = JRoute::_($currUriresource.'&fromsearch=1');
 
 //		$condominiumdetails_page = get_post( bfi_get_page_id( 'condominiumdetails' ) );

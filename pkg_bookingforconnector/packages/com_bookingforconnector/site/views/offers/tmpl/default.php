@@ -17,14 +17,15 @@ $offers = $this->items;
 $listNameAnalytics = $this->listNameAnalytics;
 $fromsearchparam = "&lna=".$listNameAnalytics;
 
-$db   = JFactory::getDBO();
-$itemIdMerchant=0;
-$uriMerchant  = 'index.php?option=com_bookingforconnector&view=merchantdetails';
-	//-------------------pagina per il redirect di tutti i merchant
-	$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uriMerchant .'%' ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
-	//$itemIdMerchant = ($db->getErrorNum())? 0 : intval($db->loadResult());
-	$itemIdMerchant = intval($db->loadResult());
-	//-------------------pagina per il redirect di tutti i merchant
+//$db   = JFactory::getDBO();
+//$itemIdMerchant=0;
+//$uriMerchant  = 'index.php?option=com_bookingforconnector&view=merchantdetails';
+//	//-------------------pagina per il redirect di tutti i merchant
+//	$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uriMerchant .'%' ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
+//	//$itemIdMerchant = ($db->getErrorNum())? 0 : intval($db->loadResult());
+//	$itemIdMerchant = intval($db->loadResult());
+//	//-------------------pagina per il redirect di tutti i merchant
+$uriMerchant  = COM_BOOKINGFORCONNECTOR_URIMERCHANTDETAILS;
 
 $total = $this->pagination->total;
 
@@ -49,8 +50,8 @@ $total = $this->pagination->total;
 		$resourceDescription = BFCHelper::getLanguage($resource->Description, $language, null, array('ln2br'=>'ln2br', 'bbcode'=>'bbcode', 'striptags'=>'striptags')); 
 		
 		$currUriMerchant = $uriMerchant. '&merchantId=' . $resource->MerchantId . ':' . BFCHelper::getSlug($resource->MrcName);
-		if ($itemIdMerchant<>0)
-			$currUriMerchant.='&Itemid='.$itemIdMerchant;
+//		if ($itemIdMerchant<>0)
+//			$currUriMerchant.='&Itemid='.$itemIdMerchant;
 		$resourceRoute  = JRoute::_($currUriMerchant.'&layout=offer&offerId=' . $resource->VariationPlanId . ':' . BFCHelper::getSlug($resourceName).$fromsearchparam);
 		
 		if(!empty($resource->DefaultImg)){

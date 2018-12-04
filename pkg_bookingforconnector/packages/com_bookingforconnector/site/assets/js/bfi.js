@@ -1,5 +1,5 @@
 var bookingfor = new function() {
-    this.version = "3.2.5";
+    this.version = "3.2.6";
 	this.bsVersion = ( typeof jQuery.fn.typeahead !== 'undefined' ? 2 : 3 );
     this.offersLoaded = [];
     this.adsBlocked = false;
@@ -541,11 +541,11 @@ var bookingfor = new function() {
 		var maxSelectable = Number(jQuery(currSelect).attr("data-availability")||0);
 		var isbookable = jQuery(currSelect).attr("data-isbookable");
 		var resourceId = jQuery(currSelect).attr("data-resid");
-		if(jQuery(".ddlrooms-" + resourceId+"[data-isbookable='" + isbookable+"']").length>1){
-			var occupancyResource = bookingfor.getOccupancy(resourceId,isbookable);
+		var realAvailProductId = jQuery(currSelect).attr("data-realavailproductid");
+		if(jQuery(".ddlroomsrealav-" + realAvailProductId+"[data-isbookable='" + isbookable+"']").length>1){
+			var occupancyResource = bookingfor.getOccupancy(realAvailProductId,isbookable);
 			var remainingResource = maxSelectable - occupancyResource;
-
-			jQuery(".ddlrooms-" + resourceId+"[data-isbookable='" + isbookable+"']").each(function () {
+			jQuery(".ddlroomsrealav-" + realAvailProductId+"[data-isbookable='" + isbookable+"']").each(function () {
 				var currentValue = parseInt(jQuery(this).val());
 				var maxValue = parseInt(jQuery(this).find("option:last-child").attr("value"));
 				if((currentValue + remainingResource) < maxValue) {
@@ -569,7 +569,7 @@ var bookingfor = new function() {
 	}
 	this.getOccupancy = function(resourceId,isbookable) {
         var occupancy = 0;
-		jQuery(".ddlrooms-" + resourceId+"[data-isbookable='" + isbookable+"']").each(function () {
+		jQuery(".ddlroomsrealav-" + resourceId+"[data-isbookable='" + isbookable+"']").each(function () {
 			occupancy += Number(jQuery(this).val()||0)
 		});
 		return occupancy;
@@ -695,6 +695,7 @@ var bookingfor = new function() {
 		Order.SearchModel.ChildrenCount = new Number(Order.SearchModel.children || 0);
 		Order.SearchModel.SeniorCount = new Number(Order.SearchModel.seniores || 0);
 		Order.SearchModel.ChildAges = [Order.SearchModel.childages1, Order.SearchModel.childages2, Order.SearchModel.childages3, Order.SearchModel.childages4, Order.SearchModel.childages5];
+		/*
 		currPaxNumber = Order.SearchModel.AdultCount + Order.SearchModel.ChildrenCount + Order.SearchModel.SeniorCount;
 		currPaxAges = new Array();
 		for (i = 0; i < Order.SearchModel.AdultCount ; i++) {
@@ -706,6 +707,7 @@ var bookingfor = new function() {
 		for (i = 0; i < Order.SearchModel.ChildrenCount ; i++) {
 			currPaxAges.push(Order.SearchModel.ChildAges[i]);
 		}
+		*/
 
 		var FirstResourceId = 0;
 		var ResetCart = 0;
@@ -729,6 +731,16 @@ var bookingfor = new function() {
 //				}
 				for (var i = 1; i <= currQtSelected; i++) {
 					currPolicy.push(new Number(jQuery(this).attr('data-policyId') || 0));
+					var currPaxes = jQuery(this).attr('data-paxes').split('|');
+					var currPaxesAges =[];
+					currPaxes.forEach(function (currPax) {
+						currPaxTot = currPax.split(':')[1];
+						currPaxAge = parseInt(currPax.split(':')[2]);
+						for (var j=0; j < currPaxTot; j++)
+						{
+							currPaxesAges.push(currPaxAge);
+						}
+					});
 					var currResourceRequest = {
 						ResourceId: new Number(currResId || 0),
 						Name: jQuery(this).attr('data-name'),
@@ -739,8 +751,10 @@ var bookingfor = new function() {
 						ToDate:  jQuery(this).attr('data-checkout'),
 						PolicyId: new Number(jQuery(this).attr('data-policyId') || 0),
 						IsBookable: new Number(jQuery(this).attr('data-isbookable') || 0),
-						PaxNumber: currPaxNumber,
-						PaxAges: currPaxAges,
+//						PaxNumber: jQuery(this).attr('data-paxes').split('|').length,
+//						PaxAges: jQuery.makeArray(jQuery.map(currPaxes, function (px) { return parseInt(px.split(':')[2]); })),
+						PaxNumber: currPaxesAges.length,
+						PaxAges: currPaxesAges,
 						IncludedMeals: jQuery(this).attr('data-includedmeals'),
 						TouristTaxValue: jQuery(this).attr('data-touristtaxvalue'),
 						VATValue: jQuery(this).attr('data-vatvalue'),
@@ -759,6 +773,7 @@ var bookingfor = new function() {
 						ComputedPaxes: jQuery(this).attr('data-computedpaxes'),
 						PricesExtraIncluded: JSON.stringify( (typeof pricesExtraIncluded[currRateplanId] !== 'undefined' && Object.keys(pricesExtraIncluded[currRateplanId]).length > 0)? pricesExtraIncluded[currRateplanId] : {}),
 						PolicyValue: jQuery(this).attr('data-policy'),
+						HidePeopleAge: jQuery(this).attr('data-hidePeopleAge') == "1",
 						ExtraServices: []
 					};
 
@@ -772,6 +787,7 @@ var bookingfor = new function() {
 					if (currAvailabilityType == 3) {
 						var currTr = jQuery("#bfi-timeslot-" + currResId);
 						currResourceRequest.FromDate = currTr.attr('data-checkin-ext');
+						currResourceRequest.ToDate = currTr.attr('data-checkin-ext');
 						currResourceRequest.TimeSlotId = currTr.attr("data-timeslotid");
 						currResourceRequest.TimeSlotStart = currTr.attr("data-timeslotstart");
 						currResourceRequest.TimeSlotEnd = currTr.attr("data-timeslotend");
@@ -869,9 +885,9 @@ var bookingfor = new function() {
 								"list": elm.ListName,
 							};
 						}));
-					var currListName = currAllItems[0].list;
 					if (typeof callAnalyticsEEc !== "undefined" )
 					{
+						var currListName = currAllItems[0].list;
 						callAnalyticsEEc("addProduct", currAllItems, "addToCart", "",  {
 								"step": 1,
 								"list" : currListName
@@ -1442,7 +1458,7 @@ jQuery.widget( 'ui.dialog', jQuery.ui.dialog, {
                   jQuery(document).on( 'click.ui.dialogClickOutside' + that.eventNamespace, function(event){
                       var $target = jQuery(event.target);
                       if ( $target.closest(jQuery(clickOutsideTriggerEl)).length === 0 &&
-                           $target.closest(jQuery(that.uiDialog)).length === 0){
+                           $target.closest(jQuery(that.uiDialog)).length === 0 && $target.closest('.ui-datepicker-header').length === 0){
                         that.close();
                       }
                   });

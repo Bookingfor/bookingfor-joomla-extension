@@ -11,7 +11,7 @@
 	<copyright>Copyright (c)2006-2017 Ipertrade s.r.l.</copyright>
      <license>http://www.gnu.org/copyleft/gpl.html GNU/GPL</license>
 	<!--  The version string is recorded in the components table -->
-	<version>3.2.5</version>
+	<version>3.2.6</version>
 	<!-- The description is optional and defaults to the name -->
 	<description>Simple module for BookingFor Search</description>
  
@@ -97,6 +97,7 @@
 					<option value="2">MOD_BOOKINGFOR_TABLIST_3</option>
 					<option value="4">MOD_BOOKINGFOR_TABLIST_4</option>
 					<option value="3">MOD_BOOKINGFOR_TABLIST_REALESTATE</option>
+					<option value="5">MOD_BOOKINGFOR_TABLIST_CATALOG</option>
 				</field>
 				
 				<field name="spacerbooking" type="spacer" default="" label="MOD_BOOKINGFOR_TABLIST_BOOKING_SEP" showon="tablistSelected:0"  class="text-uppercase"/>
@@ -462,7 +463,7 @@
 					<option value="0">JNO</option>
 					<option value="1">JYES</option>
 				</field>
-				<field
+				<!-- <field
 					name="startdate"
 					type="calendar"
 					default="NOW"
@@ -481,7 +482,7 @@
 					format="%d-%m-%Y"
 					showon="showDateRange:1[AND]tablistSelected:0[OR]tablistSelected:1[OR]tablistSelected:0[OR]tablistSelected:4"
 					>
-				</field>
+				</field> -->
 				<field
 					name="blockmonths"
 					type="list"
@@ -532,6 +533,17 @@
 					<option value="1">JYES</option>
 				</field>
 				<field
+					name="showResource"
+					type="radio"
+					default="0"
+					label="MOD_BOOKINGFOR_SHOWRESOURCE_LABEL" class="btn-group btn-group-yesno"
+					description="MOD_BOOKINGFOR_SHOWRESOURCE_DESC"
+					showon="tablistSelected:0[OR]tablistSelected:1[OR]tablistSelected:0[OR]tablistSelected:4"
+					>
+					<option value="0">JNO</option>
+					<option value="1">JYES</option>
+				</field>
+				<field
 					name="showAdult"
 					type="radio"
 					default="1"
@@ -575,6 +587,28 @@
 					<option value="0">JNO</option>
 					<option value="1">JYES</option>
 				</field>
+
+				<field name="spacercatalog" type="spacer" default="" label="MOD_BOOKINGFOR_TABLIST_CATALOG_SEP" showon="tablistSelected:5"  class="text-uppercase"/>
+				<field
+					name="tabnamecatalog"
+					type="text"
+					default="MOD_BOOKINGFOR_TABLIST_CATALOG" 
+					label="MOD_BOOKINGFOR_TABNAME_LABEL"
+					description="MOD_BOOKINGFOR_TABNAME_DESC"
+					showon="tablistSelected:5"
+					>
+				</field>
+				<field
+					name="tabiconcatalog"
+					type="fontawesomeicon"
+					default="fa fa-book" 
+					label="MOD_BOOKINGFOR_TABICON_LABEL"
+					description="MOD_BOOKINGFOR_TABICON_DESC"
+					showon="tablistSelected:5"
+					>
+				</field>
+
+<!-- realestate -->
 				<field name="spacerrealestate" type="spacer" default="" label="MOD_BOOKINGFOR_TABLIST_REALESTATE_SEP" showon="tablistSelected:3"  class="text-uppercase"/>
 
 				<field

@@ -16,10 +16,10 @@ $offerName = BFCHelper::getLanguage($offer->Name, $this->language);
 $offer->OfferId =  $offer->PackageId;
 $offer->Price = $offer->Value;
 $uriMerchant = $this->uriMerchant . '&merchantId=' . $merchant->MerchantId . ':' . BFCHelper::getSlug($merchant->Name);
-$itemIdMerchant = $this->itemIdMerchant;
-
-	if ($itemIdMerchant<>0)
-		$uriMerchant.='&Itemid='.$itemIdMerchant;
+//$itemIdMerchant = $this->itemIdMerchant;
+//
+//	if ($itemIdMerchant<>0)
+//		$uriMerchant.='&Itemid='.$itemIdMerchant;
 
 	$routeMerchant = JRoute::_($uriMerchant);
 	$route = JRoute::_($uriMerchant. '&layout=offer&offerId=' . $offer->OfferId . ':' . BFCHelper::getSlug($offerName));

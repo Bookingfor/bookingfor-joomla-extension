@@ -39,6 +39,7 @@ class BookingForConnectorViewTag extends BFCView
 		$list = "";
 		$listNameAnalytics = 0;
 		$totalItems = array();
+		$items = array();
 		$sendData = true;
 
 		if(!empty($item)) {
@@ -91,7 +92,8 @@ class BookingForConnectorViewTag extends BFCView
 
 			$this->items = $items;
 			$this->pagination = $pagination;
-			
+			$this->totalAvailable =  $this->get('TotalAvailable');;
+
 			$pagination->setAdditionalUrlParam("filter_order", $sortColumn);
 			$pagination->setAdditionalUrlParam("filter_order_Dir", $sortDirection);
 			$pagination->setAdditionalUrlParam("newsearch",0);

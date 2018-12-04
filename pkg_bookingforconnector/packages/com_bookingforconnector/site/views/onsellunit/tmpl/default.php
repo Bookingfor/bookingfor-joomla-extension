@@ -28,7 +28,7 @@ $googlemapsapykey = COM_BOOKINGFORCONNECTOR_GOOGLE_GOOGLEMAPSKEY;
 $resourceName = BFCHelper::getLanguage($resource->Name, $language, null, array('ln2br'=>'ln2br', 'striptags'=>'striptags')); 
 $merchantName = BFCHelper::getLanguage($merchant->Name, $language, null, array('ln2br'=>'ln2br', 'striptags'=>'striptags')); 
 $resourceDescription = BFCHelper::getLanguage($resource->Description, $language, null, array('ln2br'=>'ln2br', 'bbcode'=>'bbcode', 'striptags'=>'striptags'));
-$route = JRoute::_('index.php?option=com_bookingforconnector&view=onsellunit&resourceId=' . $resource->ResourceId . ':' . BFCHelper::getSlug($resourceName));
+$route = JRoute::_(COM_BOOKINGFORCONNECTOR_URIONSELLUNIT.'&resourceId=' . $resource->ResourceId . ':' . BFCHelper::getSlug($resourceName));
 
 
 $resource->Price = $resource->MinPrice;
@@ -80,19 +80,22 @@ if($resource->UpdatedOn!=''){
 }
 
 /**** for search similar *****/
-$db   = JFactory::getDBO();
+//$db   = JFactory::getDBO();
 
-$uri  = 'index.php?option=com_bookingforconnector&view=searchonsell';
+//$uri  = 'index.php?option=com_bookingforconnector&view=searchonsell';
+//
+//$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uri .'%' ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
+//
+//$itemId = ($db->getErrorNum())? 0 : intval($db->loadResult());
+//
+//$currUriresource = $uri.'&resourceId=' . $resource->ResourceId . ':' . BFCHelper::getSlug($resourceName);
+//
+//if ($itemId<>0){
+//	$currUriresource.='&Itemid='.$itemId;
+//}
 
-$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uri .'%' ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
+$currUriresource = COM_BOOKINGFORCONNECTOR_URIONSELLUNIT.'&resourceId=' . $resource->ResourceId . ':' . BFCHelper::getSlug($resourceName);
 
-$itemId = ($db->getErrorNum())? 0 : intval($db->loadResult());
-
-$currUriresource = $uri.'&resourceId=' . $resource->ResourceId . ':' . BFCHelper::getSlug($resourceName);
-
-if ($itemId<>0){
-	$currUriresource.='&Itemid='.$itemId;
-}
 $resourceRoute = JRoute::_($currUriresource);
 
 $categoryId = $resource->CategoryId;
@@ -117,15 +120,17 @@ if (!empty($resource->ServiceIdList)){
 
 //-------------------pagina per il redirect di tutti i merchant
 
-$uriMerchant  = 'index.php?option=com_bookingforconnector&view=merchantdetails';
-$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uriMerchant .'%' ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
-$itemIdMerchant = ($db->getErrorNum())? 0 : intval($db->loadResult());
-//-------------------pagina per il redirect di tutti i merchant
+//$uriMerchant  = 'index.php?option=com_bookingforconnector&view=merchantdetails';
+//$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uriMerchant .'%' ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
+//$itemIdMerchant = ($db->getErrorNum())? 0 : intval($db->loadResult());
+////-------------------pagina per il redirect di tutti i merchant
+//
+//if ($itemIdMerchant<>0)
+//	$uriMerchant.='&merchantId=' . $merchant->MerchantId . ':' . BFCHelper::getSlug($merchant->Name).'&Itemid='.$itemIdMerchant;
+//else
+//	$uriMerchant.='&merchantId=' . $merchant->MerchantId . ':' . BFCHelper::getSlug($merchant->Name);
 
-if ($itemIdMerchant<>0)
-	$uriMerchant.='&merchantId=' . $merchant->MerchantId . ':' . BFCHelper::getSlug($merchant->Name).'&Itemid='.$itemIdMerchant;
-else
-	$uriMerchant.='&merchantId=' . $merchant->MerchantId . ':' . BFCHelper::getSlug($merchant->Name);
+$uriMerchant  = COM_BOOKINGFORCONNECTOR_URIMERCHANTDETAILS.'&merchantId=' . $merchant->MerchantId . ':' . BFCHelper::getSlug($merchant->Name);
 
 $routeMerchant = JRoute::_($uriMerchant,true, -1);
 
@@ -402,6 +407,16 @@ echo("</tr>\n");
 
 <?php if (($showResourceMap)) {?>
 <br /><br />
+<?php 
+if (COM_BOOKINGFORCONNECTOR_USE_OPENSTREETMAP) {
+		$bbox = BFCHelper::bfi_getBBox_openstreetmap($resourceLat, $resourceLon, 1000);
+		$urlopenstreetmap = vsprintf('https://www.openstreetmap.org/export/embed.html?bbox=%.15f%%2C%.15f%%2C%.15f%%2C%.15f&amp;layer=mapnik&amp;marker=%.15f%%2C%.15f', $bbox);
+?>
+	<iframe width="100%" height="350" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" src="<?php echo $urlopenstreetmap ?>" ></iframe> 
+<?php 
+  
+}else{
+?>
 <div id="resource_map" style="width:100%;height:350px"></div>
 	<script type="text/javascript">
 	<!--
@@ -470,7 +485,9 @@ echo("</tr>\n");
 	//-->
 
 	</script>
-<?php } ?>
+<?php }
+}
+?>
 
 
 

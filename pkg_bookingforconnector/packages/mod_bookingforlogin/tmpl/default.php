@@ -25,7 +25,6 @@ $currModID = uniqid('bfilogin');
 ?>
 <div class="bfi-mod-bookingforlogin <?php echo $moduleclass_sfx ?> ">
 <?php if($currUser==null) { ?>
-
 <form action="<?php echo $formRouteLogin ?>" id="bfi-login-form<?php echo $currModID ?>" class="bfi-form bfi-form-vertical bfi-row">
 	<div class="bfi-container">
 		<div id="bfi-login-msg<?php echo $currModID ?>">

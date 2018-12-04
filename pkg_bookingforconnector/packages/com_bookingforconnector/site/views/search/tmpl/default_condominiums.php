@@ -43,28 +43,32 @@ $currSorting=$listOrder . "|" . $listDirn;
 
 //-------------------pagina per il redirect di tutte le risorse 
 
-$db   = JFactory::getDBO();
-$uri  = 'index.php?option=com_bookingforconnector&view=condominium';
-$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uri ) .' AND (language='. $db->Quote($this->language) .' OR language='.$db->Quote('*').') LIMIT 1' );
-//$itemId = ($db->getErrorNum())? 0 : intval($db->loadResult());
-$itemId = intval($db->loadResult());
-//------------------- pagina per i l redirect di tutte le risorse 
+//$db   = JFactory::getDBO();
+//$uri  = 'index.php?option=com_bookingforconnector&view=condominium';
+//$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uri ) .' AND (language='. $db->Quote($this->language) .' OR language='.$db->Quote('*').') LIMIT 1' );
+////$itemId = ($db->getErrorNum())? 0 : intval($db->loadResult());
+//$itemId = intval($db->loadResult());
+////------------------- pagina per i l redirect di tutte le risorse 
+//
+//$uriresource  = 'index.php?option=com_bookingforconnector&view=resource';
+//$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uriresource ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') LIMIT 1' );
+////$itemId = ($db->getErrorNum())? 0 : intval($db->loadResult());
+//$itemIdresource = intval($db->loadResult());
+//
+////-------------------pagina per il redirect di tutti i merchant
+//$itemIdMerchant=0;
+//$uriMerchant  = 'index.php?option=com_bookingforconnector&view=merchantdetails';
+//if($isportal){
+//  $db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uriMerchant .'%' ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
+//  $itemIdMerchant = intval($db->loadResult());
+//}
+//if($itemId == 0){
+//	$itemId = $itemIdMerchant;
+//}
 
-$uriresource  = 'index.php?option=com_bookingforconnector&view=resource';
-$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uriresource ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') LIMIT 1' );
-//$itemId = ($db->getErrorNum())? 0 : intval($db->loadResult());
-$itemIdresource = intval($db->loadResult());
-
-//-------------------pagina per il redirect di tutti i merchant
-$itemIdMerchant=0;
-$uriMerchant  = 'index.php?option=com_bookingforconnector&view=merchantdetails';
-if($isportal){
-  $db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uriMerchant .'%' ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
-  $itemIdMerchant = intval($db->loadResult());
-}
-if($itemId == 0){
-	$itemId = $itemIdMerchant;
-}
+$uri = COM_BOOKINGFORCONNECTOR_URICONDOMINIUM;
+$uriresource = COM_BOOKINGFORCONNECTOR_URIRESOURCE;
+$uriMerchant  = COM_BOOKINGFORCONNECTOR_URIMERCHANTDETAILS;
 
 $merchantImageUrl = Juri::root() . "components/com_bookingforconnector/assets/images/defaults/default-s6.jpeg";
 
@@ -141,15 +145,15 @@ foreach ($merchants as $currKey => $merchant){
 
 	$currUri = $uri. '&resourceId=' . $merchant->CondominiumId. ':' . BFCHelper::getSlug($merchant->GrpName);
 
-	if ($itemId<>0)
-		$currUri.='&Itemid='.$itemId;
+//	if ($itemId<>0)
+//		$currUri.='&Itemid='.$itemId;
 
 	$currUri .= $fromsearchparam;
 	$routeCondominium = JRoute::_($currUri);
 	
 	$currUriMerchant = $uriMerchant. '&merchantId=' . $merchant->MerchantId . ':' . BFCHelper::getSlug($merchantName);
-	if ($itemIdMerchant<>0)
-		$currUriMerchant.='&Itemid='.$itemIdMerchant;
+//	if ($itemIdMerchant<>0)
+//		$currUriMerchant.='&Itemid='.$itemIdMerchant;
 	
 	$routeMerchant = JRoute::_($currUriMerchant);
 	$routeRating = JRoute::_($currUriMerchant.'&layout=ratings');				
@@ -176,9 +180,9 @@ foreach ($merchants as $currKey => $merchant){
 
 	$resourceName = BFCHelper::getLanguage($merchant->ResName, $this->language, null, array('ln2br'=>'ln2br', 'striptags'=>'striptags')); 
 	$currUriresource = $uriresource.'&resourceId=' . $merchant->ResourceId . ':' . BFCHelper::getSlug($merchant->ResName);
-	if ($itemIdresource<>0){
-		$currUriresource.='&Itemid='.$itemIdresource;
-	}
+//	if ($itemIdresource<>0){
+//		$currUriresource.='&Itemid='.$itemIdresource;
+//	}
 	$currUriresource .= $fromsearchparam;
 	if (!empty($merchant->RateplanId)){
 		$currUriresource .= "&pricetype=" . $merchant->RateplanId;

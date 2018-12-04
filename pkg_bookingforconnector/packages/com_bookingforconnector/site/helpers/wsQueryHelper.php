@@ -40,7 +40,7 @@ class wsQueryHelper {
 		return $this;
 	}
 		
-	public function executeQuery($url, $method = 'GET', $setApiKey = true, $skip_cache=TRUE) {
+	public function executeQuery($url, $method = 'GET', $setApiKey = true, $skip_cache=TRUE, $userAgent ="") {
 
 		if (isset($url)) {
 			
@@ -79,6 +79,10 @@ class wsQueryHelper {
 					if($this->usegzip ==1){
 						curl_setopt($ch,CURLOPT_ENCODING,'gzip');
 					}
+
+					if (!empty($userAgent)) {
+						curl_setopt($ch,CURLOPT_USERAGENT,$userAgent);
+					}
 					
 					curl_setopt($ch, CURLOPT_URL, $url);
 					curl_setopt($ch, CURLOPT_HEADER, false);
@@ -93,6 +97,8 @@ class wsQueryHelper {
 					curl_setopt($ch,CURLOPT_TIMEOUT,360);
 					curl_setopt($ch,CURLOPT_CONNECTTIMEOUT,0);
 					
+					curl_setopt($ch, CURLOPT_REFERER, JURI::base());
+
 					$ipClient = BFCHelper::bfi_get_client_ip();
 					curl_setopt( $ch, CURLOPT_HTTPHEADER, array("REMOTE_ADDR: $ipClient", "X_FORWARDED_FOR: $ipClient"));	
 					

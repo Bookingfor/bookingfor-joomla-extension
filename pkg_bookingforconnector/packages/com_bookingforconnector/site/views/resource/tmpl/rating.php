@@ -20,21 +20,24 @@ $sitename = $this->sitename;
 
 $user = JFactory::getUser();
 
-$db   = JFactory::getDBO();
-$uri  = 'index.php?option=com_bookingforconnector&view=resource';
-$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uri ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
-//$itemId = ($db->getErrorNum())? 0 : intval($db->loadResult());
-$itemId = intval($db->loadResult());
+//$db   = JFactory::getDBO();
+//$uri  = 'index.php?option=com_bookingforconnector&view=resource';
+//$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uri ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
+////$itemId = ($db->getErrorNum())? 0 : intval($db->loadResult());
+//$itemId = intval($db->loadResult());
+//
+//$uriMerchant  = 'index.php?option=com_bookingforconnector&view=merchantdetails';
+//$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uriMerchant .'%' ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
+//$itemIdMerchant = ($db->getErrorNum())? 0 : intval($db->loadResult());
+////$itemIdMerchant = intval($db->loadResult());
+//if ($itemIdMerchant<>0)
+//	$uriMerchant.='&Itemid='.$itemIdMerchant;
 
-$uriMerchant  = 'index.php?option=com_bookingforconnector&view=merchantdetails';
-$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uriMerchant .'%' ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
-$itemIdMerchant = ($db->getErrorNum())? 0 : intval($db->loadResult());
-//$itemIdMerchant = intval($db->loadResult());
+$uri = COM_BOOKINGFORCONNECTOR_URIRESOURCE;
+$uriMerchant  = COM_BOOKINGFORCONNECTOR_URIMERCHANTDETAILS;
 
 $uriMerchant.='&merchantId=' . $this->item->MerchantId . ':' . BFCHelper::getSlug($this->item->Name);
 
-if ($itemIdMerchant<>0)
-	$uriMerchant.='&Itemid='.$itemIdMerchant;
 
 $route = JRoute::_($uriMerchant);
 $uriMerchantthanks = $uriMerchant .'&layout=thanks';
@@ -333,13 +336,13 @@ $listDate = JHTML::_('select.genericlist',$listDateArray, 'checkin','','value', 
 		<div class="bfi-row">
 			<div class="bfi-col-md-12">
 				<label><?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RATING_ADVANTAGES') ?></label>
-				<textarea name="pregi" class="bfi-col-md-12" style="height:200px;"></textarea>    
+				<textarea name="pregi" class="bfi-col-md-12" style="height:200px;" data-rule-nourl="true"  data-msg-nourl="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_NOURL_ERROR') ?>"></textarea>    
 			</div>
 		</div>
 		<div class="bfi-row">
 			<div class="bfi-col-md-12">
 				<label><?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RATING_DEFECTS') ?></label>
-				<textarea name="difetti" class="" style="height:200px;"></textarea>    
+				<textarea name="difetti" class="" style="height:200px;" data-rule-nourl="true" data-msg-nourl="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_NOURL_ERROR') ?>"></textarea>    
 			</div>
 		</div>
 
@@ -365,6 +368,7 @@ $recaptcha = $dispatcher->trigger('onDisplay', array(null, 'recaptcha', 'class="
 echo (isset($recaptcha[0])) ? $recaptcha[0] : '';
 ?>
 <div id="recaptcha-error" style="display:none"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_CAPTCHA_REQUIRED') ?></div>
+		<?php echo JHtml::_('form.token'); ?>
 
 		<div class="bfi-row bfi-footer-book" >
 			<div class="bfi-col-md-10">
@@ -458,12 +462,12 @@ echo (isset($recaptcha[0])) ? $recaptcha[0] : '';
 							var response = grecaptcha.getResponse();
 							//recaptcha failed validation
 							if(response.length == 0) {
-								$('#recaptcha-error').show();
+								jQuery('#recaptcha-error').show();
 								return false;
 							}
 							//recaptcha passed validation
 							else {
-								$('#recaptcha-error').hide();
+								jQuery('#recaptcha-error').hide();
 							}					 
 						}
 						

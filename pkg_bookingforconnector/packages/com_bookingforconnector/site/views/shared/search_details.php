@@ -9,9 +9,16 @@
 // No direct access to this file
 defined('_JEXEC') or die('Restricted access');
 
+if(!empty( COM_BOOKINGFORCONNECTOR_CRAWLER )){
+	$listCrawler = json_decode(COM_BOOKINGFORCONNECTOR_CRAWLER , true);
+	foreach( $listCrawler as $key=>$crawler){
+	if (preg_match('/'.$crawler['pattern'].'/', $_SERVER['HTTP_USER_AGENT'])) return;
+	}
+	
+}
+
 //$CartMultimerchantEnabled = !BFCHelper::getCartMultimerchantEnabled(); 
 $currentCartConfiguration = null;
-$cartLocked = false;
 $resetCart = 0;
 //if(!$CartMultimerchantEnabled){
 //	$tmpUserId = BFCHelper::bfi_get_userId();
@@ -50,29 +57,35 @@ if(empty( $listNameAnalytics )){
 }
 $currLlistNameAnalytics = BFCHelper::$listNameAnalytics[$listNameAnalytics];
 
-$db   = JFactory::getDBO();
-$uri  = 'index.php?option=com_bookingforconnector&view=resource';
-$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uri ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
-$itemId = intval($db->loadResult());
-$uriCart  = 'index.php?option=com_bookingforconnector&view=cart';
-$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uriCart .'%' ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
-$itemIdCart= ($db->getErrorNum())? 0 : intval($db->loadResult());
-if ($itemIdCart<>0)
-	$uriCart.='&Itemid='.$itemIdCart;
+//$db   = JFactory::getDBO();
+//$uri  = 'index.php?option=com_bookingforconnector&view=resource';
+//$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uri ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
+//$itemId = intval($db->loadResult());
+//$uriCart  = 'index.php?option=com_bookingforconnector&view=cart';
+//$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uriCart .'%' ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
+//$itemIdCart= ($db->getErrorNum())? 0 : intval($db->loadResult());
+//if ($itemIdCart<>0)
+//	$uriCart.='&Itemid='.$itemIdCart;
+//$itemIdMerchant=0;
+//$uriMerchant  = 'index.php?option=com_bookingforconnector&view=merchantdetails';
+//if($isportal){
+//	$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uriMerchant .'%' ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
+//	$itemIdMerchant = intval($db->loadResult());
+//}
+//if($itemId == 0){
+//	$itemId = $itemIdMerchant;
+//}
+//$uriMerchant = $uriMerchant. '&merchantId=' . $merchant->MerchantId . ':' . BFCHelper::getSlug($merchant->Name);
+//if ($itemIdMerchant<>0)
+//	$uriMerchant.='&Itemid='.$itemIdMerchant;
+
+$uri = COM_BOOKINGFORCONNECTOR_URIRESOURCE;
+$uriMerchant  = COM_BOOKINGFORCONNECTOR_URIMERCHANTDETAILS;
+$uriCart  = COM_BOOKINGFORCONNECTOR_URICART;
+
+$uriMerchant = $uriMerchant. '&merchantId=' . $merchant->MerchantId . ':' . BFCHelper::getSlug($merchant->Name);
 $url_cart_page = JRoute::_($uriCart);
 $base_url = JURI::root();
-$itemIdMerchant=0;
-$uriMerchant  = 'index.php?option=com_bookingforconnector&view=merchantdetails';
-if($isportal){
-	$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uriMerchant .'%' ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
-	$itemIdMerchant = intval($db->loadResult());
-}
-if($itemId == 0){
-	$itemId = $itemIdMerchant;
-}
-$uriMerchant = $uriMerchant. '&merchantId=' . $merchant->MerchantId . ':' . BFCHelper::getSlug($merchant->Name);
-if ($itemIdMerchant<>0)
-	$uriMerchant.='&Itemid='.$itemIdMerchant;
 
 $currUriMerchant = $uriMerchant . "&fromsearch=1&lna=".$listNameAnalytics;
 $routeMerchant = JRoute::_($currUriMerchant);
@@ -149,9 +162,9 @@ if(!empty($resourceId)){
 //	}	
 //	$currUriresource  = $uri.$resource->ResourceId.'-'.BFI()->seoUrl($resourceName);
 	$currUriresource = $uri.'&resourceId=' . $resource->ResourceId . ':' . BFCHelper::getSlug($resourceName);
-	if ($itemId<>0){
-		$currUriresource.='&Itemid='.$itemId;
-	}
+//	if ($itemId<>0){
+//		$currUriresource.='&Itemid='.$itemId;
+//	}
 //	$currUriresource .= "&fromsearch=1";
 	$resourceRoute = JRoute::_($currUriresource);
 
@@ -196,8 +209,8 @@ $checkin = BFCHelper::getStayParam('checkin', new DateTime('UTC'));
 
 $checkout = new DateTime('UTC');
 
-$paxes = 2;
-$paxages = array();
+$paxages = BFCHelper::getStayParam('paxages');
+$paxes = count($paxages);
 $currentState ='';
 
 $ratePlanId = '';
@@ -206,15 +219,14 @@ $selectablePrices ='';
 $packages ='';
 $nrooms = 1;
 
-
 if (!empty($pars)){
 
 //	$checkin = !empty($pars['checkin']) ? $pars['checkin'] : new DateTime('UTC');
 	$checkout = !empty($pars['checkout']) ? $pars['checkout'] : new DateTime('UTC');
 
-	if (!empty($pars['paxes'])) {
-		$paxes = $pars['paxes'];
-	}
+//	if (!empty($pars['paxes'])) {
+//		$paxes = $pars['paxes'];
+//	}
 	if (!empty($pars['paxages'])) {
 		$paxages = $pars['paxages'];
 	}
@@ -472,20 +484,65 @@ if(!empty($resourceId)){
 </h4>
 <?php 
 if(!empty($variationPlanId)){
-	$uri  = 'index.php?option=com_bookingforconnector&view=search';
-	$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uri ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
-	$itemId = ($db->getErrorNum())? 0 : intval($db->loadResult());
-	if ($itemId<>0){
-		$uri = 'index.php?Itemid='.$itemId ;
-	}
+//	$uri  = 'index.php?option=com_bookingforconnector&view=search';
+//	$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uri ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
+//	$itemId = ($db->getErrorNum())? 0 : intval($db->loadResult());
+//	if ($itemId<>0){
+//		$uri = 'index.php?Itemid='.$itemId ;
+//	}
+	$uri  = COM_BOOKINGFORCONNECTOR_URISEARCH;
 	$formRoute = JRoute::_($uri);
 	$formMethod = "GET";
 }
+
+
+
+$currCheckIn = new JDate($checkin->format('Y-m-d\TH:i:s')); 
+$currCheckOut = new JDate($checkout->format('Y-m-d\TH:i:s')); 
+
+
 ?>
-<form id="bfi-calculatorForm" action="<?php echo $formRoute?>" method="<?php echo $formMethod?>" class="bfi_resource-calculatorForm bfi_resource-calculatorTable ">
+<div class="bfi-summary-search " id="bfi-summary-search">
+	<div class="bfi-row ">
+		<div class="bfi-col-md-3">
+			<div class="fieldLabel">
+				<?php echo JText::_('COM_BOOKINGFORCONNECTOR_RESOURCE_VIEW_CALCULATOR_CHECKIN') ?>
+			</div>
+			<a href="javascript:bfishowsearch()" class="">
+				<strong><?php echo $currCheckIn->format("D") ?> <?php echo $currCheckIn->format("d") ?> <?php echo $currCheckIn->format("M").' '.$currCheckIn->format("Y") ?></strong>
+			</a>
+		</div>
+		<div class="bfi-col-md-3">
+			<div class="fieldLabel">
+				<?php echo JText::_('COM_BOOKINGFORCONNECTOR_RESOURCE_VIEW_CALCULATOR_CHECKOUT') ?>
+			</div>
+			<a href="javascript:bfishowsearch()">
+				<strong><?php echo $currCheckOut->format("D") ?> <?php echo $currCheckOut->format("d") ?> <?php echo $currCheckOut->format("M").' '.$currCheckOut->format("Y") ?></strong>
+			</a>
+		</div>
+		<div class="bfi-col-md-4">
+		<span class="bfi-childmessage" style="clear:both;" id="bfi_lblchildrenagescalculator">&nbsp;</span>
+			<div class="fieldLabel"><?php echo JTEXT::_('MOD_BOOKINGFOR_GUEST') ?></div>
+			<a href="javascript:bfishowsearch()"><strong>
+				<span id="bfi-room-info-calculator" class="bfi-comma bfi-hide"><span><?php echo $nrooms ?></span> <?php echo JTEXT::_('MOD_BOOKINGFOR_RESOURCE') ?></span>
+				<span id="bfi-adult-info-calculator" class="bfi-comma"><span><?php echo $nad ?></span> <?php echo JTEXT::_('MOD_BOOKINGFORSEARCH_ADULTS'); ?></span>
+				<?php if($nse>0) { ?>
+					<span id="bfi-senior-info-calculator" class="bfi-comma"><span><?php echo $nse ?></span> <?php echo JTEXT::_('MOD_BOOKINGFORSEARCH_SENIORES'); ?></span>
+				<?php } ?>
+				<?php if($nch>0) { ?>
+					<span id="bfi-child-info-calculator" class="bfi-comma"><span><?php echo $nch ?></span> <?php echo JTEXT::_('MOD_BOOKINGFORSEARCH_CHILDREN'); ?> (<?php echo implode(',', array_slice($nchs,0,$nch)) ?>)</span>
+				<?php } ?>
+			</strong></a>
+		</div>
+		<div class="bfi-col-md-2 bfi-text-right">
+			<a href="javascript:bfishowsearch()" class=" bfi-btn bfi-alternative <?php echo $btnSearchclass ?>" ><?php echo JText::_('COM_BOOKINGFORCONNECTOR_RESOURCE_VIEW_CALCULATOR_CHANGESEARCH') ?> </a>
+		</div>
+	</div>
+</div>
+<form id="bfi-calculatorForm" action="<?php echo $formRoute?>" method="<?php echo $formMethod?>" class="bfi_resource-calculatorForm bfi_resource-calculatorTable " style="display:none">
 	<div class="bfi-row bfi_resource-calculatorForm-mandatory nopadding">
 			<div class="bfi-row nopadding">
-				<div class="bfi-col-md-7">
+				<div class="bfi-col-md-8">
 					<div class="bfi-row nopadding">
 						<div class="bfi-col-md-6 bfi-col-xs-6" id="calcheckin">      
 
@@ -505,11 +562,12 @@ if(!empty($variationPlanId)){
 						</div>
 					</div>
 				</div>
-				<div class="bfi-col-md-5">
-					<div class="bfi-row nopadding">
-						<div class="bfi-col-md-9 bfi-col-xs-8 ">
+				<div class="bfi-col-md-4">
+					<a href="javascript:calculateQuote()"id="calculateButton" class="calculateButton3 bfi-btn bfi-alternative <?php echo $btnSearchclass ?>" ><?php echo JText::_('COM_BOOKINGFORCONNECTOR_RESOURCE_VIEW_CALCULATOR_CHECKAVAILABILITY') ?> </a>
+				</div>
+			</div>
 				<div class="bfi-row">
-					<div class="bfi-col-md-4 bfi-col-xs-5 bfi_resource-calculatorForm-adult">
+					<div class="bfi-col-md-2 bfi-col-xs-5 bfi_resource-calculatorForm-adult">
 						<label><?php echo JTEXT::_('MOD_BOOKINGFORSEARCH_ADULTS'); ?>:</label>
 						<select id="adultscalculator" name="adultssel" onchange="quoteCalculatorChanged();" class="">
 							<?php
@@ -519,7 +577,7 @@ if(!empty($variationPlanId)){
 							?>
 						</select>
 					</div>
-					<div class="bfi-col-md-4 bfi-col-xs-5 bfi_resource-calculatorForm-senior" >
+					<div class="bfi-col-md-2 bfi-col-xs-5 bfi_resource-calculatorForm-senior" >
 						<label><?php echo JTEXT::_('MOD_BOOKINGFORSEARCH_SENIORES'); ?>:</label>
 						<select id="seniorescalculator" name="senioressel" onchange="quoteCalculatorChanged();" class="">
 							<?php
@@ -529,7 +587,7 @@ if(!empty($variationPlanId)){
 							?>
 						</select>
 					</div>
-					<div class="bfi-col-md-4 bfi-col-xs-5 bfi_resource-calculatorForm-children">
+					<div class="bfi-col-md-2 bfi-col-xs-5 bfi_resource-calculatorForm-children">
 						<label><?php echo JTEXT::_('MOD_BOOKINGFORSEARCH_CHILDREN'); ?>:</label>
 						<select id="childrencalculator" name="childrensel" onchange="quoteCalculatorChanged();" class="">
 							<?php
@@ -584,14 +642,8 @@ if(!empty($variationPlanId)){
 						?>
 					</select>
 				</div> 
-							<span class="bfi-childmessage" id="bfi_lblchildrenagescalculator">&nbsp;</span>
-						</div>
-						<div class="bfi-col-md-3 bfi-col-xs-5 ">
-							<a href="javascript:calculateQuote()"id="calculateButton" class="calculateButton3 bfi-btn <?php echo $btnSearchclass ?>" ><?php echo JText::_('COM_BOOKINGFORCONNECTOR_RESOURCE_VIEW_CALCULATOR_CALCULATE') ?> </a>
-						</div>
-					</div>
-				</div>
-			</div>
+
+
 			<div id="bfishowpersoncalculator" style="display:none;" >
 							<div class="fieldLabel"><?php echo JTEXT::_('MOD_BOOKINGFOR_GUEST') ?></div>
 							<div class="bfi-showperson-text-calculator bfi-container">
@@ -724,7 +776,7 @@ if(!empty($fromSearch) && empty($allResourceId) && empty($resourceId)){
 	$showResult= " bfi-hide";
 }
 
-if(!empty( $fromSearch )){
+if(!empty($fromSearch) && !empty($makesearch)){
 ?>
 <script type="text/javascript">
 <!--
@@ -762,12 +814,6 @@ if(!empty( $fromSearch )){
 			<tr>
 				<td colspan="5" style="padding:0;border:none;"></td>
 				<td rowspan="400">
-					<?php if ($cartLocked) //////// && ($currentCartConfiguration as List<CartOrder>).Any(t => t.Resources.Any(r => r.MerchantId != Model.MerchantId)))
-					{ ?>
-						<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_RESOURCE_VIEW_CALCULATOR_NO_ANOTHER_MERCHANT') ?>
-	<div><a href="<?php echo $url_cart_page ?>"><?php echo JText::_('COM_BOOKINGFORCONNECTOR_ORDERS_VIEW_CART') ?></a></div>
-					
-					<?php } else{ ?>
 							<div class="bfi-book-now">
 								<div class="bfi-resource-total"><span></span> <?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_RESOURCE_VIEW_SELECTEDITEMS') ?></div>
 								<div class="bfi-discounted-price bfi-discounted-price-total bfi_<?php echo $currencyclass ?>" style="display:none;"></div>
@@ -780,15 +826,14 @@ if(!empty( $fromSearch )){
 								</div>
 
 							</div>
-					<?php } ?>
 				</td>
 			</tr>
 
 			<?php  if(!empty($resourceId) && !in_array($resourceId,$allResourceId)) {
 				$currUriresourceJM = $uri.'&resourceId=' . $resourceId . ':' . BFCHelper::getSlug($resource->Name);
-				if ($itemId<>0){
-					$currUriresourceJM.='&Itemid='.$itemId;
-				}
+//				if ($itemId<>0){
+//					$currUriresourceJM.='&Itemid='.$itemId;
+//				}
 				$currUriresourceJM .= "&fromsearch=1&lna=".$listNameAnalytics;
 				$currUriresource = JRoute::_($currUriresourceJM);
 				$resourceNameTrack =  BFCHelper::string_sanitize($resource->Name);
@@ -801,7 +846,7 @@ if(!empty( $fromSearch )){
 					<a class="bfi-resname eectrack" onclick="bfiGoToTop()" href="<?php echo $currUriresource ?>" data-type="Resource" data-id="<?php echo $resource->ResourceId?>" data-index="0" data-itemname="<?php echo $resourceNameTrack; ?>" data-category="<?php echo $merchantCategoryNameTrack; ?>" data-brand="<?php echo $merchantNameTrack; ?>"><?php echo $resource->Name; ?></a>
 <div class="bfi-clearfix"></div>
 <?php 
-			if(!empty($resource->ImageUrl)){
+			if(false && !empty($resource->ImageUrl)){
 				$resourceImageUrl = BFCHelper::getImageUrlResized('resources',$resource->ImageUrl, 'small');
 ?>
 <a class="bfi-link-searchdetails" onclick="bfiGoToTop()" href="<?php echo $currUriresource ?>"><img src="<?php echo $resourceImageUrl; ?>" class="bfi-img-searchdetails" /></a>
@@ -835,7 +880,7 @@ $currTouristTaxValue = isset($resource->TouristTaxValue)?$resource->TouristTaxVa
 
 				</td>
 				<td>
-				<?php if (isset($resource->MaxCapacityPaxes) && $resource->MaxCapacityPaxes>0):?>
+				<?php if (isset($resource->MaxCapacityPaxes) && $resource->MaxCapacityPaxes>0){?>
 					<div class="bfi-icon-paxes">
 						<i class="fa fa-user"></i> 
 						<?php if ($resource->MaxCapacityPaxes==2){?>
@@ -845,15 +890,15 @@ $currTouristTaxValue = isset($resource->TouristTaxValue)?$resource->TouristTaxVa
 							<?php echo ($resource->MinCapacityPaxes != $resource->MaxCapacityPaxes)? $resource->MinCapacityPaxes . "-" : "" ?><?php echo  $resource->MaxCapacityPaxes?>
 						<?php }?>
 					</div>
-					<?php endif; ?>
+					<?php } ?>
 				</td>
 				<td colspan="3" style="vertical-align:middle;text-align:center;">
 					<div class="errorbooking" id="errorbooking">
 						<strong><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_RESOURCE_VIEW_CALCULATOR_NORESULT') ?></strong>
 						<!-- No disponibile -->
-						<?php if(isset($resource->MaxCapacityPaxes) && $resource->MaxCapacityPaxes > 0 && ( $totalPerson > $resource->MaxCapacityPaxes || $totalPerson < $resource->MinCapacityPaxes )) :?><!-- Errore persone-->
+						<?php if(isset($resource->MaxCapacityPaxes) && $resource->MaxCapacityPaxes > 0 && ( $totalPerson > $resource->MaxCapacityPaxes || $totalPerson < $resource->MinCapacityPaxes )) {?><!-- Errore persone-->
 							<br /><?php echo sprintf(JTEXT::_('COM_BOOKINGFORCONNECTOR_RESOURCE_VIEW_CALCULATOR_ERRORPAXS') , $resource->MinCapacityPaxes, $resource->MaxCapacityPaxes) ?>
-						<?php endif;?>
+						<?php }?>
 					</div>
 				</td>
 			</tr>
@@ -901,9 +946,9 @@ foreach($allResourceId as $resId) {
 //	}
 //	$currUriresource = $uri.$res->ResourceId . '-' . BFCHelper::getSlug($res->ResName) . "?fromsearch=1&lna=".$listNameAnalytics;
 	$currUriresourceJM = $uri.'&resourceId=' . $res->ResourceId  . ':' . BFCHelper::getSlug($res->ResName);
-	if ($itemId<>0){
-		$currUriresourceJM.='&Itemid='.$itemId;
-	}
+//	if ($itemId<>0){
+//		$currUriresourceJM.='&Itemid='.$itemId;
+//	}
 	$currUriresourceJM .= "&fromsearch=1&lna=".$listNameAnalytics;
 	$currUriresource = JRoute::_($currUriresourceJM);
 
@@ -947,7 +992,7 @@ foreach($allResourceId as $resId) {
 					<a  class="bfi-resname eectrack" href="<?php echo $formRouteSingle ?>" <?php echo ($resId == $resourceId)? 'onclick="bfiGoToTop()"' :  'target="_blank"' ; ?> data-type="Resource" data-id="<?php echo $res->ResourceId?>" data-index="<?php echo $currKey?>" data-itemname="<?php echo $resourceNameTrack; ?>" data-category="<?php echo $merchantCategoryNameTrack; ?>" data-brand="<?php echo $merchantNameTrack; ?>"><?php echo $res->ResName; ?></a>
 <div class="bfi-clearfix"></div>
 <?php 
-			if(!empty($res->ImageUrl)){
+			if($resId != $resourceId && !empty($res->ImageUrl)){
 				$resourceImageUrl = BFCHelper::getImageUrlResized('resources',$res->ImageUrl, 'small');
 ?>
 <a  class="bfi-link-searchdetails" href="<?php echo $formRouteSingle ?>" <?php echo ($resId == $resourceId)? 'onclick="bfiGoToTop()"' :  'target="_blank"' ; ?> ><img src="<?php echo $resourceImageUrl; ?>" class="bfi-img-searchdetails" /></a>
@@ -1174,7 +1219,7 @@ if($currRateplan->AvailabilityType==0 || $currRateplan->AvailabilityType==1){
 								$nchild += $currComputedPax[1];
 							}
 						}
-
+						$totPerson = $nadult+ $nsenior +$nchild;
 						if ($nadult>0) {
 							?>
 							<div class="bfi-icon-paxes">
@@ -1189,6 +1234,11 @@ if($currRateplan->AvailabilityType==0 || $currRateplan->AvailabilityType==1){
 								}
 							?>
 							
+							</div>
+							<div class="webui-popover-content">
+							   <div class="bfi-options-popover">
+							   <?php echo sprintf(JTEXT::_('COM_BOOKINGFORCONNECTOR_MERCHANTS_VIEW_MERCHANTDETAILS_RESOURCE_PRICEPERSON') ,$totPerson) ?>
+								</div>
 							</div>
 							
 							<?php 
@@ -1437,12 +1487,20 @@ if($currRateplan->RatePlan->IncludedMeals >-1){
 				<td>
 <?php
 				$currratePlanName =  BFCHelper::string_sanitize($currRateplan->RatePlan->Name);
-
+				$currRealAvailProductId = $currRateplan->ResourceId;
+				if (!empty($currRateplan->RealAvailProductId)) {
+					$currRealAvailProductId = $currRateplan->RealAvailProductId;
+				}
+				$hidePeopleAge = 0;
+				if (!empty($currRateplan->HidePeopleAge)) {
+					$hidePeopleAge = 1;
+				}
 ?>
-					<select class="ddlrooms ddlrooms-<?php echo $currRateplan->ResourceId ?> ddlrooms-indipendent" 
+					<select class="ddlrooms ddlrooms-<?php echo $currRateplan->ResourceId ?> ddlroomsrealav-<?php echo $currRealAvailProductId ?> ddlrooms-indipendent" 
 					id="ddlrooms-<?php echo $currRateplan->ResourceId ?>-<?php echo $currRateplan->RatePlan->RatePlanId ?>" 
 					onclick="bookingfor.checkMaxSelect(this);" 
 					onchange="bookingfor.checkBookable(this);UpdateQuote();" 
+					data-realavailproductid="<?php echo $currRealAvailProductId?>" 
 					data-resid="<?php echo $currRateplan->ResourceId ?>" 
 					data-name="<?php echo $resourceNameTrack ?>"
 					data-lna="<?php echo $currLlistNameAnalytics ?>"
@@ -1473,6 +1531,8 @@ if($currRateplan->RatePlan->IncludedMeals >-1){
 					data-minpaxes="<?php echo $currRateplan->MinPaxes ?>" 
 					data-maxpaxes="<?php echo $currRateplan->MaxPaxes ?>" 
 					data-resetCart="<?php echo $resetCart ?>" 
+					data-hidePeopleAge="<?php echo $hidePeopleAge ?>" 
+					data-paxes="<?php echo (!empty( $currRateplan->RatePlan->SuggestedStay ) && !empty( $currRateplan->RatePlan->SuggestedStay->Paxes ))?$currRateplan->RatePlan->SuggestedStay->Paxes:":::::::" ?>" 
 					data-computedpaxes="<?php echo (!empty( $currRateplan->RatePlan->SuggestedStay ) && !empty( $currRateplan->RatePlan->SuggestedStay->ComputedPaxes ))?$currRateplan->RatePlan->SuggestedStay->ComputedPaxes:":::::::" ?>" 
 					>
 					<?php 
@@ -1550,9 +1610,9 @@ if($currRateplan->RatePlan->IncludedMeals >-1){
 		}
 
 		$currUriresource = $uri.'&resourceId='.$currRateplan->ResourceId . '-' . BFCHelper::getSlug($currRateplan->ResName);
-				if ($itemId<>0){
-					$currUriresource.='&Itemid='.$itemId;
-				}
+//				if ($itemId<>0){
+//					$currUriresource.='&Itemid='.$itemId;
+//				}
 				$currUriresource .= "&fromsearch=1&lna=".$listNameAnalytics;
 				$currUriresource = JRoute::_($currUriresource);
 
@@ -1783,7 +1843,7 @@ if($currRateplan->RatePlan->IncludedMeals >-1){
 						<script>
 							servicesAvailability[<?php echo $selPrice->PriceId ?>] =<?php echo (!empty($selPrice->Availability)? min($selPrice->Availability, COM_BOOKINGFORCONNECTOR_MAXQTSELECTABLE) : 0) ?> ;
 						</script>
-						<select class="ddlrooms ddlrooms-<?php echo $selPrice->RelatedProductId?> ddlextras inputmini" 
+						<select class="ddlrooms ddlrooms-<?php echo $selPrice->RelatedProductId?> ddlroomsrealav-<?php echo $selPrice->RelatedProductId ?> ddlextras inputmini" 
 							onchange="<?php echo $clickFunction ?>" 
 							data-maxvalue="<?php echo $selPrice->MaxQt ?>" 
 							data-minvalue="<?php echo $selPrice->MinQt ?>" 
@@ -1794,6 +1854,7 @@ if($currRateplan->RatePlan->IncludedMeals >-1){
 							data-category="<?php echo $merchantCategoryNameTrack ?>"
 							data-resourcename="<?php echo $resourceNameTrack ?>"
 							data-resid="<?php echo $selPrice->RelatedProductId ?>"
+							data-realavailproductid="<?php echo $selPrice->RelatedProductId ?>" 
 							data-sourceid="<?php echo $selPrice->RelatedProductId ?>"
 							data-rateplanid="<?php echo $currRateplan->RatePlan->RatePlanId ?>" 
 							data-rateplanname="<?php echo $currratePlanName?>" 
@@ -1828,7 +1889,7 @@ $countPrices+=1;
 ?>
 			</td>
 			<td >
-				<div class="totalextrasstay bfi-book-now" style="display:none;">
+				<div class="totalextrasstay bfi-book-now" >
 					<div class="bfi-resource-total"><span></span> <?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_RESOURCE_VIEW_SELECTEDITEMS') ?></div>
 					<div class="bfi-extras-total"><span></span> <?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_RESOURCE_VIEW_SELECTEDSERVICES') ?></div> 
 					<div class="bfi-discounted-price bfi-discounted-price-total bfi_<?php echo $currencyclass ?>" style="display:none;"></div>
@@ -1966,6 +2027,7 @@ var allStays = <?php echo json_encode($allRatePlans) ?>;
 		UpdateQuote();
 
 		jQuery('.bfi-options-help i').webuiPopover({trigger:'hover',placement:'right-bottom',style:'bfi-webuipopover'});
+		jQuery('.bfi-icon-paxes').webuiPopover({trigger:'hover',placement:'right-bottom',style:'bfi-webuipopover'});
 
 		jQuery(".bfi-percent-discount").on("click", function (e) {
 			e.preventDefault();
@@ -2168,6 +2230,7 @@ var allStays = <?php echo json_encode($allRatePlans) ?>;
 </script>
 <script type="text/javascript">
 <!--
+
 function getDisplayDate(date) {
 	return date == null ? "" : bookingfor.pad(date.getDate(),2) + '/' + bookingfor.pad((date.getMonth() + 1),2) + '/' + date.getFullYear();
 }
@@ -2265,6 +2328,24 @@ function checkDateBooking<?php echo $checkinId?>($, obj, selectedDate) {
 <?php } ?>
 
 }
+var dialogForm;
+var bfi_wuiP_width= 800;
+function bfishowsearch() {
+	if(jQuery(window).width()<bfi_wuiP_width){
+		bfi_wuiP_width = jQuery(window).width()*0.8;
+	}
+	dialogForm = jQuery( "#bfi-calculatorForm" ).dialog({
+			title:"<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_RESOURCE_VIEW_CALCULATOR_CHANGESEARCH_TITLE') ?>",
+			autoOpen: false,
+			width:bfi_wuiP_width,
+			modal: true,
+			dialogClass: 'bfi-dialog',
+			clickOutside: true,
+
+	});
+	dialogForm.dialog( "open" );
+}
+
 jQuery(document).ready(function() {
 
 	checkDateBooking<?php echo $checkinId; ?>(jQuery, jQuery('#<?php echo $checkinId?>'), jQuery('#<?php echo $checkinId?>').datepicker({ dateFormat: "dd/mm/yy" }).val()); 
@@ -2320,9 +2401,9 @@ function countMinAdults(){
 	var numSeniores = new Number(jQuery('#seniorescalculator').val() || 0);
 	var numChildren = new Number(jQuery("#childrencalculator").val() || 0);
 
-	jQuery('#bfi-adult-info-calculator span').html(numAdults);
-	jQuery('#bfi-senior-info-calculator span').html(numSeniores);
-	jQuery('#bfi-child-info-calculator span').html(numChildren);
+//	jQuery('#bfi-adult-info-calculator span').html(numAdults);
+//	jQuery('#bfi-senior-info-calculator span').html(numSeniores);
+//	jQuery('#bfi-child-info-calculator span').html(numChildren);
 	
 	jQuery('#searchformpersonsadult-calculator').val(numAdults);
 	jQuery('#searchformpersonssenior-calculator').val(numSeniores);
@@ -2358,6 +2439,11 @@ function calculateQuote() {
 	jQuery('input[name="state"]','#bfi-calculatorForm').val('');
 	jQuery('input[name="extras[]"]','#bfi-calculatorForm').val('');
 	jQuery('.bfi-percent-discount').webuiPopover('destroy');
+	if (typeof dialogForm !=='undefined')
+	{
+		dialogForm.dialog( "close" ).dialog('destroy');
+	}
+
 <?php 
 if(!empty($variationPlanId)){
 ?>
@@ -2377,7 +2463,7 @@ function showpopovercalculator() {
 			content : jQuery("#bfi_childrenagesmsgcalculator").html(),
 			container: document.body,
 			cache: false,
-			placement:"auto-bottom",
+			placement:"top-right",
 			maxWidth: "300px",
 			type:'html',
 			style:'bfi-webuipopover'

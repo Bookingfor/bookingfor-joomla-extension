@@ -65,7 +65,8 @@ class BookingForConnectorModelSearch extends JModelList
 		$merchantIds = isset($params['merchantIds']) ? $params['merchantIds'] : '';
 		$merchantTagIds = $params['merchantTagIds'];
 		$productTagIds = $params['productTagIds'];
-		
+		$minqt = isset($params['minqt']) ? $params['minqt'] : 0;
+
 		$availabilitytype = $params['availabilitytype'];
 		$itemtypes = $params['itemtypes'];
 		$groupresulttype = $params['groupresulttype'];
@@ -98,6 +99,8 @@ class BookingForConnectorModelSearch extends JModelList
 			if (isset($resourceName) && $resourceName <> "" ) {
 				$options['data']['resourceName'] = '\''. $resourceName.'\'';
 			}
+//			$options['data']['groupResultType'] = 2;
+//			$options['data']['getBestGroupResult'] = 1;
 		}else{
 			
 			$onlystay = $params['onlystay'];
@@ -112,7 +115,12 @@ class BookingForConnectorModelSearch extends JModelList
 				$options['data']['calculate'] = $bookableonly;
 				$options['data']['checkAvailability'] = $bookableonly;
 			}
-			
+			$getallresults = $params['getallresults'];
+			if(!empty($getallresults )){
+				$options['data']['getAllResults'] = 0 ; //work inverse
+				$options['data']['checkAvailability'] = 1;
+			}
+
 			if (isset($params['locationzone']) ) {
 				$locationzone = $params['locationzone'];
 			}
@@ -184,9 +192,12 @@ class BookingForConnectorModelSearch extends JModelList
 			if (isset($locationzone) && $locationzone !='' && $locationzone !='0') {
 				$options['data']['zoneIds'] = '\''. $locationzone . '\'';
 			}
-			
+
 			if (!empty($tags)) {
 				$options['data']['tagids'] = '\'' . $tags . '\'';
+			}				
+			if (!empty($minqt)) {
+				$options['data']['minqt'] = $minqt ;
 			}				
 		}
 
@@ -250,6 +261,7 @@ class BookingForConnectorModelSearch extends JModelList
 			$groupresulttypefilter = $merchantResults ;
 			if(!empty( $filters['price'] )){
 				$options['data']['priceRange'] = BFCHelper::getQuotedString($filters['price']) ;
+				$options['data']['checkAvailability'] = 1 ;
 			}
 			if(!empty( $filters['resourcescategories'] )){
 				$options['data']['masterTypeIds'] = BFCHelper::getQuotedString(str_replace("|",",",$filters['resourcescategories'])) ;
@@ -302,9 +314,13 @@ class BookingForConnectorModelSearch extends JModelList
 			}
 			if(!empty( $filters['bookingtypes'] )){
 				$options['data']['requirePaymentsOnly'] = 1 ;
+				$options['data']['calculate'] = 1;
+				$options['data']['checkAvailability'] = 1 ;
 			}
 			if(!empty( $filters['offers'] )){
 				$options['data']['discountedPriceOnly'] = 1 ;
+				$options['data']['calculate'] = 1;
+				$options['data']['checkAvailability'] = 1 ;
 			}
 //			if(!empty( $filters['tags'] )){
 //				$options['data']['tagids'] = BFCHelper::getQuotedString(str_replace("|",",",$filters['tags'])) ;
@@ -669,12 +685,14 @@ class BookingForConnectorModelSearch extends JModelList
 				'availabilitytype' => $availabilitytype,
 				'locationzone' => BFCHelper::getInt('locationzone',0),
 				'cultureCode' => BFCHelper::getVar('cultureCode'),
+				'minqt' => BFCHelper::getInt('minqt'),
 				'paxes' => BFCHelper::getInt('persons'),
 				'resourceName' => BFCHelper::getVar('resourceName',""),
 				'refid' => BFCHelper::getVar('refid',""),
 				'condominiumsResults' => $condominiumsResults,
 				'pricerange' => BFCHelper::getVar('pricerange'),
 				'onlystay' => BFCHelper::getVar('onlystay'),
+				'getallresults' => BFCHelper::getVar('getallresults'),
 				'tags' => BFCHelper::getVar('tags'),
 				'filters' => $filters,
 				'bookableonly' => BFCHelper::getVar('bookableonly'),
@@ -708,6 +726,7 @@ class BookingForConnectorModelSearch extends JModelList
 					'merchantResults' => $merchantResults,
 					'merchantCategoryId' => $pars['merchantCategoryId'],
 					'merchantId' => $pars['merchantId'],
+					'minqt' => BFCHelper::getInt('minqt'),
 					'paxes' => $pars['paxes'],
 					'paxages' => $pars['paxages'],
 					'locationzone' =>  $pars['zoneId'],
@@ -717,6 +736,8 @@ class BookingForConnectorModelSearch extends JModelList
 					'condominiumsResults' => $pars['condominiumsResults'],
 					'pricerange' => $pars['pricerange'],
 					'onlystay' => BFCHelper::getVar('onlystay', $pars['onlystay']),
+					'getallresults' => BFCHelper::getVar('getallresults', $pars['getallresults']),
+
 //					'filters' => BFCHelper::getVar('filters', $pars['filters']),
 					'filters' => $filters,
 					'bookableonly' => BFCHelper::getVar('bookableonly', $pars['bookableonly']),
@@ -770,12 +791,14 @@ class BookingForConnectorModelSearch extends JModelList
 					'zoneId' => BFCHelper::getInt('locationzone',0),
 					'locationzone' => BFCHelper::getInt('locationzone',0),
 					'cultureCode' => BFCHelper::getVar('cultureCode'),
+					'minqt' => BFCHelper::getInt('minqt'),
 					'paxes' => BFCHelper::getInt('persons'),
 					'resourceName' => BFCHelper::getVar('resourceName',""),
 					'refid' => BFCHelper::getVar('refid',""),
 					'condominiumsResults' => $condominiumsResults,
 					'pricerange' => BFCHelper::getVar('pricerange'),
 					'onlystay' => BFCHelper::getVar('onlystay'),
+					'getallresults' => BFCHelper::getVar('getallresults'),
 					'tags' => BFCHelper::getVar('tags'),
 					'filters' => $filters,
 					'bookableonly' => BFCHelper::getVar('bookableonly'),

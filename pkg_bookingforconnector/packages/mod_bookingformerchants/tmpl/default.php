@@ -20,21 +20,20 @@ $carouselid = uniqid();
 
 $config = JComponentHelper::getParams('com_bookingforconnector');
 
+//
+//$db   = JFactory::getDBO();
+//$lang = JFactory::getLanguage()->getTag();
+//$uriMerchant  = 'index.php?option=com_bookingforconnector&view=merchantdetails';
+//$currModID = uniqid('merchantdetails');
+//
+//$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uriMerchant .'%' ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
+//$itemIdMerchant = ($db->getErrorNum())? 0 : intval($db->loadResult());
+//if ($itemIdMerchant<>0)
+//	$uriMerchant.='&Itemid='.$itemIdMerchant;
 
-$db   = JFactory::getDBO();
-$lang = JFactory::getLanguage()->getTag();
-$uriMerchant  = 'index.php?option=com_bookingforconnector&view=merchantdetails';
-$currModID = uniqid('merchantdetails');
-
-$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uriMerchant .'%' ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
-$itemIdMerchant = ($db->getErrorNum())? 0 : intval($db->loadResult());
-if ($itemIdMerchant<>0)
-	$uriMerchant.='&Itemid='.$itemIdMerchant;
-
+$uriMerchant = COM_BOOKINGFORCONNECTOR_URIMERCHANTDETAILS;
 
 $merchantImageUrl = Juri::root() . "components/com_bookingforconnector/assets/images/defaults/default-s6.jpeg";
-
-
 
 $merchants = BFCHelper::getMerchantsExt($tags, 0, $maxitems);
 if(count($merchants) > 0){

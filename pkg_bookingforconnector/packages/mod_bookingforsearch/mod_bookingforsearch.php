@@ -42,12 +42,14 @@ $mainframe = JFactory::getApplication();
 		  $instance['tabnameservices'] = $params->get('tabnameservices');
 		  $instance['tabnameactivities'] = $params->get('tabnameactivities');
 		  $instance['tabnameothers'] = $params->get('tabnameothers');
+		  $instance['tabnamecatalog'] = $params->get('tabnamecatalog');  
 		  
 		  $instance['tabiconbooking'] = $params->get('tabiconbooking');
 		  $instance['tabiconservices'] = $params->get('tabiconservices');
 		  $instance['tabiconactivities'] = $params->get('tabiconactivities');
 		  $instance['tabiconothers'] = $params->get('tabiconothers');
 		  $instance['tabiconrealestate'] = $params->get('tabiconrealestate');
+		  $instance['tabiconcatalog'] = $params->get('tabiconcatalog');
 
 		  $instance['merchantcategoriesbooking'] = $params->get('merchantcategoriesbooking');
 		  $instance['merchantcategoriesservices'] = $params->get('merchantcategoriesservices');
@@ -95,6 +97,7 @@ $mainframe = JFactory::getApplication();
 		  $instance['showMinFloor'] = $params->get('showMinFloor');
 		  $instance['showContract'] = $params->get('showContract');
 		  
+		  $instance['showResource'] = $params->get('showResource');
 
 		  $instance['showSearchTextOnSell'] = $params->get('showSearchTextOnSell');
 		  $instance['showMapIconOnSell'] = $params->get('showMapIconOnSell');

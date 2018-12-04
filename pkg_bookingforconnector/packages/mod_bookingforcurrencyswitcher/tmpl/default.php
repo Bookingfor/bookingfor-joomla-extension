@@ -8,7 +8,6 @@
 // No direct access to this file
 defined('_JEXEC') or die('Restricted access');
 
-$pathbase = JPATH_BASE . DIRECTORY_SEPARATOR . 'components' . DIRECTORY_SEPARATOR . 'com_bookingforconnector' . DIRECTORY_SEPARATOR;
 $usessl = COM_BOOKINGFORCONNECTOR_USESSL;
 
 $currency_text = array('978' => JTEXT::_('MOD_BOOKINGFORCURRENCYSWITCHER_978'), //Euro
@@ -59,13 +58,13 @@ jQuery(document).ready(function() {
 <?php 
 	} //$showcurrencyswitcher
 	if($showcart){
-	$db   = JFactory::getDBO();
-	$uriCart  = 'index.php?option=com_bookingforconnector&view=cart';
-	$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uriCart .'%' ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
-	$itemIdCart= ($db->getErrorNum())? 0 : intval($db->loadResult());
-	if ($itemIdCart<>0)
-		$uriCart.='&Itemid='.$itemIdCart;
-	$url_cart_page = JRoute::_($uriCart);
+//	$db   = JFactory::getDBO();
+//	$uriCart  = 'index.php?option=com_bookingforconnector&view=cart';
+//	$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uriCart .'%' ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
+//	$itemIdCart= ($db->getErrorNum())? 0 : intval($db->loadResult());
+//	if ($itemIdCart<>0)
+//		$uriCart.='&Itemid='.$itemIdCart;
+	$url_cart_page = JRoute::_(COM_BOOKINGFORCONNECTOR_URICART);
 	$currentCartsItems = BFCHelper::getSession('totalItems', 0, 'bfi-cart');
 	if($usessl){
 		$url_cart_page = str_replace( 'http:', 'https:', $url_cart_page );

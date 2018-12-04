@@ -47,23 +47,26 @@ $currSorting=$listOrder . "|" . $listDirn;
 
 //-------------------pagina per il redirect di tutte le risorse 
 
-$db   = JFactory::getDBO();
-$uri  = 'index.php?option=com_bookingforconnector&view=resource';
+//$db   = JFactory::getDBO();
+//$uri  = 'index.php?option=com_bookingforconnector&view=resource';
+//
+//$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uri ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
+//
+//$itemId = intval($db->loadResult());
+//
+////-------------------pagina per il redirect di tutti i merchant
+//$itemIdMerchant=0;
+//$uriMerchant  = 'index.php?option=com_bookingforconnector&view=merchantdetails';
+//if($isportal){
+//	$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uriMerchant .'%' ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
+//	$itemIdMerchant = intval($db->loadResult());
+//}
+//if($itemId == 0){
+//	$itemId = $itemIdMerchant;
+//}
 
-$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uri ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
-
-$itemId = intval($db->loadResult());
-
-//-------------------pagina per il redirect di tutti i merchant
-$itemIdMerchant=0;
-$uriMerchant  = 'index.php?option=com_bookingforconnector&view=merchantdetails';
-if($isportal){
-	$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uriMerchant .'%' ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
-	$itemIdMerchant = intval($db->loadResult());
-}
-if($itemId == 0){
-	$itemId = $itemIdMerchant;
-}
+$uri = COM_BOOKINGFORCONNECTOR_URIRESOURCE;
+$uriMerchant  = COM_BOOKINGFORCONNECTOR_URIMERCHANTDETAILS;
 
 $onlystay = true ;
 $currParam = BFCHelper::getSearchParamsSession();
@@ -143,8 +146,8 @@ $totPerson = (isset($currParam)  && isset($currParam['paxes']))? $currParam['pax
 		$showResourceMap = (($resourceLat != null) && ($resourceLon !=null));
 		
 		$currUriresource = $uri.'&resourceId=' . $resource->ResourceId . ':' . BFCHelper::getSlug($resourceName);
-		if ($itemId<>0)
-			$currUriresource.='&Itemid='.$itemId;
+//		if ($itemId<>0)
+//			$currUriresource.='&Itemid='.$itemId;
 
 		if (!empty($resource->RateplanId)){
 			 $currUriresource .= "&pricetype=" . $resource->RateplanId;
@@ -155,8 +158,8 @@ $totPerson = (isset($currParam)  && isset($currParam['paxes']))? $currParam['pax
 		$routeMerchant = "";
 		if($isportal){
 			$currUriMerchant = $uriMerchant. '&merchantId=' . $resource->MerchantId . ':' . BFCHelper::getSlug($merchantName);
-			if ($itemIdMerchant<>0)
-				$currUriMerchant.= '&Itemid='.$itemIdMerchant;
+//			if ($itemIdMerchant<>0)
+//				$currUriMerchant.= '&Itemid='.$itemIdMerchant;
 			$routeMerchant = JRoute::_($currUriMerchant.$fromsearchparam);
 		}
 		$bookingType = 0;

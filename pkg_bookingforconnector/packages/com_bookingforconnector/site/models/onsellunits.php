@@ -165,17 +165,18 @@ class BookingForConnectorModelOnSellUnits extends JModelList
 				$resources = $res->d;
 			}
 			
-				$db   = JFactory::getDBO();
-				$uri  = 'index.php?option=com_bookingforconnector&view=onsellunit';
-				$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uri ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1  LIMIT 1' );
-				$itemId = ($db->getErrorNum())? 0 : intval($db->loadResult());
+//				$db   = JFactory::getDBO();
+//				$uri  = 'index.php?option=com_bookingforconnector&view=onsellunit';
+////				$db->setQuery('SELECT id FROM #__menu WHERE link = '. $db->Quote( $uri ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1  LIMIT 1' );
+//				$db->setQuery('SELECT id FROM #__menu WHERE (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 AND link = '. $db->Quote( $uri ) .' LIMIT 1' );
+//				$itemId = ($db->getErrorNum())? 0 : intval($db->loadResult());
 ///		$route = JRoute::_('index.php?option=com_bookingforconnector&view=onsellunit&resourceId=' . $resource->ResourceId . ':' . BFCHelper::getSlug($resourceName));
-
+			$uri = COM_BOOKINGFORCONNECTOR_URIONSELLUNIT;
 			foreach( $resources as $resource ) {
 				$resourceName = BFCHelper::getLanguage($resource->Name, $language);
-				if ($itemId<>0)
-					$route = JRoute::_($uri.'&resourceId=' . $resource->ResourceId . ':' . BFCHelper::getSlug($resourceName).'&Itemid='.$itemId );
-				else
+//				if ($itemId<>0)
+//					$route = JRoute::_($uri.'&resourceId=' . $resource->ResourceId . ':' . BFCHelper::getSlug($resourceName).'&Itemid='.$itemId );
+//				else
 					$route = JRoute::_($uri.'&resourceId=' . $resource->ResourceId . ':' . BFCHelper::getSlug($resourceName));
 				
 				$resource->Url =  $route;
@@ -219,17 +220,18 @@ class BookingForConnectorModelOnSellUnits extends JModelList
 				$resources = $res->d;
 			}
 			
-				$db   = JFactory::getDBO();
-				$uri  = 'index.php?option=com_bookingforconnector&view=onsellunit';
-				$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uri ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1  LIMIT 1' );
-				$itemId = ($db->getErrorNum())? 0 : intval($db->loadResult());
+//				$db   = JFactory::getDBO();
+//				$uri  = 'index.php?option=com_bookingforconnector&view=onsellunit';
+////				$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uri ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1  LIMIT 1' );
+//				$db->setQuery('SELECT id FROM #__menu WHERE (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 AND link = '. $db->Quote( $uri ) .' LIMIT 1' );
+//				$itemId = ($db->getErrorNum())? 0 : intval($db->loadResult());
 ///		$route = JRoute::_('index.php?option=com_bookingforconnector&view=onsellunit&resourceId=' . $resource->ResourceId . ':' . BFCHelper::getSlug($resourceName));
-
+			$uri = COM_BOOKINGFORCONNECTOR_URIONSELLUNIT;
 			foreach( $resources as $resource ) {
 				$resourceName = BFCHelper::getLanguage($resource->Name, $language);
-				if ($itemId<>0)
-					$route = JRoute::_($uri.'&resourceId=' . $resource->ResourceId . ':' . BFCHelper::getSlug($resourceName).'&Itemid='.$itemId );
-				else
+//				if ($itemId<>0)
+//					$route = JRoute::_($uri.'&resourceId=' . $resource->ResourceId . ':' . BFCHelper::getSlug($resourceName).'&Itemid='.$itemId );
+//				else
 					$route = JRoute::_($uri.'&resourceId=' . $resource->ResourceId . ':' . BFCHelper::getSlug($resourceName));
 	
 				$resource->Url =  $route;

@@ -14,17 +14,18 @@ $language 	= JFactory::getLanguage()->getTag();
 $app = JFactory::getApplication();
 $sitename = $app->get('sitename');
 
-$db   = JFactory::getDBO();
-$uriMerchant  = 'index.php?option=com_bookingforconnector&view=merchantdetails';
-$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uriMerchant .'%' ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
-$itemIdMerchant = ($db->getErrorNum())? 0 : intval($db->loadResult());
-//$itemIdMerchant = intval($db->loadResult());
+//$db   = JFactory::getDBO();
+//$uriMerchant  = 'index.php?option=com_bookingforconnector&view=merchantdetails';
+//$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uriMerchant .'%' ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
+//$itemIdMerchant = ($db->getErrorNum())? 0 : intval($db->loadResult());
+////$itemIdMerchant = intval($db->loadResult());
+//
+//$uriMerchant.='&merchantId=' . $merchant->MerchantId . ':' . BFCHelper::getSlug($merchant->Name);
+//
+//if ($itemIdMerchant<>0)
+//	$uriMerchant.='&Itemid='.$itemIdMerchant;
 
-$uriMerchant.='&merchantId=' . $merchant->MerchantId . ':' . BFCHelper::getSlug($merchant->Name);
-
-if ($itemIdMerchant<>0)
-	$uriMerchant.='&Itemid='.$itemIdMerchant;
-
+$uriMerchant  = COM_BOOKINGFORCONNECTOR_URIMERCHANTDETAILS;
 
 $uriMerchant .='&layout=contacts';
 $route = JRoute::_($uriMerchant);
@@ -130,7 +131,7 @@ $idform = uniqid("merchantdetailscontacts");
 		<div class="bfi-row">
             <div class="bfi-col-md-12" style="padding:0;">
               <label><?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_NOTES') ?></label>
-              <textarea name="form[note]" style="height:200px;" class="" placeholder="<?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_NOTES') ?>"></textarea>    
+              <textarea name="form[note]" style="height:200px;" class=""  data-rule-nourl="true"  data-msg-nourl="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_NOURL_ERROR') ?>" placeholder="<?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_NOTES') ?>"></textarea>    
             </div>
         </div>
 			
@@ -158,6 +159,7 @@ echo (isset($recaptcha[0])) ? $recaptcha[0] : '';
 		<input type="hidden" id="redirect" name="form[Redirect]" value="<?php echo $routeThanks;?>" />
 		<input type="hidden" id="redirecterror" name="Redirecterror" value="<?php echo $routeThanksKo;?>" />
 		<input type="hidden" id="formCulture" name="form[Culture]" value="<?php echo $language;?>" />
+		<?php echo JHtml::_('form.token'); ?>
 
 		<div class="bfi-row bfi-footer-book" >
 			<div class="bfi-col-md-10">
@@ -311,7 +313,8 @@ echo (isset($recaptcha[0])) ? $recaptcha[0] : '';
 						form.submit();
 					}
 				}
-			});
+			}
 		});
+	});
 //-->
 </script>

@@ -45,6 +45,7 @@ class BookingForConnectorModelTag extends JModelList
 	private $urlPackages = null;
 	private $urlPackagesCount = null;
 	private $count = null;
+	private $availableCount = null;
 
 		
 
@@ -97,14 +98,18 @@ class BookingForConnectorModelTag extends JModelList
 //			$options['data']['categoryIds'] = '\''.implode('|',$categoryIds).'\'';
 	}
 	
+//	public function getTags($language='', $categoryIds='', $start, $limit)  {
+////		$session = JFactory::getSession();
+//		$results = BFCHelper::getSession('getTags'.$language.$categoryIds, null , 'com_bookingforconnector');
+////		if (!$session->has('getMerchantCategories','com_bookingforconnector')) {
+//		if ($results==null) {
+//			$results = $this->getTagsFromService($language, $categoryIds, $start, $limit);
+//			BFCHelper::setSession('getTags'.$language.$categoryIds, $results, 'com_bookingforconnector');
+//		}
+//		return $results;
+//	}
 	public function getTags($language='', $categoryIds='', $start, $limit)  {
-//		$session = JFactory::getSession();
-		$results = BFCHelper::getSession('getTags'.$language.$categoryIds, null , 'com_bookingforconnector');
-//		if (!$session->has('getMerchantCategories','com_bookingforconnector')) {
-		if ($results==null) {
-			$results = $this->getTagsFromService($language, $categoryIds, $start, $limit);
-			BFCHelper::setSession('getTags'.$language.$categoryIds, $results, 'com_bookingforconnector');
-		}
+		$results = $this->getTagsFromService($language, $categoryIds, $start, $limit);
 		return $results;
 	}
 	public function getTagsFromService($language='', $categoryIds='', $start, $limit) {
@@ -137,7 +142,7 @@ class BookingForConnectorModelTag extends JModelList
 		
 		$ret = null;
 		
-		$r = $this->helper->executeQuery($url);
+		$r = $this->helper->executeQuery($url,null,null,false);
 		if (isset($r)) {
 			$res = json_decode($r);
 			if (!empty($res->d->results)){
@@ -150,14 +155,18 @@ class BookingForConnectorModelTag extends JModelList
 		return $ret;
 	}
 
+//	public function getTagsForSearch($language='', $categoryIds='')  {
+//		$session = JFactory::getSession();
+//		$results = $session->get('getTagsForSearch'.$language.$categoryIds, null , 'com_bookingforconnector');
+////		if (!$session->has('getMerchantCategories','com_bookingforconnector')) {
+//		if ($results==null) {
+//			$results = $this->getTagsForSearchFromService($language, $categoryIds);
+//			$session->set('getTagsForSearch'.$language.$categoryIds, $results, 'com_bookingforconnector');
+//		}
+//		return $results;
+//	}
 	public function getTagsForSearch($language='', $categoryIds='')  {
-		$session = JFactory::getSession();
-		$results = $session->get('getTagsForSearch'.$language.$categoryIds, null , 'com_bookingforconnector');
-//		if (!$session->has('getMerchantCategories','com_bookingforconnector')) {
-		if ($results==null) {
-			$results = $this->getTagsForSearchFromService($language, $categoryIds);
-			$session->set('getTagsForSearch'.$language.$categoryIds, $results, 'com_bookingforconnector');
-		}
+		$results = $this->getTagsForSearchFromService($language, $categoryIds);
 		return $results;
 	}
 	
@@ -183,7 +192,7 @@ class BookingForConnectorModelTag extends JModelList
 		
 		$ret = null;
 		
-		$r = $this->helper->executeQuery($url);
+		$r = $this->helper->executeQuery($url,null,null,false);
 		if (isset($r)) {
 			$res = json_decode($r);
 			if (!empty($res->d->results)){
@@ -277,6 +286,7 @@ class BookingForConnectorModelTag extends JModelList
 				$count = (int)$res->d;
 			}
 		}
+		$this->availableCount =  $count;
 		$this->count =  $count;
 		
 		return $count;
@@ -560,6 +570,17 @@ class BookingForConnectorModelTag extends JModelList
 		return $ret;
 	}
 
+	public function getTotalAvailable()
+	{
+		if ($this->availableCount !== null){
+			return $this->availableCount;
+		}
+		else{
+//			$this->retrieveItems();
+			return $this->availableCount;
+		}
+	}
+
 	public function getResourcesFromService($start, $limit, $ordering, $direction, $ignorePagination = false, $jsonResult = false) {
 
 		$store = $this->getStoreId();
@@ -651,6 +672,7 @@ class BookingForConnectorModelTag extends JModelList
 
 		if(isset($results->ItemsCount)){
 			$this->count = $results->ItemsCount;
+			$this->availableCount = $results->AvailableItemsCount;
 			$resultsItems = json_decode($results->ItemsString);
 		}
 		BFCHelper::setSearchParamsSession($params);

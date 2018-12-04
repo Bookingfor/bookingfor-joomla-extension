@@ -141,18 +141,20 @@
 	.bfi-form-vertical .bfi-showchildren.bfi-col-sm-2 {
 		padding-left: 2%;
 	}
-
+/*
 	.bfi-form-vertical .bfi-childrenages {
 		margin-left: -65px;
 		width: 200% !important;
 	}
+*/
 	.bfi-form-vertical .bfi-searchbutton-wrapper.bfi-col-sm-2{
 	clear:both;
 	}
 }
 @media only screen  and (max-width : 767px) {
 	.bfi-form-horizontal div[class*="bfi-col-sm-"],
-	.bfi-form-vertical div[class*="bfi-col-sm-"] {
+	.bfi-form-vertical div[class*="bfi-col-sm-"],
+	.bfi-form-vertical .bfi-showperson{
 		padding-left: 15px;
 		padding-right: 15px;
 	}
@@ -373,6 +375,46 @@ padding-left:10px;
 		.bfi-form-horizontal .bfi-showadult, .bfi-form-horizontal .bfi-showchildren, .bfi-form-horizontal .bfi-showsenior, .bfi-form-horizontal .bfi-childrenages {
 			float: none !important;
 			width: 100% !important;
+		}
+
+		.bfi-content.bfi-content-mrc, #navbookingfordetails .ui-tabs-panel {
+			padding: 0 !important;
+		}
+		.bfi-table-resources, .bfi-table-cart, .bfi-table-groupedresources {
+			width: 100%;
+			min-width: 0;
+			border: none;
+		}
+		.bfi-book-now.bfi-sticked {
+			top: 0 !important;
+			width: 90%;
+			background-color: #fff;
+			border: 1px solid grey;
+			-webkit-box-sizing: border-box;
+			-moz-box-sizing: border-box;
+			box-sizing: border-box;
+			left: 5%;
+			padding: 10px;
+			border-radius: 20px;
+		}
+		.bfi-table-resources thead {
+			display: none !important;
+		}
+		.bfi-table-cart thead th {
+			display: none !important;
+		}
+		.bfi-table-cart thead th:first-child {
+			display: block !important;
+		}
+		.bfi-table-resources td, .bfi-table-cart td {
+			-webkit-box-sizing: border-box;
+			-moz-box-sizing: border-box;
+			box-sizing: border-box;
+			display: block !important;
+			width: 100%;
+		}
+		.bfi-menu-booking{
+			display: none;
 		}
 
 }

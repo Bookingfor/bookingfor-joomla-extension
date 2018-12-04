@@ -57,15 +57,16 @@ $stato = isset($merchant->AddressData->StateName)?$merchant->AddressData->StateN
 
 $fromSearch =  BFCHelper::getVar('fromsearch','0');
 
-$db   = JFactory::getDBO();
-$uriMerchant  = 'index.php?option=com_bookingforconnector&view=merchantdetails';
-$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uriMerchant .'%' ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
-$itemIdMerchant = ($db->getErrorNum())? 0 : intval($db->loadResult());
-
-$uriMerchant.='&merchantId=' . $merchant->MerchantId . ':' . BFCHelper::getSlug($merchant->Name);
-
-if ($itemIdMerchant<>0)
-	$uriMerchant.='&Itemid='.$itemIdMerchant;
+//$db   = JFactory::getDBO();
+//$uriMerchant  = 'index.php?option=com_bookingforconnector&view=merchantdetails';
+//$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uriMerchant .'%' ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
+//$itemIdMerchant = ($db->getErrorNum())? 0 : intval($db->loadResult());
+//
+//$uriMerchant.='&merchantId=' . $merchant->MerchantId . ':' . BFCHelper::getSlug($merchant->Name);
+//
+//if ($itemIdMerchant<>0)
+//	$uriMerchant.='&Itemid='.$itemIdMerchant;
+$uriMerchant  = COM_BOOKINGFORCONNECTOR_URIMERCHANTDETAILS.'&merchantId=' . $merchant->MerchantId . ':' . BFCHelper::getSlug($merchant->Name);
 
 $routeMerchant = JRoute::_($uriMerchant,true, -1);
 $routeRating = JRoute::_($uriMerchant.'&layout=rating');				
@@ -117,7 +118,7 @@ $merchantDescription = BFCHelper::getLanguage($merchant->Description, $language,
 <script type="application/ld+json">// <![CDATA[
 <?php echo json_encode($payload,JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE); ?>
 // ]]></script>
-<div class="bfi-content bfi-hideonextra">
+<div class="bfi-content bfi-content-mrc<?php echo $merchant->MerchantId?> bfi-hideonextra">
 
 	<?php if($reviewcount>0){ ?>
 	<div class="bfi-row">
@@ -172,7 +173,7 @@ $merchantDescription = BFCHelper::getLanguage($merchant->Description, $language,
 
 	</div>
 
-<div class="bfi-content">
+<div class="bfi-content bfi-content-mrc<?php echo $merchant->MerchantId?>">
 	<div class="bfi-row">
 		<div class="bfi-col-md-8 bfi-description-data">
 			<?php echo $merchantDescription ?>		
@@ -264,6 +265,19 @@ $merchantDescription = BFCHelper::getLanguage($merchant->Description, $language,
 
 	<?php if (($showMap)) {?>
 	<br /><br />
+<?php 
+if (COM_BOOKINGFORCONNECTOR_USE_OPENSTREETMAP) {
+		$bbox = BFCHelper::bfi_getBBox_openstreetmap($resourceLat, $resourceLon, 1000);
+		$urlopenstreetmap = vsprintf('https://www.openstreetmap.org/export/embed.html?bbox=%.15f%%2C%.15f%%2C%.15f%%2C%.15f&amp;layer=mapnik&amp;marker=%.15f%%2C%.15f', $bbox);
+?>
+	<iframe width="100%" height="350" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" src="<?php echo $urlopenstreetmap ?>" ></iframe> 
+<?php 
+  
+}else{
+?>
+
+
+
 <div id="merchant_map" style="width:100%;height:350px"></div>
 	<script type="text/javascript">
 	<!--
@@ -318,7 +332,9 @@ $merchantDescription = BFCHelper::getLanguage($merchant->Description, $language,
 
 	//-->
 	</script>
-<?php } ?>
+<?php } 
+}
+?>
 
 <?php if ($merchant->RatingsContext ==1 || $merchant->RatingsContext ==3){?>
 	<div class="bfi-ratingslist">

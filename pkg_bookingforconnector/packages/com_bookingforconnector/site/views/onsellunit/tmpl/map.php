@@ -43,37 +43,40 @@ $contractType = ($resource->ContractType) ? JTEXT::_('COM_BOOKINGFORCONNECTOR_VI
 	}
 
 
-//-------------------pagina per i l redirect di tutte le risorse in vendita
+////-------------------pagina per i l redirect di tutte le risorse in vendita
+//
+//$db   = JFactory::getDBO();
+//$uri  = 'index.php?option=com_bookingforconnector&view=onsellunit';
+//$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uri ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
+//$itemId = ($db->getErrorNum())? 0 : intval($db->loadResult());
+////-------------------pagina per i l redirect di tutte le risorsein vendita
+//
+//
+////-------------------pagina per il redirect di tutti i merchant
+//
+//$uriMerchant  = 'index.php?option=com_bookingforconnector&view=merchantdetails';
+//$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uriMerchant .'%' ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
+//$itemIdMerchant = ($db->getErrorNum())? 0 : intval($db->loadResult());
+////-------------------pagina per il redirect di tutti i merchant
+//
+////$route = JRoute::_('index.php?option=com_bookingforconnector&view=onsellunit&resourceId=' . $resource->ResourceId . ':' . BFCHelper::getSlug($resourceName));
+//
+//if ($itemId<>0)
+//	$uri.='&resourceId=' . $resource->ResourceId . ':' . BFCHelper::getSlug($resourceName).'&Itemid='.$itemId;
+//else
+//	$uri.='&resourceId=' . $resource->ResourceId . ':' . BFCHelper::getSlug($resourceName);
+//
+//
+////$routeMerchant = JRoute::_('index.php?option=com_bookingforconnector&view=merchantdetails&merchantId=' . $resource->MerchantId . ':' . BFCHelper::getSlug($merchant->Name));
+//if ($itemIdMerchant<>0)
+//	$uriMerchant.='&merchantId=' . $merchant->MerchantId . ':' . BFCHelper::getSlug($merchant->Name).'&Itemid='.$itemIdMerchant;
+//else
+//	$uriMerchant.='&merchantId=' . $merchant->MerchantId . ':' . BFCHelper::getSlug($merchant->Name);
 
-$db   = JFactory::getDBO();
-$uri  = 'index.php?option=com_bookingforconnector&view=onsellunit';
-$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uri ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
-$itemId = ($db->getErrorNum())? 0 : intval($db->loadResult());
-//-------------------pagina per i l redirect di tutte le risorsein vendita
-
-
-//-------------------pagina per il redirect di tutti i merchant
-
-$uriMerchant  = 'index.php?option=com_bookingforconnector&view=merchantdetails';
-$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uriMerchant .'%' ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
-$itemIdMerchant = ($db->getErrorNum())? 0 : intval($db->loadResult());
-//-------------------pagina per il redirect di tutti i merchant
-
-//$route = JRoute::_('index.php?option=com_bookingforconnector&view=onsellunit&resourceId=' . $resource->ResourceId . ':' . BFCHelper::getSlug($resourceName));
-
-if ($itemId<>0)
-	$uri.='&resourceId=' . $resource->ResourceId . ':' . BFCHelper::getSlug($resourceName).'&Itemid='.$itemId;
-else
-	$uri.='&resourceId=' . $resource->ResourceId . ':' . BFCHelper::getSlug($resourceName);
+$uri = COM_BOOKINGFORCONNECTOR_URIONSELLUNIT .'&resourceId=' . $resource->ResourceId . ':' . BFCHelper::getSlug($resourceName);
+$uriMerchant  = COM_BOOKINGFORCONNECTOR_URIMERCHANTDETAILS .'&merchantId=' . $merchant->MerchantId . ':' . BFCHelper::getSlug($merchant->Name);
 
 $route = JRoute::_($uri);
-
-//$routeMerchant = JRoute::_('index.php?option=com_bookingforconnector&view=merchantdetails&merchantId=' . $resource->MerchantId . ':' . BFCHelper::getSlug($merchant->Name));
-if ($itemIdMerchant<>0)
-	$uriMerchant.='&merchantId=' . $merchant->MerchantId . ':' . BFCHelper::getSlug($merchant->Name).'&Itemid='.$itemIdMerchant;
-else
-	$uriMerchant.='&merchantId=' . $merchant->MerchantId . ':' . BFCHelper::getSlug($merchant->Name);
-
 $routeMerchant = JRoute::_($uriMerchant);
 $isMerchantAnonymous = BFCHelper::isMerchantAnonymous($merchant->MerchantTypeId);
 ?>

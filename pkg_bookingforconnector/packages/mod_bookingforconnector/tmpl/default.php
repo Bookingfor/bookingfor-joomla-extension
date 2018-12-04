@@ -80,16 +80,18 @@ $fax ="";
 
 $MerchantType = $merchant->MerchantTypeId;
 
-$db   = JFactory::getDBO();
-$uriMerchant  = 'index.php?option=com_bookingforconnector&view=merchantdetails';
-$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uriMerchant .'%' ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
-$itemIdMerchant = ($db->getErrorNum())? 0 : intval($db->loadResult());
-//$itemIdMerchant = intval($db->loadResult());
+//$db   = JFactory::getDBO();
+//$uriMerchant  = 'index.php?option=com_bookingforconnector&view=merchantdetails';
+//$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uriMerchant .'%' ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
+//$itemIdMerchant = ($db->getErrorNum())? 0 : intval($db->loadResult());
+////$itemIdMerchant = intval($db->loadResult());
+//
+//$uriMerchant.='&merchantId=' . $merchant->MerchantId . ':' . BFCHelper::getSlug($merchant->Name);
+//
+//if ($itemIdMerchant<>0)
+//	$uriMerchant.='&Itemid='.$itemIdMerchant;
 
-$uriMerchant.='&merchantId=' . $merchant->MerchantId . ':' . BFCHelper::getSlug($merchant->Name);
-
-if ($itemIdMerchant<>0)
-	$uriMerchant.='&Itemid='.$itemIdMerchant;
+$uriMerchant = COM_BOOKINGFORCONNECTOR_URIMERCHANTDETAILS .'&merchantId=' . $merchant->MerchantId . ':' . BFCHelper::getSlug($merchant->Name);
 
 $uriMerchantResources = $uriMerchant .'&layout=resources&limitstart=0';
 $uriMerchantRateplanslist = $uriMerchant .'&layout=rateplanslist';
@@ -301,7 +303,7 @@ if(empty($maxCapacityPaxes)) {
 		<?php } ?>	
 		<div class="bfi-row">
             <div class="bfi-col-md-12" style="padding:0;">
-              <textarea name="form[note]" style="height:200px;" class="bfi-col-md-12" placeholder="<?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_NOTES') ?>"></textarea>    
+              <textarea name="form[note]" style="height:200px;" data-rule-nourl="true"  data-msg-nourl="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_NOURL_ERROR') ?>" class="bfi-col-md-12" placeholder="<?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_NOTES') ?>"></textarea>    
             </div>
         </div>
 		<div class="bfi-row">
@@ -331,6 +333,7 @@ if(empty($maxCapacityPaxes)) {
 			<input type="hidden" id="redirect" name="form[Redirect]" value="<?php echo $routeThanks;?>" />
 			<input type="hidden" id="redirecterror" name="Redirecterror" value="<?php echo $routeThanksKo;?>" />
 			<input type="hidden" id="formCulture" name="form[Culture]" value="<?php echo $language;?>" />
+			<?php echo JHtml::_('form.token'); ?>
 			<div class="bfi-footer-book" >
 				<?php echo $infoSendBtn ?>
 			</div>

@@ -146,6 +146,9 @@
 .bfi-content, .bfi-form-contacts form, .ui-dialog.bfi-guest {
 	padding: 10px;
 }
+.ui-dialog.bfi-guest{
+	z-index:10010;
+}
 .ui-dialog.bfi-guest, .ui-dialog.bfi-dialog-timeperiod, .ui-dialog.bfi-dialog-timeslot {
 	min-width: 220px;
 	padding: 10px;
@@ -986,6 +989,9 @@ a.bfi-resname:link, a.bfi-resname:hover, .bfi-resname a {
 }
 .bfi-form-horizontal {
 	text-align: center;
+	& .bfi-showperson {
+		display: none;
+	}
 	/*
 	& .bfi-fields, .bfi-showperson-text {
 		display: inline-block;
@@ -1041,16 +1047,26 @@ a.bfi-resname:link, a.bfi-resname:hover, .bfi-resname a {
 {
 	font-size: 14px;
 }
-.bfi-form-vertical .bfi-showperson-text {
+.bfi-form-vertical .bfi-showperson-text, .bfi-form-vertical .bfi-showperson-container {
 	display: none;
 }
 .bfi-showperson-text {
 	border-radius: $border-radius-base;
 	border: 1px solid $color11;
-	height: 30px;
-	line-height: 30px;
+	/*height: 30px;
+	line-height: 30px;*/
+	text-align:left;
 	padding: 0 5px;
+	width:100% !important;
 }
+.bfi-summary-search{
+	background-color: #fff;
+	border: 1px solid #e0e0e0;
+	padding: 24px;
+	margin-bottom: 16px;
+	border-radius: 2px;
+}
+
 .bfi-wait {
 	color: $color2;
 	font-size: $font-size-large;
@@ -1624,10 +1640,11 @@ label.bfi-lblcheckzone {
 	}
 }
 .bfi-guest .bfi-inputmini, .bfi-childrenages .bfi-inputmini,.bfi_resource-calculatorForm-childrenages .bfi-inputmini {
-	padding-left: 5px;
+	padding: 0 !important;
 	position: relative;
 	width: 45px;
 }
+.bfi-guest  .ui-dialog-titlebar-close {display: none }
 .bfi_resource-calculatorForm-childrenages  .bfi-inputmini {
 	width: 50px;
 }

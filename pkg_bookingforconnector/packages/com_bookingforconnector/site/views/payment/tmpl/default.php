@@ -17,13 +17,15 @@ $invalidate=0;
 $errorCode ="0";
 $lastPayment =  null;
 
-//$route= JRoute::_('index.php?view=orders&checkmode=' . $checkmode);
-$db   = JFactory::getDBO();
-$uriCart  = 'index.php?option=com_bookingforconnector&view=cart';
-$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uriCart .'%' ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
-$itemIdCart= ($db->getErrorNum())? 0 : intval($db->loadResult());
-if ($itemIdCart<>0)
-	$uriCart.='&Itemid='.$itemIdCart;
+////$route= JRoute::_('index.php?view=orders&checkmode=' . $checkmode);
+//$db   = JFactory::getDBO();
+//$uriCart  = 'index.php?option=com_bookingforconnector&view=cart';
+//$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uriCart .'%' ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
+//$itemIdCart= ($db->getErrorNum())? 0 : intval($db->loadResult());
+//if ($itemIdCart<>0)
+//	$uriCart.='&Itemid='.$itemIdCart;
+
+$uriCart  = COM_BOOKINGFORCONNECTOR_URICART;
 $url_cart_page = JRoute::_($uriCart);
 
 $redirect = JRoute::_($uriCart.'&layout=thanks&orderid='.$orderid, true, -1);

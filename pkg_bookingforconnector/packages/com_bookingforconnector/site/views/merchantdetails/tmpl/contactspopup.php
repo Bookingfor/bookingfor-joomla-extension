@@ -7,6 +7,13 @@
 
 // No direct access to this file
 defined('_JEXEC') or die('Restricted access');
+if(!empty( COM_BOOKINGFORCONNECTOR_CRAWLER )){
+	$listCrawler = json_decode(COM_BOOKINGFORCONNECTOR_CRAWLER , true);
+	foreach( $listCrawler as $key=>$crawler){
+	if (preg_match('/'.$crawler['pattern'].'/', $_SERVER['HTTP_USER_AGENT'])) return;
+	}
+	
+}
 
 $merchant = $this->item;
 $sitename = $this->sitename;
@@ -16,16 +23,18 @@ $base_url = JURI::root();
 $this->document->setTitle(sprintf(JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEW_MERCHANTDETAILS_CONTACTS_TITLE'),$merchant->Name,$sitename));
 $this->document->setDescription( BFCHelper::getLanguage($this->item->Description, $language));
 
-$db   = JFactory::getDBO();
-$uriMerchant  = 'index.php?option=com_bookingforconnector&view=merchantdetails';
-$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uriMerchant .'%' ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
-$itemIdMerchant = ($db->getErrorNum())? 0 : intval($db->loadResult());
-//$itemIdMerchant = intval($db->loadResult());
+//$db   = JFactory::getDBO();
+//$uriMerchant  = 'index.php?option=com_bookingforconnector&view=merchantdetails';
+//$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uriMerchant .'%' ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
+//$itemIdMerchant = ($db->getErrorNum())? 0 : intval($db->loadResult());
+////$itemIdMerchant = intval($db->loadResult());
+//
+//$uriMerchant.='&merchantId=' . $merchant->MerchantId . ':' . BFCHelper::getSlug($merchant->Name);
+//
+//if ($itemIdMerchant<>0)
+//	$uriMerchant.='&Itemid='.$itemIdMerchant;
 
-$uriMerchant.='&merchantId=' . $merchant->MerchantId . ':' . BFCHelper::getSlug($merchant->Name);
-
-if ($itemIdMerchant<>0)
-	$uriMerchant.='&Itemid='.$itemIdMerchant;
+$uriMerchant  = COM_BOOKINGFORCONNECTOR_URIMERCHANTDETAILS.'&merchantId=' . $merchant->MerchantId . ':' . BFCHelper::getSlug($merchant->Name);
 
 $cNationList = BFCHelper::parseArrayList(JTEXT::_('COM_BOOKINGFORCONNECTOR_VIEW_CONSTANTS_NATIONSLIST'));
 
@@ -179,7 +188,7 @@ if(empty($maxCapacityPaxes)) {
 		<div class="bfi-row">
             <div class="bfi-col-md-12" style="padding:0;">
               <label><?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_NOTES') ?></label>
-              <textarea name="form[note]" style="height:200px;" class="" placeholder="<?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_NOTES') ?>"></textarea>    
+              <textarea name="form[note]" style="height:200px;" class="" data-rule-nourl="true"  data-msg-nourl="<?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_NOURL_ERROR') ?>"  placeholder="<?php echo  JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_NOTES') ?>"></textarea>    
             </div>
         </div>
 		<div class=" bfi-checkbox-wrapper">
@@ -199,17 +208,17 @@ if(empty($maxCapacityPaxes)) {
 	?>
 	<div id="recaptcha-error-<?php echo $idrecaptcha ?>" style="display:none"><?php echo JTEXT::_('COM_BOOKINGFORCONNECTOR_DEFAULT_FORM_CAPTCHA_REQUIRED') ?></div>
 
-			<input type="hidden" name="actionform" value="formlabel" />
-			<input type="hidden" name="form[merchantId]" value="<?php echo $merchant->MerchantId;?>" > 
-			<input type="hidden" name="form[orderType]" value="<?php echo $orderType ?>" />
-			<input type="hidden" name="form[cultureCode]" value="<?php echo $language;?>" />
-			<input type="hidden" name="form[Fax]" value="" />
-			<input type="hidden" name="form[VatCode]" value="" />
-			<input type="hidden" name="form[label]" value="" />
-			<input type="hidden" name="form[Redirect]" value="<?php echo $routeThanks;?>" />
-			<input type="hidden" name="form[Redirecterror]" value="<?php echo $routeThanksKo;?>" />
-			<input type="hidden" name="form[Culture]" value="<?php echo $language;?>" />
-			
+		<input type="hidden" name="actionform" value="formlabel" />
+		<input type="hidden" name="form[merchantId]" value="<?php echo $merchant->MerchantId;?>" > 
+		<input type="hidden" name="form[orderType]" value="<?php echo $orderType ?>" />
+		<input type="hidden" name="form[cultureCode]" value="<?php echo $language;?>" />
+		<input type="hidden" name="form[Fax]" value="" />
+		<input type="hidden" name="form[VatCode]" value="" />
+		<input type="hidden" name="form[label]" value="" />
+		<input type="hidden" name="form[Redirect]" value="<?php echo $routeThanks;?>" />
+		<input type="hidden" name="form[Redirecterror]" value="<?php echo $routeThanksKo;?>" />
+		<input type="hidden" name="form[Culture]" value="<?php echo $language;?>" />
+		<?php echo JHtml::_('form.token'); ?>			
 
 		<div class="bfi-row bfi-footer-book" >
 			<div class="bfi-col-md-10">

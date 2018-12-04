@@ -145,13 +145,17 @@ class BookingForConnectorModelPortal extends JModelList
 		return $results;
 	}
 
+//	public function getCurrencyExchanges() {
+//		$results = BFCHelper::getSession('getCurrencyExchanges', null , 'com_bookingforconnector');
+////		$results=null;
+//		if ($results==null) {
+//			$results = $this->getCurrencyExchangesFromService();
+//			BFCHelper::setSession('getCurrencyExchanges', $results, 'com_bookingforconnector');
+//		}
+//		return $results;
+//	}
 	public function getCurrencyExchanges() {
-		$results = BFCHelper::getSession('getCurrencyExchanges', null , 'com_bookingforconnector');
-//		$results=null;
-		if ($results==null) {
-			$results = $this->getCurrencyExchangesFromService();
-			BFCHelper::setSession('getCurrencyExchanges', $results, 'com_bookingforconnector');
-		}
+		$results = $this->getCurrencyExchangesFromService();
 		return $results;
 	}
 	
@@ -189,12 +193,16 @@ class BookingForConnectorModelPortal extends JModelList
 		return $return;
 	}
 
+//	public function getDefaultCurrency() {
+//		$results = BFCHelper::getSession('getDefaultCurrency', null , 'com_bookingforconnector');
+//		if ($results==null) {
+//			$results = $this->getDefaultCurrencyFromService();
+//			BFCHelper::setSession('getDefaultCurrency', $results, 'com_bookingforconnector');
+//		}
+//		return $results;
+//	}
 	public function getDefaultCurrency() {
-		$results = BFCHelper::getSession('getDefaultCurrency', null , 'com_bookingforconnector');
-		if ($results==null) {
-			$results = $this->getDefaultCurrencyFromService();
-			BFCHelper::setSession('getDefaultCurrency', $results, 'com_bookingforconnector');
-		}
+		$results = $this->getDefaultCurrencyFromService();
 		return $results;
 	}
 	
@@ -255,14 +263,19 @@ class BookingForConnectorModelPortal extends JModelList
 		return $return;
 	}
 
+//	public function getProductCategoryForSearch($language='', $typeId = 1,$merchantid=0) {
+////		$session = JFactory::getSession();
+//		$results = BFCHelper::getSession('getProductCategoryForSearch'.$language.$typeId.$merchantid, null , 'com_bookingforconnector');
+////		if (!$session->has('getMerchantCategories','com_bookingforconnector')) {
+//		if ($results==null) {
+//			$results = $this->getProductCategoryForSearchFromService($language, $typeId,$merchantid);
+//			BFCHelper::setSession('getProductCategoryForSearch'.$language.$typeId.$merchantid, $results, 'com_bookingforconnector');
+//		}
+//		return $results;
+//	}
+
 	public function getProductCategoryForSearch($language='', $typeId = 1,$merchantid=0) {
-//		$session = JFactory::getSession();
-		$results = BFCHelper::getSession('getProductCategoryForSearch'.$language.$typeId.$merchantid, null , 'com_bookingforconnector');
-//		if (!$session->has('getMerchantCategories','com_bookingforconnector')) {
-		if ($results==null) {
-			$results = $this->getProductCategoryForSearchFromService($language, $typeId,$merchantid);
-			BFCHelper::setSession('getProductCategoryForSearch'.$language.$typeId.$merchantid, $results, 'com_bookingforconnector');
-		}
+		$results = $this->getProductCategoryForSearchFromService($language, $typeId,$merchantid);
 		return $results;
 	}
 

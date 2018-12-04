@@ -27,14 +27,15 @@ $listNameAnalytics = $this->listNameAnalytics;
 $fromsearchparam = "&lna=".$listNameAnalytics;
 
 $currSorting=$listOrder . "|" . $listDirn;
+$counter = 0;
 
 //-------------------pagina per il redirect di tutte le risorse 
 
-$db   = JFactory::getDBO();
-$uri  = 'index.php?option=com_bookingforconnector&view=condominium';
-$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uri ) .' AND (language='. $db->Quote($this->language) .' OR language='.$db->Quote('*').') AND published = 1  LIMIT 1' );
-//$itemId = ($db->getErrorNum())? 0 : intval($db->loadResult());
-$itemId = intval($db->loadResult());
+//$db   = JFactory::getDBO();
+//$uri  = 'index.php?option=com_bookingforconnector&view=condominium';
+//$db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uri ) .' AND (language='. $db->Quote($this->language) .' OR language='.$db->Quote('*').') AND published = 1  LIMIT 1' );
+////$itemId = ($db->getErrorNum())? 0 : intval($db->loadResult());
+//$itemId = intval($db->loadResult());
 //------------------- pagina per i l redirect di tutte le risorse 
 
 $merchantImageUrl = Juri::root() . "components/com_bookingforconnector/assets/images/defaults/default-s6.jpeg";
@@ -45,16 +46,19 @@ $merchantImagePathError = BFCHelper::getImageUrl('condominium', "[img]",'medium'
 $merchants = $this->items;
 $total = $this->pagination->total;
 
-$itemIdMerchant=0;
-$uriMerchant  = 'index.php?option=com_bookingforconnector&view=merchantdetails';
-if($isportal){
-  $db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uriMerchant .'%' ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
-  $itemIdMerchant = intval($db->loadResult());
-}
-$counter = 0;
-if($itemId == 0){
-	$itemId = $itemIdMerchant;
-}
+//$itemIdMerchant=0;
+//$uriMerchant  = 'index.php?option=com_bookingforconnector&view=merchantdetails';
+//if($isportal){
+//  $db->setQuery('SELECT id FROM #__menu WHERE link LIKE '. $db->Quote( $uriMerchant .'%' ) .' AND (language='. $db->Quote($language) .' OR language='.$db->Quote('*').') AND published = 1 LIMIT 1' );
+//  $itemIdMerchant = intval($db->loadResult());
+//}
+//if($itemId == 0){
+//	$itemId = $itemIdMerchant;
+//}
+
+$uri = COM_BOOKINGFORCONNECTOR_URICONDOMINIUM;
+$uriMerchant  = COM_BOOKINGFORCONNECTOR_URIMERCHANTDETAILS;
+
 $url=JFactory::getURI()->toString();
 $formAction=$url;
 
@@ -99,14 +103,14 @@ $isCondominium = true;
 			$currUri = $uri. '&resourceId=' . $merchant->CondominiumId. ':' . BFCHelper::getSlug($merchant->Name);
 			$merchantDescription = ""; // BFCHelper::getLanguage($resource->Description, $language, null, array('ln2br'=>'ln2br', 'striptags'=>'striptags')); 
 			
-			if ($itemId<>0)
-				$currUri.='&Itemid='.$itemId;
+//			if ($itemId<>0)
+//				$currUri.='&Itemid='.$itemId;
 
 			$currUri .= $fromsearchparam;
 			$routeCondominium = JRoute::_($currUri);
 
-			if ($itemIdMerchant<>0)
-				$currUriMerchant.='&Itemid='.$itemIdMerchant;
+//			if ($itemIdMerchant<>0)
+//				$currUriMerchant.='&Itemid='.$itemIdMerchant;
 			
 			$routeMerchant = JRoute::_($currUriMerchant);
 			$routeRating = JRoute::_($currUriMerchant.'&layout=ratings');				

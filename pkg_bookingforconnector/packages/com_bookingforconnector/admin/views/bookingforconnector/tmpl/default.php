@@ -19,6 +19,10 @@ $result = null;
 $resultOk = false;
 $msg="";
 $monomerchant = false;
+$urlGitHub = "https://api.github.com/repos/Bookingfor/bookingfor-joomla-extension/releases/latest";
+$currReleased = "";
+$downloadUrl = "";
+$releaseHtmlUrl = "";
 
 if($checkUrl){
 	$options = array(
@@ -91,6 +95,17 @@ if($checkUrl){
 		*/
 
 	}
+	$relGithub = $wsHelper->executeQuery($urlGitHub,'GET', true, TRUE, "Bookingfor");
+	if (isset($relGithub)) {
+		$release = json_decode($relGithub);
+		$currReleased = ltrim($release->tag_name, 'v');
+		$downloadUrl = $release->zipball_url;
+		$releaseHtmlUrl = $release->html_url;
+		if ( isset($release->assets[0]) ) {
+			$downloadUrl= $release->assets[0]->browser_download_url;
+		}
+
+	}
 }
 	
 
@@ -116,6 +131,16 @@ $version=2;
 		<td><?php echo JTEXT::_('CONFIG_VERSION_LABEL')  ?></td>
 		<td>
 			<?php echo BFI_VERSION ?>
+<?php 
+			if (version_compare(BFI_VERSION, $currReleased, 'le'))
+//			if (version_compare("3.2.4", $currReleased, 'le'))
+			{
+				echo "<div class='alert alert-error'>New version released ". $currReleased .", download latest version from <a href='" . $downloadUrl . "'>github.com</a><br /> More details at <a href='" . $releaseHtmlUrl . "' target='_blank'>github.com</a></div>";
+			} else {
+				echo "<div>Congratulations! You have the latest version</div>";
+			}
+
+?>
 		</td>
 	</tr>
 	<tr>
