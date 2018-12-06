@@ -26,6 +26,7 @@ $sitename = $app->get('sitename');
 //	$uriMerchant.='&Itemid='.$itemIdMerchant;
 
 $uriMerchant  = COM_BOOKINGFORCONNECTOR_URIMERCHANTDETAILS;
+$uriMerchant.='&merchantId=' . $merchant->MerchantId . ':' . BFCHelper::getSlug($merchant->Name);
 
 $uriMerchant .='&layout=contacts';
 $route = JRoute::_($uriMerchant);

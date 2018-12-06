@@ -132,8 +132,8 @@ $version=2;
 		<td>
 			<?php echo BFI_VERSION ?>
 <?php 
-			if (version_compare(BFI_VERSION, $currReleased, 'le'))
-//			if (version_compare("3.2.4", $currReleased, 'le'))
+			if (version_compare(BFI_VERSION, $currReleased, 'lt'))
+//			if (version_compare("3.2.4", $currReleased, 'lt'))
 			{
 				echo "<div class='alert alert-error'>New version released ". $currReleased .", download latest version from <a href='" . $downloadUrl . "'>github.com</a><br /> More details at <a href='" . $releaseHtmlUrl . "' target='_blank'>github.com</a></div>";
 			} else {
